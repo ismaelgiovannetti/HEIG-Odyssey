@@ -55,13 +55,31 @@ jobs:
             type=raw,value=latest
             type=sha,format=long
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (Main App)
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Extract metadata for Landing Page
+        id: meta-landing
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}-landing
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+
+      - name: Build and push Docker image (Landing Page)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./landing-page
+          file: ./landing-page/Dockerfile
+          push: true
+          tags: ${{ steps.meta-landing.outputs.tags }}
+          labels: ${{ steps.meta-landing.outputs.labels }}
 
   # 3. Déploiement SSH sur VPS Hostinger (uniquement après le build sur main)
   deploy:
