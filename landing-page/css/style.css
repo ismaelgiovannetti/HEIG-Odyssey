@@ -150,29 +150,28 @@ button:focus-visible,
 .starfield {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
 .bg-orb {
   position: absolute;
-  border-radius: 50%;
-  background:
-    linear-gradient(
-      180deg,
-      var(--color-primary) 0 46%,
-      var(--color-outline) 46% 54%,
-      var(--color-secondary) 54% 100%
-    );
-  opacity: 0.1;
+  background-image: url('../assets/pokeball-pixel.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  opacity: 0.16;
   animation: drift 9s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 @media (prefers-reduced-motion: reduce) {
-  .bg-orb { animation: none; opacity: 0.08; }
+  .bg-orb { animation: none; opacity: 0.12; }
 }
 @keyframes drift {
-  0%, 100% { opacity: 0.06; transform: translateY(0); }
-  50% { opacity: 0.16; transform: translateY(-14px); }
+  0%, 100% { opacity: 0.12; transform: translateY(0); }
+  50% { opacity: 0.22; transform: translateY(-14px); }
 }
 
 /* ============================================================
@@ -336,14 +335,29 @@ button:focus-visible,
 /* ============================================================
    Sections / layout rhythm
    ============================================================ */
-main { position: relative; z-index: 1; }
+main { position: relative; }
 
 .section {
   padding-block: var(--space-7);
   position: relative;
-  background: var(--color-bg);
 }
-.section-alt { background: var(--color-bg-alt); }
+.section-alt {
+  position: relative;
+  z-index: 2;
+  background: var(--color-bg-alt);
+}
+
+.container,
+.panel,
+.hero-screen-frame,
+.starter-card,
+.trainer-card,
+.diff-card,
+.version-card,
+.section-head {
+  position: relative;
+  z-index: 2;
+}
 
 .section-head {
   max-width: 760px;
@@ -902,8 +916,10 @@ main { position: relative; z-index: 1; }
   height: 100%;
   min-height: 0;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 30%;
   flex-shrink: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 .trainer-body { padding: var(--space-3); }
 .trainer-name { font-family: var(--font-display); font-size: 13px; color: var(--color-text); margin-bottom: 6px; }
@@ -934,6 +950,8 @@ main { position: relative; z-index: 1; }
    CTA band
    ============================================================ */
 .cta-band {
+  position: relative;
+  z-index: 2;
   text-align: center;
   padding: var(--space-6) var(--space-3);
   background: linear-gradient(180deg, var(--color-bg-alt), var(--color-bg));
@@ -948,6 +966,8 @@ main { position: relative; z-index: 1; }
    Footer
    ============================================================ */
 .site-footer {
+  position: relative;
+  z-index: 2;
   padding: var(--space-5) 0 var(--space-4);
   border-top: 3px solid var(--color-primary-dark);
   background: var(--color-bg-alt);
