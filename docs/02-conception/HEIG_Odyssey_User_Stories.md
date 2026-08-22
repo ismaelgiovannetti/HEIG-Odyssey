@@ -2,15 +2,13 @@
 
 > Les stories commencent dans la colonne **Backlog** du GitHub Project. Elles passent dans **Ready** lorsque leurs critères d'acceptation, leurs dépendances et leur priorité sont compris par l'équipe.
 
-Le kick-off reste la source de vérité du périmètre MVP et hors MVP. Ce document traduit ce périmètre en valeur utilisateur et en critères vérifiables sans recopier inutilement les quantités de contenu. Les inventaires détaillés sont fixés dans les configurations versionnées ou dans les issues concernées avant leur passage dans **Ready**.
-
 ## Convention
 
 - **P1 - Socle critique :** nécessaire pour obtenir une boucle jouable ou livrer le prototype de manière sûre.
 - **P2 - Complément du MVP :** nécessaire pour couvrir tout le périmètre annoncé, après stabilisation du socle.
 - **P3 - Amélioration :** utile, mais simplifiable ou reportable sans casser la boucle principale.
 - Une **story joueur** décrit une valeur directement observable par un joueur.
-- Un **enabler technique** couvre une exigence de maintenabilité, de fiabilité ou de livraison indispensable au MVP. Il peut être géré comme une issue parente au même titre qu'une story joueur.
+- Une **story technique** décrit un besoin de développement, de fiabilité ou de livraison indispensable au MVP. Elle peut être gérée comme une issue parente au même titre qu'une story joueur.
 
 ## Vue d'ensemble
 
@@ -30,12 +28,12 @@ Le kick-off reste la source de vérité du périmètre MVP et hors MVP. Ce docum
 | US-12 | Recruter une créature dans la boutique gacha | Joueur | P2 | Katniss Everdeen | FR-10, NFR-01 |
 | US-13 | Accomplir des quêtes communes avec une progression individuelle | Joueur | P2 | Katniss Everdeen | FR-11, NFR-09 |
 | US-14 | Utiliser les parcours principaux de manière accessible | Joueur | P2 | Kim Possible | NFR-06, NFR-10 |
-| US-15 | Ajouter du contenu sans modifier le moteur | Enabler technique | P1 | Patrick Jane | FR-08, NFR-05 |
-| US-16 | Importer et servir les sprites localement | Enabler technique | P1 | Patrick Jane | NFR-05, NFR-08 |
-| US-17 | Traiter les événements de quête de manière fiable | Enabler technique | P2 | Patrick Jane, Katniss Everdeen | NFR-01, NFR-07, NFR-09 |
-| US-18 | Lancer un environnement local reproductible | Enabler technique | P1 | Patrick Jane | NFR-08 |
-| US-19 | Contrôler automatiquement chaque intégration | Enabler technique | P1 | Patrick Jane | NFR-05, NFR-08 |
-| US-20 | Déployer et restaurer une version identifiable | Enabler technique | P1 | Patrick Jane | NFR-02, NFR-07, NFR-08 |
+| US-15 | Ajouter du contenu sans modifier le moteur | Technique | P1 | Patrick Jane | FR-08, NFR-05 |
+| US-16 | Importer et servir les sprites localement | Technique | P1 | Patrick Jane | NFR-05, NFR-08 |
+| US-17 | Traiter les événements de quête de manière fiable | Technique | P2 | Patrick Jane, Katniss Everdeen | NFR-01, NFR-07, NFR-09 |
+| US-18 | Lancer un environnement local reproductible | Technique | P1 | Patrick Jane | NFR-08 |
+| US-19 | Contrôler automatiquement chaque intégration | Technique | P1 | Patrick Jane | NFR-05, NFR-08 |
+| US-20 | Déployer et restaurer une version identifiable | Technique | P1 | Patrick Jane | NFR-02, NFR-07, NFR-08 |
 
 ## Stories joueur
 
@@ -275,7 +273,7 @@ En tant que joueuse utilisant un ordinateur portable, je veux naviguer au clavie
 - Le son peut être coupé sans perdre une information nécessaire au jeu.
 - Les parcours principaux sont vérifiés sur la version récente de Chromium retenue pour la démonstration.
 
-## Enablers techniques
+## Stories techniques
 
 ### US-15 - Ajouter du contenu sans modifier le moteur
 
@@ -380,16 +378,6 @@ En tant que responsable de livraison, je veux déployer sur le VPS une image ide
 - Un échec redéploie un SHA précédemment validé et un seul déploiement peut s'exécuter à la fois.
 - Les logs applicatifs et de déploiement sont structurés, incluent un `requestId` ou un `eventId` lorsque pertinent et ne contiennent aucun secret.
 
-## Critères de performance à préciser pendant la réalisation
-
-Aucun seuil chiffré n'est imposé au kick-off pour le temps de réponse de l'application ou le temps de décision de l'IA difficile. Il serait arbitraire d'en inventer avant de disposer d'une tranche verticale mesurable. L'équipe procédera donc ainsi :
-
-1. mesurer un parcours applicatif représentatif et les trois IA sur un scénario de référence ;
-2. fixer dans les issues concernées une cible et une limite maximale compatibles avec le VPS ;
-3. ajouter le contrôle correspondant avant de déclarer les stories concernées terminées.
-
-L'absence de valeur initiale est acceptable à ce stade préliminaire ; l'absence de mesure et de seuil au moment de la validation finale ne le serait pas.
-
 ## Traçabilité avec les exigences
 
 | Exigence | Stories correspondantes |
@@ -418,7 +406,7 @@ L'absence de valeur initiale est acceptable à ce stade préliminaire ; l'absenc
 
 ## Transposition dans GitHub
 
-- Chaque `US-xx` devient une issue parente de type **Story** ou **Enabler technique**.
+- Chaque `US-xx` devient une issue parente de type **Story joueur** ou **Story technique**.
 - L'issue référence le périmètre du kick-off au lieu d'en recopier les quantités ; l'inventaire détaillé reste dans la configuration ou les sous-issues concernées.
 - L'issue reprend le persona ou l'acteur concerné, la formulation de la story, sa priorité et ses critères d'acceptation.
 - Les tâches `T-USxx-yy` sont ajoutées comme sous-issues de cette issue parente.

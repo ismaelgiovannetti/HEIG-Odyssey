@@ -21,7 +21,6 @@ La capacité théorique est de **160 heures-personnes par sprint** : quatre memb
 Les estimations sont des hypothèses initiales, pas une contrainte destinée à faire artificiellement tenir le périmètre dans la capacité disponible. L'équipe maîtrise déjà Next.js, Prisma, GitHub Actions et Docker. Better Auth, Resend, `@pkmn/sim`, Redis Streams et Playwright comportent davantage de découverte ; leurs estimations doivent donc être validées par les premiers travaux réels.
 
 - Le temps réellement consommé est renseigné à la fermeture de chaque tâche.
-- Une première comparaison entre attendu et réalisé est effectuée à la fin du deuxième jour du Sprint 1.
 - Si l'écart cumulé dépasse environ 20 %, les estimations des tâches restantes sont recalculées collectivement.
 - Pour une tâche de contenu, l'estimation reste provisoire jusqu'à la définition de son inventaire versionné.
 - Si le total recalculé dépasse la capacité, l'équipe rend le risque visible et simplifie l'implémentation dans les limites du MVP ; elle ne réduit pas arbitrairement les heures annoncées.
@@ -44,7 +43,7 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 
 | ID | Tâche | Label | Optimiste | Attendu | Pessimiste |
 | --- | --- | --- | ---: | ---: | ---: |
-| T-ARC-01 | Concevoir collectivement le modèle PostgreSQL initial couvrant comptes, collection, équipe, progression, combats, gacha et quêtes | Architecture / Data | 3 h | 5 h | 8 h |
+| T-ARC-01 | Concevoir collectivement le modèle PostgreSQL initial couvrant comptes, collection, équipe, progression, combats, gacha et quêtes | Architecture / Data | 4 h | 8 h | 12 h |
 | T-ARC-02 | Créer le schéma Prisma initial, la première migration et les données minimales de développement | Data | 2 h | 3 h | 5 h |
 | T-NFR03-01 | Mesurer la première tranche verticale et fixer les seuils de réponse et de décision IA à valider avant la release | QA / Performance | 2 h | 3 h | 5 h |
 
@@ -55,7 +54,7 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 | ID | Tâche | Label | Optimiste | Attendu | Pessimiste |
 | --- | --- | --- | ---: | ---: | ---: |
 | T-US01-01 | Définir le parcours de compte, les états de vérification et les contraintes de session | Fonctionnel / Sécurité | 1 h | 2 h | 3 h |
-| T-US01-02 | Intégrer Better Auth avec Prisma et l'envoi de vérification via Resend | Backend / Sécurité | 3 h | 4 h | 6 h |
+| T-US01-02 | Intégrer Better Auth avec Prisma et l'envoi de vérification via Resend | Backend / Sécurité | 4 h | 7 h | 12 h |
 | T-US01-03 | Réaliser les écrans d'inscription, vérification, connexion et déconnexion | Frontend | 3 h | 4 h | 6 h |
 | T-US01-04 | Tester la session, les routes protégées et les erreurs d'authentification | QA / Sécurité | 1 h | 2 h | 4 h |
 
@@ -97,12 +96,12 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 
 | ID | Tâche | Label | Optimiste | Attendu | Pessimiste |
 | --- | --- | --- | ---: | ---: | ---: |
-| T-US06-01 | Réaliser un spike `@pkmn/sim` en format simple Gen 4 avec un scénario reproductible | Combat / Recherche | 3 h | 4 h | 7 h |
-| T-US06-02 | Définir l'adaptateur, les types d'action et le format d'état exposé à l'interface | Architecture / Combat | 2 h | 3 h | 5 h |
-| T-US06-03 | Implémenter la création du combat, la validation des actions et la résolution des tours | Backend / Combat | 3 h | 5 h | 8 h |
-| T-US06-04 | Réaliser l'interface minimale d'attaque, de changement et d'affichage de l'état | Frontend / Combat | 3 h | 5 h | 8 h |
-| T-US06-05 | Créer des fixtures Gen 4 et des tests de résultat/invariants | QA / Combat | 2 h | 3 h | 5 h |
-| T-US06-06 | Relier contenu configuré, équipe active, adversaire, IA aléatoire, interface et résultat dans une tranche verticale | Intégration / Combat | 2 h | 4 h | 7 h |
+| T-US06-01 | Réaliser un spike `@pkmn/sim` en format simple Gen 4 avec un scénario reproductible | Combat / Recherche | 4 h | 6 h | 10 h |
+| T-US06-02 | Définir l'adaptateur, les types d'action et le format d'état exposé à l'interface | Architecture / Combat | 3 h | 4 h | 7 h |
+| T-US06-03 | Implémenter la création du combat, la validation des actions et la résolution des tours | Backend / Combat | 4 h | 7 h | 11 h |
+| T-US06-04 | Réaliser l'interface minimale d'attaque, de changement et d'affichage de l'état | Frontend / Combat | 4 h | 6 h | 10 h |
+| T-US06-05 | Créer des fixtures Gen 4 et des tests de résultat/invariants | QA / Combat | 2 h | 4 h | 6 h |
+| T-US06-06 | Relier contenu configuré, équipe active, adversaire, IA aléatoire, interface et résultat dans une tranche verticale | Intégration / Combat | 3 h | 5 h | 8 h |
 
 ### US-07 - Progresser dans la campagne
 
@@ -139,7 +138,7 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 | --- | --- | --- | ---: | ---: | ---: |
 | T-US10-01 | Implémenter une IA aléatoire qui ne produit que des actions légales | IA | 1 h | 2 h | 3 h |
 | T-US10-02 | Définir et implémenter l'heuristique du niveau normal | IA | 3 h | 4 h | 7 h |
-| T-US10-03 | Prototyper Expectiminimax avec budget et stratégie de repli | IA / Recherche | 4 h | 7 h | 12 h |
+| T-US10-03 | Prototyper Expectiminimax avec budget et stratégie de repli | IA / Recherche | 6 h | 10 h | 18 h |
 | T-US10-04 | Configurer les multiplicateurs de récompense par difficulté | Équilibrage / Backend | 1 h | 2 h | 4 h |
 | T-US10-05 | Mesurer le temps de décision, fixer le budget et tester les différences de comportement | QA / Performance | 2 h | 3 h | 5 h |
 
@@ -223,29 +222,29 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 | --- | --- | --- | ---: | ---: | ---: |
 | T-US19-01 | Normaliser les scripts lint, typecheck, tests et build | CI / Outillage | 1 h | 2 h | 3 h |
 | T-US19-02 | Remplacer le contrôle fictif du POC par la CI réelle déclenchée sur `dev` | CI | 2 h | 3 h | 5 h |
-| T-US19-03 | Compléter le workflow de PR avec services éphémères, E2E, accessibilité et validation d'image | CI / QA | 3 h | 5 h | 8 h |
+| T-US19-03 | Compléter le workflow de PR avec services éphémères, E2E, accessibilité et validation d'image | CI / QA | 4 h | 8 h | 12 h |
 | T-US19-04 | Protéger `main` et configurer les checks obligatoires | GitHub / Sécurité | 1 h | 1 h | 2 h |
 
 ### US-20 - Déployer et restaurer une version identifiable
 
 | ID | Tâche | Label | Optimiste | Attendu | Pessimiste |
 | --- | --- | --- | ---: | ---: | ---: |
-| T-US20-01 | Finaliser Docker Compose de production, vérifier HTTPS et isoler PostgreSQL/Redis sur le réseau privé du VPS | DevOps / Sécurité | 2 h | 3 h | 5 h |
+| T-US20-01 | Finaliser Docker Compose de production, vérifier HTTPS et isoler PostgreSQL/Redis sur le réseau privé du VPS | DevOps / Sécurité | 3 h | 6 h | 10 h |
 | T-US20-02 | Garantir que l'image publiée dans GHCR et déployée est identifiée par le SHA, sans dépendre de `latest` | CD / Docker | 1 h | 2 h | 3 h |
 | T-US20-03 | Compléter GitHub Actions Secrets, la connexion SSH et la concurrence de déploiement | CD / Sécurité | 1 h | 2 h | 4 h |
 | T-US20-04 | Ajouter `prisma migrate deploy` et remplacer l'attente fixe par un smoke test avec tentatives bornées | CD / Prisma | 2 h | 3 h | 5 h |
-| T-US20-05 | Tester l'image SHA dans une stack éphémère avant publication et automatiser le redéploiement du SHA précédent | QA / CD | 3 h | 5 h | 8 h |
+| T-US20-05 | Tester l'image SHA dans une stack éphémère avant publication et automatiser le redéploiement du SHA précédent | QA / CD | 4 h | 8 h | 12 h |
 | T-US20-06 | Ajouter des logs structurés avec `requestId`/`eventId` et vérifier l'absence de secrets | Exploitabilité / Sécurité | 2 h | 3 h | 5 h |
 
 ## Charge globale du catalogue
 
 | Estimation | Total |
 |---|---:|
-| Optimiste | 175 h |
-| Attendu | 274 h |
-| Pessimiste | 459 h |
+| Optimiste | 187 h |
+| Attendu | 300 h |
+| Pessimiste | 500 h |
 
-Les deux sprints représentent une capacité théorique totale de 320 heures-personnes. Le scénario attendu initial utilise environ **85,6 %** de cette capacité et laisse 46 heures pour la coordination et les imprévus. Après les 128 heures attendues du Sprint 1, 146 heures attendues restent dans le catalogue pour le Sprint 2 ; cette seconde semaine sera donc plus contrainte et devra être préparée avant sa première journée. Ces totaux seront recalculés à partir des temps observés et des inventaires de contenu, sans chercher à conserver artificiellement la valeur de 274 heures. Les éléments du POC déjà terminés ou partiellement réalisés réduisent la charge restante réelle, mais leur état doit être vérifié dans GitHub plutôt que supposé.
+Les deux sprints représentent une capacité théorique totale de 320 heures-personnes. Le scénario attendu initial utilise environ **93,8 %** de cette capacité et laisse 20 heures pour la coordination et les imprévus. 
 
 Le scénario pessimiste ne tient pas dans la capacité disponible. Si plusieurs tâches atteignent leur estimation pessimiste, l'équipe doit redécouper, paralléliser ou simplifier l'implémentation sans retirer les fonctionnalités obligatoires.
 

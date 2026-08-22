@@ -97,10 +97,6 @@ Kim Possible est le proto-persona principal : le jeu doit lui permettre de déco
 | Katniss Everdeen | Proto-persona secondaire | Collection et progression régulière | Récompenses, gacha, quêtes et sauvegarde. |
 | Patrick Jane | Acteur technique interne | Maintenabilité et livraison fiable | Configurations, sprites, PostgreSQL, Redis, tests et CI/CD. |
 
-## Source de vérité du périmètre
-
-Le kick-off définit le MVP et les éléments hors MVP. Les proto-personas décrivent uniquement des besoins et des comportements ; ils ne recopient pas les quantités de mondes, d'adversaires, de portails, de quêtes ou d'assets. Les inventaires précis sont établis dans les configurations versionnées et les issues de réalisation lorsqu'ils deviennent nécessaires.
-
 ## Règle d'utilisation
 
-Une user story joueur doit être rattachée à au moins un proto-persona. Les enablers techniques peuvent être rattachés à Patrick Jane lorsqu'ils satisfont directement une exigence non fonctionnelle ou permettent de livrer une story joueur. Les hypothèses de ces profils seront révisées si les tests utilisateurs révèlent des besoins différents.
+Une user story joueur doit être rattachée à au moins un proto-persona. Les stories techniques peuvent être rattachées à Patrick Jane lorsqu'elles satisfont directement une exigence non fonctionnelle ou permettent de livrer une story joueur. Les hypothèses de ces profils seront révisées si les tests utilisateurs révèlent des besoins différents.
