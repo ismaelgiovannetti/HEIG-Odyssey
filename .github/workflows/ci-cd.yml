@@ -1,0 +1,289 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  validate:
+    name: Validate repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate current repository structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f Dockerfile
+          test -f landing-page/Dockerfile
+          test -f landing-page/index.html
+
+      - name: Detect Next.js application
+        id: app
+        shell: bash
+        run: |
+          if [[ -f package.json ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Application Next.js non initialisée : les contrôles npm ne sont pas encore applicables."
+          fi
+
+      - name: Setup Node.js
+        if: steps.app.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        if: steps.app.outputs.exists == 'true'
+        run: npm ci
+
+      - name: Require essential npm scripts
+        if: steps.app.outputs.exists == 'true'
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const scripts = require('./package.json').scripts ?? {};
+          const required = ['lint', 'typecheck', 'test:unit', 'build'];
+          const missing = required.filter((name) => !scripts[name]);
+          if (missing.length) {
+            throw new Error(`Scripts npm manquants : ${missing.join(', ')}`);
+          }
+          NODE
+
+      - name: Lint
+        if: steps.app.outputs.exists == 'true'
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.app.outputs.exists == 'true'
+        run: npm run typecheck
+
+      - name: Unit tests
+        if: steps.app.outputs.exists == 'true'
+        run: npm run test:unit
+
+      - name: Available domain and integration tests
+        if: steps.app.outputs.exists == 'true'
+        shell: bash
+        run: |
+          npm run test:combat --if-present
+          npm run test:integration --if-present
+
+      - name: Build Next.js
+        if: steps.app.outputs.exists == 'true'
+        run: npm run build
+
+      - name: Pull Request browser checks when available
+        if: github.event_name == 'pull_request' && steps.app.outputs.exists == 'true'
+        shell: bash
+        run: |
+          npm run test:e2e --if-present -- --project=chromium
+          npm run test:a11y --if-present
+
+      - name: Validate Docker Compose when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
+            docker compose config
+          else
+            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
+          fi
+
+      - name: Build validation images
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --tag heig-odyssey-validation:"$GITHUB_SHA" .
+          docker build --tag heig-odyssey-landing-validation:"$GITHUB_SHA" ./landing-page
+
+      - name: Smoke test landing image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --rm --name landing-ci -p 8080:80 heig-odyssey-landing-validation:"$GITHUB_SHA"
+          trap 'docker rm -f landing-ci >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..10}; do
+            if curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs landing-ci
+          exit 1
+
+  package:
+    name: Test and publish SHA images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Define immutable image names
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE_NAME_LOWER="$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+          echo "APP_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "LANDING_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-landing:${GITHUB_SHA}" >> "$GITHUB_ENV"
+
+      - name: Build production images once
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --tag "$APP_IMAGE" .
+          docker build --tag "$LANDING_IMAGE" ./landing-page
+
+      - name: Test exact production images
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cleanup() {
+            docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
+            docker rm -f app-ci landing-ci >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          if [[ -f compose.ci.yml ]]; then
+            export APP_IMAGE LANDING_IMAGE
+            docker compose -f compose.ci.yml config
+            docker compose -f compose.ci.yml up -d --wait
+            HEALTH_URL="http://localhost:3000/api/health"
+          else
+            echo "compose.ci.yml absent : validation transitoire des conteneurs autonomes."
+            docker run -d --rm --name app-ci -p 3000:3000 "$APP_IMAGE"
+            docker run -d --rm --name landing-ci -p 8080:80 "$LANDING_IMAGE"
+            HEALTH_URL="http://localhost:3000/health"
+          fi
+
+          for attempt in {1..15}; do
+            if curl --fail --silent --show-error "$HEALTH_URL" >/dev/null \
+              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker compose -f compose.ci.yml logs 2>/dev/null || true
+          docker logs app-ci 2>/dev/null || true
+          docker logs landing-ci 2>/dev/null || true
+          exit 1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the tested images without rebuilding
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker push "$APP_IMAGE"
+          docker push "$LANDING_IMAGE"
+
+  deploy:
+    name: Deploy exact SHA to VPS
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: package
+    runs-on: ubuntu-latest
+    concurrency:
+      group: production-vps
+      cancel-in-progress: false
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          IMAGE_NAME: ${{ github.repository }}
+          GHCR_USERNAME: ${{ github.actor }}
+          CR_PAT: ${{ secrets.CR_PAT }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT
+          script: |
+            set -euo pipefail
+            cd /home/app/heig-odyssey
+
+            IMAGE_NAME_LOWER="$(printf '%s' "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
+            PREVIOUS_SHA="$(cat .deployed_sha 2>/dev/null || true)"
+
+            configure_images() {
+              local tag="$1"
+              export APP_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}:${tag}"
+              export LANDING_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-landing:${tag}"
+            }
+
+            smoke_test() {
+              for attempt in $(seq 1 15); do
+                if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
+                  || curl --fail --silent --show-error http://localhost:3000/health >/dev/null; then
+                  return 0
+                fi
+                sleep 2
+              done
+              return 1
+            }
+
+            echo "$CR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+
+            configure_images "$DEPLOY_SHA"
+            docker compose pull
+
+            if docker compose config --services | grep -qx app \
+              && docker compose run --rm app sh -lc 'test -f prisma/schema.prisma'; then
+              docker compose run --rm app npx prisma migrate deploy
+            else
+              echo "Migration Prisma non applicable au POC actuel."
+            fi
+
+            docker compose up -d --remove-orphans
+
+            if smoke_test; then
+              printf '%s\n' "$DEPLOY_SHA" > .deployed_sha
+              exit 0
+            fi
+
+            echo "Le smoke test a échoué pour ${DEPLOY_SHA}."
+
+            if [[ -z "$PREVIOUS_SHA" ]]; then
+              echo "Aucun SHA précédent connu : rollback impossible."
+              exit 1
+            fi
+
+            configure_images "$PREVIOUS_SHA"
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+            if smoke_test; then
+              echo "Version ${PREVIOUS_SHA} restaurée."
+              exit 1
+            fi
+
+            echo "Le rollback vers ${PREVIOUS_SHA} a également échoué."
+            exit 1
