@@ -7,29 +7,44 @@
   <title>HEIG Odyssey - Gagner demande enfin de la stratégie.</title>
   <meta name="description"
     content="HEIG Odyssey : et si gagner demandait enfin de la stratégie ? Une campagne à vivre, une IA qui punit chaque erreur de type, zéro hasard truqué, zéro pay-to-win.">
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="theme-color" content="#10141A">
+
+  <!-- Applique le thème avant le chargement du CSS pour éviter un flash clair au démarrage. -->
   <script>
-    (function () {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-        document.documentElement.setAttribute('data-theme', 'light');
+    (() => {
+      let initialTheme = 'dark';
+
+      try {
+        const savedTheme = localStorage.getItem('heig-odyssey-theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          initialTheme = savedTheme;
+        }
+      } catch (error) {
+        /* Le mode sombre reste le mode par défaut si le stockage est indisponible. */
       }
+
+      document.documentElement.dataset.theme = initialTheme;
+      document.querySelector('meta[name="theme-color"]').setAttribute(
+        'content',
+        initialTheme === 'dark' ? '#10141A' : '#F8FAFC'
+      );
     })();
   </script>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=2">
+  <link rel="stylesheet" href="css/style.css?v=85">
 </head>
 
 <body>
   <a class="skip-link" href="#main">Aller au contenu principal</a>
 
+  <!-- Décor généré en JavaScript et ignoré par les technologies d'assistance. -->
   <div class="starfield" aria-hidden="true" id="starfield"></div>
 
+  <!-- Navigation principale : version bureau et déclinaison mobile. -->
   <header class="site-header">
     <nav class="nav container" aria-label="Navigation principale">
       <a class="brand" href="#top">
-        <span>HEIG&nbsp;ODYSSEY</span>
+        <img class="brand-logo" src="assets/heig-odyssey-logo.png" alt="HEIG Odyssey">
       </a>
 
       <ul class="nav-links">
@@ -43,11 +58,9 @@
 
       <div class="header-actions">
         <a class="btn btn-accent nav-cta" href="https://play.heig-odyssey.online/">Commencer l'aventure !</a>
-
-
       </div>
 
-      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mobileMenu"
+      <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="mobileMenu"
         aria-label="Ouvrir le menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
@@ -55,19 +68,21 @@
       </button>
     </nav>
 
-    <div class="mobile-menu" id="mobileMenu">
-      <li><a href="#projet">Le projet</a></li>
-      <li><a href="#modes">Modes de jeu</a></li>
-      <li><a href="#entrainement">L'IA</a></li>
-      <li><a href="#starters">Les starters</a></li>
-      <li><a href="#roadmap">La roadmap</a></li>
-      <li><a href="#equipe">L'équipe</a></li>
-    </div>
+    <nav aria-label="Navigation mobile">
+      <ul class="mobile-menu" id="mobileMenu">
+        <li><a href="#projet">Le projet</a></li>
+        <li><a href="#modes">Modes de jeu</a></li>
+        <li><a href="#entrainement">L'IA</a></li>
+        <li><a href="#starters">Les starters</a></li>
+        <li><a href="#roadmap">La roadmap</a></li>
+        <li><a href="#equipe">L'équipe</a></li>
+      </ul>
+    </nav>
   </header>
 
   <main id="main">
 
-    <!-- HERO -->
+    <!-- HERO : proposition de valeur et aperçu d'un combat. -->
     <section class="hero container" id="top">
       <div class="hero-grid">
         <div>
@@ -82,6 +97,7 @@
           </div>
         </div>
 
+        <!-- Les deux groupes permettent de garder Pokémon et dresseur alignés à chaque breakpoint. -->
         <div class="hero-screen-frame reveal">
           <div class="hero-screen">
             <div class="hero-screen-hud">
@@ -89,11 +105,20 @@
               <span>CHAMPION BRON</span>
             </div>
             <div class="hero-screen-stage">
-              <img class="sprite-pixelated hero-mascot" src="assets/sprites/321.png"
-                alt="Piplup, la pokémon de départ du joueur, vue de dos comme lors d'un combat">
-              <span class="vs-badge" aria-hidden="true">VS</span>
-              <img class="sprite-pixelated hero-mascot hero-mascot--flip" src="assets/sprites/garchomp-445.png"
-                alt="Garchomp, pokémon adverse redoutable générée par l'entraînement">
+              <div class="battle-side battle-side--player">
+                <img class="sprite-pixelated battle-trainer battle-trainer--player"
+                  src="assets/sprites/trainer-player-back.png"
+                  alt="Dresseur du joueur vu de dos, prêt à combattre">
+                <img class="sprite-pixelated hero-mascot" src="assets/sprites/321.png"
+                  alt="Wailord, Pokémon du joueur">
+              </div>
+              <div class="battle-side battle-side--opponent">
+                <img class="sprite-pixelated hero-mascot hero-mascot--garchomp" src="assets/sprites/garchomp-445.png"
+                  alt="Carchacrok, Pokémon adverse redoutable généré par l'entraînement">
+                <img class="sprite-pixelated battle-trainer battle-trainer--opponent"
+                  src="assets/sprites/trainer-champion-front.png"
+                  alt="Dresseur adverse vu de face, prêt à combattre">
+              </div>
             </div>
             <div class="hero-screen-dialog">
               Carchacrok entre en scène ! <b>Un mauvais switch ici, et c'est la défaite immédiate.</b> Réfléchissez
@@ -104,66 +129,115 @@
         </div>
       </div>
 
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Niveaux d'IA qui challengent</span>
-        </div>
-        <div class="stat"><span class="stat-num">4</span><span class="stat-label">Générations disponibles (1-4)</span>
-        </div>
-        <div class="stat"><span class="stat-num">8</span><span class="stat-label">Mondes remplis de niveaux</span></div>
-        <div class="stat"><span class="stat-num">0€</span><span class="stat-label">Aucun pay-to-win</span></div>
-      </div>
     </section>
 
-    <!-- PROBLEME / SOLUTION -->
+    <!-- PROJET : constat, transition puis réponse apportée par HEIG Odyssey. -->
     <section class="section section-alt" id="projet">
       <div class="container">
-        <div class="section-head reveal">
+        <header class="section-head reveal">
           <span class="eyebrow">Vous connaissez cette sensation ?</span>
           <h2 class="section-title">Deux frustrations, un seul jeu qui les résout</h2>
           <p class="section-lede">Que vous veniez de l'aventure ou de la compétition, il vous a toujours manqué une
-            moitié
-            de l'expérience.</p>
-        </div>
+            moitié de l'expérience.</p>
+        </header>
 
-        <div class="vs-grid reveal">
-          <div class="panel vs-card">
-            <span class="vs-tag vs-tag--limit">La frustration</span>
-            <h3>Les jeux de la licence</h3>
-            <p>Vous avez terminé le jeu en écrasant tout sur votre passage. Aucune décision ne vous a vraiment mis en
-              danger, aucun combat ne vous a forcé à repenser votre équipe.</p>
-            <span class="vs-tag vs-tag--strength">Ce qui manque</span>
-            <p>Un adversaire qui vous punit vraiment quand vous jouez mal pour enfin ressentir de la difficulté.</p>
+        <div class="reveal" aria-label="Ce qui manque aux expériences Pokémon actuelles">
+          <div class="experience-list">
+            <article class="experience-line">
+              <header class="experience-source">
+                <h3>Les jeux de la licence</h3>
+              </header>
+              <span class="experience-kind">La frustration</span>
+              <p class="experience-summary">Vous avez terminé le jeu en écrasant tout sur votre passage. Aucune
+                décision ne vous a vraiment mis en danger et aucun combat ne vous a forcé à repenser votre équipe ou
+                votre manière de jouer.</p>
+              <p class="experience-missing"><span>Ce qui manque</span><strong>Un adversaire capable de punir vos mauvais
+                  choix pour vous faire enfin ressentir une véritable difficulté.</strong></p>
+            </article>
+
+            <span class="experience-versus" aria-hidden="true">VS</span>
+
+            <article class="experience-line">
+              <header class="experience-source">
+                <h3>Pokémon Showdown</h3>
+              </header>
+              <span class="experience-kind">La frustration</span>
+              <p class="experience-summary">Chaque combat compte enfin, mais il n'y a ni histoire, ni monde à explorer,
+                ni progression personnelle. Les matchs s'enchaînent sans donner le sentiment de construire une
+                aventure qui vous appartient.</p>
+              <p class="experience-missing"><span>Ce qui manque</span><strong>Une raison d'y revenir au-delà du
+                  classement : une campagne personnelle dans laquelle chaque victoire vous fait avancer.</strong></p>
+            </article>
           </div>
 
-          <div class="vs-center" aria-hidden="true">VS</div>
-
-          <div class="panel vs-card">
-            <span class="vs-tag vs-tag--limit">La frustration</span>
-            <h3>Pokémon Showdown</h3>
-            <p>Chaque combat compte enfin mais aucune histoire, aucun monde, aucune progression personnelle. Juste des
-              adversaires aléatoires qui résulte en un manque de sentiment d'évolution.</p>
-            <span class="vs-tag vs-tag--strength">Ce qui manque</span>
-            <p>Une raison d'y retourner en dehors du classement, une campagne personnelle.</p>
+          <div class="summary-band">
+            <p><span class="summary-band-label">Besoin commun</span>Une aventure qui donne du sens à chaque victoire et
+              exige de la mériter.</p>
           </div>
         </div>
 
-        <div class="vs-result reveal">
-          <h3>★ Ici, vos choix tactiques écrivent l'histoire</h3>
-          <p>Chaque dresseur affronté en campagne a été pensé pour punir une mauvaise composition d'équipe. Le meilleur
-            des jeux de la licence et de Pokémon Showdown, sans jamais croiser un adversaire toxique.</p>
+        <div class="problem-solution-divider reveal" aria-label="Passage de la problématique à la solution">
+          <span>Problématique</span>
+          <span class="problem-solution-arrow" aria-hidden="true">→</span>
+          <strong>Solution</strong>
         </div>
+
+        <section class="reveal" aria-labelledby="answer-title">
+          <header class="section-head answer-section-head">
+            <span class="eyebrow">La promesse HEIG Odyssey</span>
+            <h3 class="section-title" id="answer-title">Une aventure où la stratégie change réellement l'issue</h3>
+            <p class="section-lede">HEIG Odyssey relie la liberté d'une campagne à l'exigence du combat compétitif.
+              Chaque victoire fait avancer votre aventure.</p>
+          </header>
+
+          <div class="odyssey-answer">
+            <header class="answer-board-head">
+              <span>Trois décisions qui changent tout</span>
+              <p>Construisez, apprenez de vos erreurs et conquérez huit mondes.</p>
+            </header>
+
+            <ol class="answer-path">
+              <li>
+                <span class="answer-step" aria-hidden="true"><span class="pokeball-number">01</span></span>
+                <h4>Affrontez une IA qui exploite vos erreurs</h4>
+                <p>Une erreur de type, une résistance oubliée ou un switch risqué peuvent renverser le combat. Chaque
+                  victoire se prépare.</p>
+              </li>
+              <li>
+                <span class="answer-step" aria-hidden="true"><span class="pokeball-number">02</span></span>
+                <h4>Progressez, gagnez et recrutez</h4>
+                <p>Chaque victoire fait progresser la campagne et rapporte de la monnaie pour recruter de nouveaux
+                  Pokémon dans la boutique gacha. Adaptez ensuite votre équipe aux huit mondes.</p>
+              </li>
+              <li>
+                <span class="answer-step" aria-hidden="true"><span class="pokeball-number">03</span></span>
+                <h4>Composez avant de combattre</h4>
+                <p>Types, rôles et synergies comptent dès le choix de votre partenaire. L'équilibre de l'équipe devient
+                  votre première décision.</p>
+              </li>
+            </ol>
+
+          </div>
+
+          <footer class="summary-band">
+            <p><strong class="summary-band-label">Résultat</strong><span>La tension de Showdown dans une aventure
+                personnelle, sans toxicité
+                ni pay-to-win.</span></p>
+          </footer>
+        </section>
       </div>
     </section>
 
-    <!-- 4 MODES -->
+    <!-- MODES DE JEU -->
     <section class="section" id="modes">
       <div class="container">
-        <div class="section-head reveal">
+        <header class="section-head reveal">
           <span class="eyebrow">LES MODES DE JEU</span>
           <h2 class="section-title">Quatre façons de jouer</h2>
-          <p class="section-lede">Après le recrutement gratuit de votre première pokémon, l'accueil vous laisse choisir
-            votre rythme jamais l'inverse.</p>
-        </div>
+          <p class="section-lede">Après avoir choisi gratuitement votre premier Pokémon, l'accueil vous laisse décider
+            de la prochaine étape : progresser dans la campagne, entraîner une composition, réorganiser votre équipe ou
+            recruter de nouveaux alliés.</p>
+        </header>
 
         <div class="menu-grid reveal">
           <article class="menu-card">
@@ -174,8 +248,9 @@
               </svg>
             </div>
             <h3>Mode campagne</h3>
-            <p>Une histoire qui teste vraiment vos choix. Chaque dresseur et Boss a été pensé pour punir une faiblesse
-              de type pas juste gonflé en PV.</p>
+            <p>Parcourez huit mondes où chaque dresseur et chaque boss possède une équipe conçue pour exploiter une
+              faiblesse précise. Pour avancer, observez le terrain, adaptez vos types et reconstruisez parfois votre
+              composition plutôt que de simplement accumuler des niveaux.</p>
             <span class="menu-card-tag">Des rivaux qui ont un plan</span>
           </article>
 
@@ -186,9 +261,10 @@
               </svg>
             </div>
             <h3>Mode entraînement</h3>
-            <p>Le terrain d'essai sans pression. Testez une composition risquée contre une IA adaptée à votre niveau,
-              sans jamais impacter votre campagne.</p>
-            <span class="menu-card-tag">Classique · Champion · Cauchemar</span>
+            <p>Testez librement vos idées contre les IA Classique, Champion ou Cauchemar. Comparez vos synergies,
+              corrigez les faiblesses de votre équipe et tentez des changements audacieux pour préparer le prochain
+              monde sans modifier la progression de votre campagne.</p>
+              <span class="menu-card-tag">Testez, ajustez, recommencez</span>
           </article>
 
           <article class="menu-card">
@@ -199,8 +275,9 @@
               </svg>
             </div>
             <h3>Gestion d'équipe</h3>
-            <p>Votre stratégie commence ici. Composez, ajustez, planifiez vos changements bien avant que le premier coup
-              ne parte et jouez enfin avec des pokémon qui vous plaisent.</p>
+            <p>Construisez votre plan avant même le premier tour. Répartissez les rôles, combinez les types et préparez
+              vos remplacements pour répondre à plusieurs menaces. Une bonne équipe ne réunit pas seulement vos
+              Pokémon préférés : elle leur permet de fonctionner ensemble.</p>
             <span class="menu-card-tag">Votre plan, votre équipe</span>
           </article>
 
@@ -212,23 +289,24 @@
               </svg>
             </div>
             <h3>Boutique gacha</h3>
-            <p>De nouvelles options tactiques, jamais un raccourci payant. Débloquez des pokémons uniquement grâce à ce
-              que vous gagnez en jouant.</p>
+            <p>Utilisez la monnaie obtenue après vos combats pour recruter de nouveaux Pokémon et élargir vos options
+              tactiques. Chaque recrue peut combler une faiblesse, créer une nouvelle synergie ou inspirer une autre
+              composition, sans transformer la boutique en raccourci payant.</p>
             <span class="menu-card-tag">100% gagné en jeu</span>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- ENTRAINEMENT / IA -->
+    <!-- ENTRAÎNEMENT : difficultés et exemples de menaces. -->
     <section class="section section-alt" id="entrainement">
       <div class="container">
-        <div class="section-head reveal">
+        <header class="section-head reveal">
           <span class="eyebrow">Le mode entraînement</span>
-          <h2 class="section-title">Affrontez des IA plus qu'intelligentes</h2>
+          <h2 class="section-title">Une IA qui lit le terrain et punit vos erreurs</h2>
           <p class="section-lede">Chaque session génère un combat sur mesure, avec une équipe adverse calibrée sur la
             vôtre. Trois intensités d'IA, jusqu'à un adversaire capable de calculer plusieurs coups à l'avance.</p>
-        </div>
+        </header>
 
         <div class="diff-grid reveal">
           <div class="diff-card diff-card--easy">
@@ -251,7 +329,7 @@
               </svg>
             </div>
             <h3>Champion</h3>
-            <p>L'IA lit le tableau des types, vise le KO et change de pokémon intelligemment la première vraie
+            <p>L'IA lit le tableau des types, vise le KO et change de Pokémon au bon moment : votre première vraie
               résistance.</p>
             <span class="diff-reward">XP + MONNAIE AUGMENTÉES</span>
           </div>
@@ -276,86 +354,106 @@
         <div class="threat-row reveal">
           <p class="threat-intro">Face à des menaces comme celles-ci, l'improvisation ne suffit plus :</p>
           <div class="threat-list">
-            <div class="threat-item">
-              <img class="sprite-pixelated" src="assets/sprites/garchomp-445.png" alt="Carchacrok">
-              <span>Carchacrok<em>Punit les switchs tardifs</em></span>
-            </div>
-            <div class="threat-item">
-              <img class="sprite-pixelated" src="assets/sprites/lucario-448.png" alt="Lucario">
-              <span>Lucario<em>Exploite le moindre mauvais matchup</em></span>
-            </div>
-            <div class="threat-item">
-              <img class="sprite-pixelated" src="assets/sprites/togekiss-468.png" alt="Togekiss">
-              <span>Togekiss<em>Le mur qui ne cède jamais</em></span>
-            </div>
+            <article class="threat-item">
+              <div class="threat-item-header">
+                <div class="threat-sprite">
+                  <img class="sprite-pixelated" src="assets/sprites/garchomp-445.png" alt="">
+                </div>
+                <div>
+                  <h3>Carchacrok</h3>
+                </div>
+              </div>
+              <span class="threat-item-tag">Punit les switchs tardifs</span>
+            </article>
+            <article class="threat-item">
+              <div class="threat-item-header">
+                <div class="threat-sprite">
+                  <img class="sprite-pixelated" src="assets/sprites/lucario-448.png" alt="">
+                </div>
+                <div>
+                  <h3>Lucario</h3>
+                </div>
+              </div>
+              <span class="threat-item-tag">Exploite la moindre faiblesse</span>
+            </article>
+            <article class="threat-item">
+              <div class="threat-item-header">
+                <div class="threat-sprite">
+                  <img class="sprite-pixelated" src="assets/sprites/togekiss-468.png" alt="">
+                </div>
+                <div>
+                  <h3>Togekiss</h3>
+                </div>
+              </div>
+              <span class="threat-item-tag">Le mur qui ne cède jamais</span>
+            </article>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- STARTERS -->
+    <!-- STARTERS : aperçu volontairement compact de la sélection. -->
     <section class="section" id="starters">
       <div class="container">
-        <div class="section-head reveal">
+        <header class="section-head reveal">
           <span class="eyebrow">Votre première décision</span>
-          <h2 class="section-title">Choisissez votre allié parmi des centaines de possibilités</h2>
-          <p class="section-lede">Gratuit, sans tirage gacha : tout pokémon des Générations 1 à 4 est éligible à son
-            premier stade d'évolution même ceux qui n'évoluent pas du tout, comme Métamorph. Seuls les pokémons
-            légendaires sont exclus.</p>
-        </div>
+          <h2 class="section-title">Votre aventure commence avec un premier allié</h2>
+          <p class="section-lede">Les générations 1 à 4 composent la sélection de départ. Chaque Pokémon débute au
+            premier stade d'évolution pour grandir à vos côtés au fil de l'aventure ; les légendaires restent exclus.</p>
+        </header>
 
         <div class="starter-wall reveal">
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/bulbasaur-1.png"
-              alt="Bulbasaur"><span>Bulbizarre</span></div>
+              alt=""><span>Bulbizarre</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/charmander-4.png"
-              alt="Charmander"><span>Salamèche</span></div>
+              alt=""><span>Salamèche</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/squirtle-7.png"
-              alt="Squirtle"><span>Carapuce</span></div>
+              alt=""><span>Carapuce</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/ditto-132.png"
-              alt="Métamorph, exemple de pokémon sans évolution mais tout de même éligible"><span>Métamorph</span>
+              alt=""><span>Métamorph</span>
           </div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/chikorita-152.png"
-              alt="Chikorita"><span>Germignon</span></div>
+              alt=""><span>Germignon</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/cyndaquil-155.png"
-              alt="Cyndaquil"><span>Kaiminus</span></div>
+              alt=""><span>Héricendre</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/totodile-158.png"
-              alt="Totodile"><span>Kaiminus</span></div>
+              alt=""><span>Kaiminus</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/larvitar-246.png"
-              alt="Larvitar"><span>Embrylex</span></div>
+              alt=""><span>Embrylex</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/treecko-252.png"
-              alt="Treecko"><span>Arcko</span></div>
+              alt=""><span>Arcko</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/torchic-255.png"
-              alt="Torchic"><span>Poussifeu</span></div>
+              alt=""><span>Poussifeu</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/mudkip-258.png"
-              alt="Mudkip"><span>Gobou</span></div>
+              alt=""><span>Gobou</span></div>
           <div class="starter-tile"><img class="sprite-pixelated" src="assets/sprites/ralts-280.png"
-              alt="Ralts"><span>Tarsal</span></div>
+              alt=""><span>Tarsal</span></div>
         </div>
-        <p class="starter-note reveal">Un aperçu parmi des centaines de pokémons disponibles dès le premier lancement.
+        <p class="starter-note reveal">Un aperçu de la sélection disponible dès le premier lancement.
         </p>
       </div>
     </section>
 
-    <!-- ROADMAP -->
+    <!-- ROADMAP : contenu disponible puis évolutions envisagées. -->
     <section class="section section-alt" id="roadmap">
       <div class="container">
-        <div class="section-head reveal">
+        <header class="section-head reveal">
           <span class="eyebrow">Roadmap</span>
-          <h2 class="section-title">Ce qui vous attend, dès aujourd'hui et après</h2>
-          <p class="section-lede">Une V1 déjà complète pour jouer sérieusement, et des pistes déjà identifiées pour la
-            suite.</p>
-        </div>
+          <h2 class="section-title">Une aventure déjà jouable, un monde encore à étendre</h2>
+          <p class="section-lede">La version actuelle propose une expérience complète, tandis que les prochaines étapes
+            ouvrent la voie à de nouvelles façons de combattre, progresser et jouer ensemble.</p>
+        </header>
 
         <div class="version-grid reveal">
           <div class="version-card version-card--now">
             <div class="version-card-head">
-              <span class="version-badge">Disponible en V1</span>
+              <span class="version-badge">Disponible maintenant</span>
             </div>
             <h3>Tout ce qu'il faut pour une vraie campagne stratégique</h3>
             <p class="version-intro">La boucle complète est jouable dès le premier lancement, du recrutement de votre
-              allié jusqu'au Boss final du Doctorat.</p>
+              allié jusqu'au boss final du Doctorat.</p>
             <ul class="version-list">
-              <li>Campagne complète : 5 mondes Bachelor, 2 mondes Master, 1 monde Doctorat avec 5 Boss</li>
+              <li>Campagne complète : 5 mondes Bachelor, 2 mondes Master, 1 monde Doctorat</li>
               <li>Entraînement procédural à 3 niveaux d'IA, adapté à votre équipe</li>
               <li>Gestion d'équipe complète et combats aux règles officielles Génération 4</li>
               <li>Boutique gacha 100% gratuite, monnaie gagnée en jeu uniquement</li>
@@ -368,12 +466,11 @@
               <span class="version-badge">Prochainement</span>
             </div>
             <h3>Les pistes déjà identifiées pour la suite</h3>
-            <p class="version-intro">Des chantiers déjà repérés pour approfondir l'expérience une fois la V1 en mains
-              des
-              joueurs.</p>
+            <p class="version-intro">Des chantiers déjà repérés pour approfondir l'expérience une fois la version
+              actuelle entre les mains des premiers joueurs.</p>
             <ul class="version-list">
               <li>Combats entre joueurs et classement</li>
-              <li>Échanges de pokémons</li>
+              <li>Échanges de Pokémon</li>
               <li>Entraînement coopératif et IA encore plus poussée</li>
               <li>Nouveaux scénarios de départ et personnalisation avancée</li>
               <li>Application mobile</li>
@@ -384,68 +481,69 @@
       </div>
     </section>
 
-    <!-- EQUIPE -->
+    <!-- ÉQUIPE -->
     <section class="section" id="equipe">
       <div class="container">
-        <div class="section-head reveal">
-          <span class="eyebrow">Les dresseurs derrière le projet</span>
-          <h2 class="section-title">L'équipe</h2>
-          <p class="section-lede">Quatre créateurs, une seule règle : aucune stratégie n'est laissée au hasard.</p>
-        </div>
+        <header class="section-head reveal">
+          <span class="eyebrow">L'équipe</span>
+          <h2 class="section-title">Quatre expertises derrière chaque combat</h2>
+          <p class="section-lede">Sécurité, progression, contenu et IA : chacun protège une pièce essentielle de
+            l'expérience HEIG Odyssey.</p>
+        </header>
 
         <div class="team-grid reveal">
-          <article class="trainer-card">
-            <div class="trainer-photo" style="--trainer-c1:#FF5C5C;--trainer-c2:#7A0C1E">
-              <img src="assets/team/tiago.jpg" alt="Tiago, Maître de l'interface" style="object-position: 51% 22%;">
+          <article class="trainer-card trainer-card--tiago">
+            <div class="trainer-photo">
+              <img src="assets/team/tiago.jpg" alt="Tiago, Sentinelle des accès" loading="lazy" decoding="async">
             </div>
             <div class="trainer-body">
               <span class="trainer-name">Tiago</span>
-              <span class="trainer-role">Maître de l'interface</span>
-              <p>Fait en sorte que chaque écran reste aussi lisible qu'un combat bien engagé, et que votre compte reste
-                protégé.</p>
+              <span class="trainer-role">Sentinelle des accès</span>
+              <p>Verrouille chaque accès, protège les comptes et maintient l'interface claire même quand les attaques
+                se multiplient.</p>
               <div class="trainer-tags"><span class="trainer-tag">Interface</span><span
                   class="trainer-tag">Sécurité</span></div>
             </div>
           </article>
 
-          <article class="trainer-card">
-            <div class="trainer-photo" style="--trainer-c1:#F5F5F2;--trainer-c2:#A9A9AE">
-              <img src="assets/team/ismael.jpg" alt="Ismael, Gardien des sauvegardes" style="object-position: 45% 18%;">
+          <article class="trainer-card trainer-card--ismael">
+            <div class="trainer-photo">
+              <img src="assets/team/ismael.jpg" alt="Ismael, Gardien des sauvegardes" loading="lazy" decoding="async">
             </div>
             <div class="trainer-body">
               <span class="trainer-name">Ismael</span>
               <span class="trainer-role">Gardien des sauvegardes</span>
-              <p>Veille à ce qu'aucune victoire ni aucun gain ne soit jamais perdu votre progression reste toujours en
+              <p>Veille à ce qu'aucune victoire ni aucun gain ne se perde, afin que votre progression reste toujours en
                 sécurité.</p>
               <div class="trainer-tags"><span class="trainer-tag">Sauvegardes</span><span
                   class="trainer-tag">Quêtes</span></div>
             </div>
           </article>
 
-          <article class="trainer-card">
-            <div class="trainer-photo" style="--trainer-c1:#3A3A3E;--trainer-c2:#000000">
-              <img src="assets/team/evan.jpg" alt="Evan, Chasseur de pokémons avec son Monorpale"
-                style="object-position: 42% 24%;">
+          <article class="trainer-card trainer-card--evan">
+            <div class="trainer-photo">
+              <img src="assets/team/evan.jpg" alt="Evan, Chasseur de Pokémon avec son Monorpale" loading="lazy"
+                decoding="async">
             </div>
             <div class="trainer-body">
               <span class="trainer-name">Evan</span>
-              <span class="trainer-role">Chasseur de pokémons</span>
-              <p>Choisit quelles pokémons rejoignent le gacha, scripte l'aventure campagne et règle les chances
+              <span class="trainer-role">Chasseur de Pokémon</span>
+              <p>Choisit quels Pokémon rejoignent la boutique gacha, écrit la campagne et équilibre leurs chances
                 d'apparition.</p>
-              <div class="trainer-tags"><span class="trainer-tag">pokémons</span><span class="trainer-tag">Gacha</span>
+              <div class="trainer-tags"><span class="trainer-tag">Campagne</span><span class="trainer-tag">Gacha</span>
               </div>
             </div>
           </article>
 
-          <article class="trainer-card">
-            <div class="trainer-photo" style="--trainer-c1:#C8102E;--trainer-c2:#3A0A12">
-              <img src="assets/team/mo.jpg" alt="Mo, Architecte de l'IA avec son Ouisticram"
-                style="object-position: 52% 12%; transform: scale(1.1);">
+          <article class="trainer-card trainer-card--mo">
+            <div class="trainer-photo">
+              <img src="assets/team/mo.jpg" alt="Mo, Architecte de l'IA avec son Ouisticram" loading="lazy"
+                decoding="async">
             </div>
             <div class="trainer-body">
               <span class="trainer-name">Mo</span>
               <span class="trainer-role">Architecte de l'IA</span>
-              <p>Conçoit les adversaires qui vous forceront à vraiment réfléchir avant la prochaine de vos action.</p>
+              <p>Conçoit les adversaires qui vous forceront à vraiment réfléchir avant chacune de vos actions.</p>
               <div class="trainer-tags"><span class="trainer-tag">IA</span><span class="trainer-tag">Stratégie</span>
               </div>
             </div>
@@ -454,14 +552,15 @@
       </div>
     </section>
 
-    <!-- CTA BAND -->
+    <!-- APPEL À L'ACTION FINAL -->
     <section class="cta-band">
       <div class="container">
-        <h2>Prêt à prouver que la stratégie change tout ?</h2>
-        <p>HEIG Odyssey est un prototype pédagogique interne, sans microtransactions ni pay-to-win juste vous, votre
-          équipe, et une IA qui ne vous fera aucun cadeau.</p>
+        <span class="cta-kicker">Votre prochain défi</span>
+        <h2>Prêt à faire de chaque victoire une vraie décision ?</h2>
+        <p>Composez votre équipe, traversez huit mondes et affrontez une IA qui exploite chacune de vos erreurs. Aucun
+          raccourci : seule votre stratégie fera la différence.</p>
         <div class="cta-actions">
-          <a class="btn btn-accent" href="https://play.heig-odyssey.online">Commencer l'aventure !</a>
+          <a class="btn btn-accent" href="https://play.heig-odyssey.online/">Commencer l'aventure !</a>
         </div>
       </div>
     </section>
@@ -471,36 +570,52 @@
   <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
-        <div class="footer-col">
-          <div class="footer-brand">HEIG&nbsp;ODYSSEY</div>
-          <p>Une campagne à vivre, une IA qui ne triche jamais, et une progression qui vous appartient entièrement.</p>
+        <div class="footer-brand">
+          <img class="footer-logo" src="assets/heig-odyssey-logo.png" alt="HEIG Odyssey">
         </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="#modes">Les modes de jeu</a></li>
-            <li><a href="#entrainement">L'IA</a></li>
-            <li><a href="#starters">Les starters</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Projet</h4>
-          <ul>
-            <li><a href="#projet">Le projet</a></li>
-            <li><a href="#roadmap">La roadmap</a></li>
-            <li><a href="#equipe">L'équipe</a></li>
-          </ul>
-        </div>
+        <ul class="footer-legal" aria-label="Informations légales à venir">
+          <li><span>Politique de confidentialité</span></li>
+          <li><span>Conditions d'utilisation</span></li>
+          <li><span>Mentions légales</span></li>
+          <li><span>Préférences cookies</span></li>
+        </ul>
       </div>
       <div class="footer-bottom">
-        Prototype pédagogique interne sans objectif de publication ni de commercialisation.<br>
-        Sprites Pokémon via PokeAPI © Nintendo / Creatures Inc. / GAME FREAK inc., utilisés à titre
-        pédagogique et non commercial.
+        <p class="footer-tagline">Une campagne à vivre, une IA qui ne triche jamais, et une progression qui vous
+          appartient entièrement.</p>
+        <div class="footer-credits">
+          <span>Prototype pédagogique interne sans objectif de publication ni de commercialisation.</span>
+          <span>Sprites Pokémon via PokeAPI © Nintendo / Creatures Inc. / GAME FREAK inc.</span>
+        </div>
       </div>
     </div>
   </footer>
 
-  <script src="js/main.js?v=2"></script>
+  <!-- Contrôle flottant du thème, placé en fin de document pour rester accessible au clavier. -->
+  <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="true"
+    aria-label="Activer le mode clair" data-tooltip="Mode clair">
+    <span class="theme-toggle-orb" aria-hidden="true">
+      <svg class="theme-icon theme-icon--sun" viewBox="0 0 32 32">
+        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+          <path d="M16 2v5M16 25v5M2 16h5M25 16h5M6.1 6.1l3.5 3.5M22.4 22.4l3.5 3.5M25.9 6.1l-3.5 3.5M9.6 22.4l-3.5 3.5" />
+        </g>
+        <circle class="sun-disc" cx="16" cy="16" r="7" />
+        <path class="sun-pokeball-line" d="M9 16h14" />
+        <circle class="sun-pokeball-core" cx="16" cy="16" r="2.5" />
+      </svg>
+
+      <svg class="theme-icon theme-icon--moon" viewBox="0 0 32 32">
+        <path class="moon-crescent" d="M21.7 24.8A11 11 0 0 1 11.2 6.2 10.4 10.4 0 1 0 21.7 24.8Z" />
+        <path class="moon-star" d="m23.8 6.2 1.1 2.3 2.5.4-1.8 1.8.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.8 2.5-.4Z" />
+        <circle class="moon-pokeball" cx="14" cy="18" r="3.2" />
+        <path class="moon-pokeball-line" d="M10.8 18h6.4" />
+        <circle class="moon-pokeball-core" cx="14" cy="18" r="1" />
+      </svg>
+    </span>
+    <span class="visually-hidden" id="themeStatus" aria-live="polite">Mode sombre activé</span>
+  </button>
+
+  <script src="js/main.js?v=12"></script>
 </body>
 
 </html>
