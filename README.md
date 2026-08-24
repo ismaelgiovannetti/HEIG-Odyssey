@@ -4,11 +4,15 @@ HEIG Odyssey est un jeu web solo qui combine l'aventure d'un jeu Pokémon avec l
 
 ## MVP
 
-- campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat avec 5 Boss ;
+- campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat ;
 - entraînement procédural avec trois niveaux d'IA ;
 - gestion d'équipe et progression persistante ;
 - gacha sans microtransactions ;
 - quêtes quotidiennes et hebdomadaires.
+
+## Landing page
+
+La présentation du projet est disponible sur [heig-odyssey.online](https://heig-odyssey.online).
 
 ## Stack
 
@@ -23,4 +27,8 @@ Next.js, TypeScript, PostgreSQL, Prisma, Redis/Redis Streams, Better Auth, `@pkm
 
 ## Workflow
 
-Le développement s'effectue sur `dev`. La branche `main` est protégée et reçoit les versions validées via Pull Request.
+Chaque modification est réalisée dans une branche `feature/*` ou `fix/*` créée depuis `dev`.
+
+Une Pull Request avec revue humaine et CI verte est obligatoire pour intégrer une modification dans `dev`. À la fin de chaque sprint, une Pull Request de release permet de promouvoir `dev` vers `main`.
+
+Les branches `dev` et `main` sont protégées et n'acceptent aucun push direct.
