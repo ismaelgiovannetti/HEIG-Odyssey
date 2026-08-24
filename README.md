@@ -5,7 +5,7 @@ HEIG Odyssey est un jeu web solo qui combine l'aventure d'un jeu Pokémon avec l
 ## MVP
 
 - campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat ;
-- entraînement procédural avec trois niveaux d'IA ;
+- entraînement procédural avec trois niveaux d'IA (facile, normal et difficile) ;
 - gestion d'équipe et progression persistante ;
 - gacha sans microtransactions ;
 - quêtes quotidiennes et hebdomadaires.
@@ -20,10 +20,11 @@ Next.js, TypeScript, PostgreSQL, Prisma, Redis/Redis Streams, Better Auth, `@pkm
 
 ## Documentation
 
-- [Kick-off](deliverables/HEIG_Odyssey_Kickoff_Semaine_1.md)
-- [Personas](deliverables/HEIG_Odyssey_Personas.md)
-- [User stories](deliverables/HEIG_Odyssey_User_Stories.md)
-- [Tâches](deliverables/HEIG_Odyssey_Taches.md)
+- [Kick-off](docs/01-kickoff/HEIG_Odyssey_Kickoff.md)
+- [Personas](docs/02-conception/HEIG_Odyssey_Personas.md)
+- [User stories](docs/02-conception/HEIG_Odyssey_User_Stories.md)
+- [Tâches](docs/03-planification/HEIG_Odyssey_Taches.md)
+- [Guide de création des tâches GitHub](docs/03-planification/HEIG_Odyssey_Guide_Creation_Taches_GitHub.md)
 
 ## Workflow
 
