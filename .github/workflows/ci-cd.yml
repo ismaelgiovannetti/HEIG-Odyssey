@@ -1,17 +1,57 @@
 name: CI/CD Pipeline
 
+# Lance la CI sur les branches de travail et les branches partagées.
 on:
   push:
-    branches: [dev, main]
+    branches:
+      - dev
+      - main
+      - "feature/**"
+      - "fix/**"
   pull_request:
-    branches: [main]
+    branches:
+      - dev
+      - main
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
-  validate:
-    name: Validate repository
+  # Vérifie que les Pull Requests respectent le Git flow défini.
+  pull-request-policy:
+    name: Validate pull request source
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enforce documented branch flow
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo "Événement hors Pull Request : aucun contrôle de branche source nécessaire."
+            exit 0
+          fi
+
+          if [[ "$BASE_REF" == "main" && "$HEAD_REF" != "dev" ]]; then
+            echo "Une Pull Request vers main doit obligatoirement provenir de dev."
+            exit 1
+          fi
+
+          if [[ "$BASE_REF" == "dev" && "$HEAD_REF" != feature/* && "$HEAD_REF" != fix/* ]]; then
+            echo "Une Pull Request vers dev doit provenir d'une branche feature/* ou fix/*."
+            exit 1
+          fi
+
+          echo "Flux de branches valide : $HEAD_REF vers $BASE_REF."
+
+  # Exécute les contrôles rapides à chaque modification.
+  quick-checks:
+    name: Quick CI
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +97,7 @@ jobs:
           const required = ['lint', 'typecheck', 'test:unit', 'build'];
           const missing = required.filter((name) => !scripts[name]);
           if (missing.length) {
-            throw new Error(`Scripts npm manquants : ${missing.join(', ')}`);
+            throw new Error('Scripts npm manquants : ' + missing.join(', '));
           }
           NODE
 
@@ -73,6 +113,45 @@ jobs:
         if: steps.app.outputs.exists == 'true'
         run: npm run test:unit
 
+      - name: Build Next.js
+        if: steps.app.outputs.exists == 'true'
+        run: npm run build
+
+  # Exécute les tests d'intégration avant ou après une fusion dans dev.
+  integration-checks:
+    name: Integration CI
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/dev') || github.event_name == 'pull_request'
+    needs:
+      - pull-request-policy
+      - quick-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect Next.js application
+        id: app
+        shell: bash
+        run: |
+          if [[ -f package.json ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Application Next.js non initialisée : les tests d'intégration ne sont pas encore applicables."
+          fi
+
+      - name: Setup Node.js
+        if: steps.app.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        if: steps.app.outputs.exists == 'true'
+        run: npm ci
+
       - name: Available domain and integration tests
         if: steps.app.outputs.exists == 'true'
         shell: bash
@@ -80,12 +159,54 @@ jobs:
           npm run test:combat --if-present
           npm run test:integration --if-present
 
-      - name: Build Next.js
+      - name: Validate Docker Compose when available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
+            docker compose config
+          else
+            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
+          fi
+
+  # Exécute les contrôles complets pour une release de dev vers main.
+  release-validation:
+    name: Full release validation
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    needs:
+      - pull-request-policy
+      - quick-checks
+      - integration-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect Next.js application
+        id: app
+        shell: bash
+        run: |
+          if [[ -f package.json ]]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Application Next.js non initialisée : les contrôles navigateur ne sont pas encore applicables."
+          fi
+
+      - name: Setup Node.js
         if: steps.app.outputs.exists == 'true'
-        run: npm run build
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies from lockfile
+        if: steps.app.outputs.exists == 'true'
+        run: npm ci
 
       - name: Pull Request browser checks when available
-        if: github.event_name == 'pull_request' && steps.app.outputs.exists == 'true'
+        if: steps.app.outputs.exists == 'true'
         shell: bash
         run: |
           npm run test:e2e --if-present -- --project=chromium
@@ -125,10 +246,11 @@ jobs:
           docker logs landing-ci
           exit 1
 
+  # Construit, teste et publie les images identifiées par le SHA Git.
   package:
     name: Test and publish SHA images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: validate
+    needs: quick-checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -203,11 +325,13 @@ jobs:
           docker push "$APP_IMAGE"
           docker push "$LANDING_IMAGE"
 
+  # Déploie sur le VPS uniquement après une fusion réussie dans main.
   deploy:
     name: Deploy exact SHA to VPS
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: package
     runs-on: ubuntu-latest
+    # Empêche deux déploiements de modifier le VPS en même temps.
     concurrency:
       group: production-vps
       cancel-in-progress: false
