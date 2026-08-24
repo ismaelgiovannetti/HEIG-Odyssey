@@ -57,6 +57,10 @@ flowchart TB
     F --> J[Boutique gacha]
 ```
 
+### Mode campagne
+
+La campagne organise l'aventure en mondes et en combats progressivement débloqués. Chaque combat affiche un niveau recommandé afin d'aider le joueur à estimer sa préparation, mais cette indication reste purement informative : elle ne modifie pas les conditions de déblocage et ne bloque jamais le lancement du combat. Le joueur peut participer avec toute équipe valide composée d'une à six créatures qu'il possède, même si son équipe est moins forte que le niveau recommandé.
+
 ### Mode entraînement
 
 L'entraînement génère un combat procédural. Il sert à gagner de l'expérience, de la monnaie et à comprendre les choix tactiques avant de retourner à la campagne.
@@ -73,15 +77,17 @@ Les trois difficultés utilisent donc une puissance d'équipe comparable : ce so
 
 La difficulté choisie concerne exclusivement l'entraînement. Dans la campagne, chaque dresseur ou Boss possède un `aiProfile` fixe défini dans sa configuration afin de maîtriser l'équilibrage narratif.
 
+Dans ce document, `aiProfile` désigne le comportement de l'IA associé à un adversaire : `random` choisit une action légale aléatoire, `heuristic` évalue la situation avec des règles tactiques et `expectiminimax` anticipe plusieurs résultats possibles dans un budget de calcul limité. En campagne, ce profil est imposé par la configuration du dresseur ou du Boss et ne peut pas être choisi par le joueur.
+
 ### Périmètre MVP
 
 | Inclus dans le MVP | Hors MVP |
 |---|---|
 | Campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat endgame avec 5 Boss. | JcJ, classement, échanges entre joueurs et guildes. |
 | Onboarding unique avec recrutement gratuit et équipe initiale. | Plusieurs tutoriels, scénarios de départ ou personnalisation avancée. |
-| Entraînement procédural, trois difficultés et récompenses XP/monnaie croissantes. | Matchmaking, entraînement coopératif et recherche IA illimitée. |
+| Entraînement procédural, trois difficultés et récompenses XP/monnaie croissantes. | Matchmaking, entraînement coopératif et recherche IA. |
 | Gestion d'équipe, combats Gen 4, progression, récompenses et sauvegarde. | Choix de difficulté par le joueur dans les combats de campagne. |
-| Dresseurs/Boss : `aiProfile` fixe, équipe, catchlines et musique. | IA Expectiminimax étendue à davantage d'adversaires de campagne. |
+| Dresseurs/Boss : `aiProfile` fixe, équipe, catchlines, musique et sprite local. | IA Expectiminimax étendue à davantage d'adversaires de campagne. |
 | Gacha sans microtransactions. | Boutique payante, pass payant ou mécanisme pay-to-win. |
 | Quêtes quotidiennes et hebdomadaires communes avec progression individuelle. | Application mobile native et fonctions sociales temps réel. |
 
@@ -90,11 +96,11 @@ La difficulté choisie concerne exclusivement l'entraînement. Dans la campagne,
 - **FR-01 - Compte et accès :** créer un compte, se connecter, vérifier son e-mail et récupérer son accès.
 - **FR-02 - Onboarding :** jouer l’onboarding une seule fois, recruter gratuitement une première créature et créer l’équipe initiale.
 - **FR-03 - Navigation principale :** accéder depuis l’accueil à la campagne, à l’entraînement, à la gestion d’équipe ou à la boutique gacha.
-- **FR-04 - Campagne :** consulter la carte, les mondes débloqués et la progression persistante, puis lancer un combat disponible.
-- **FR-05 - Gestion d’équipe :** consulter les créatures possédées, composer une équipe valide et utiliser cette équipe dans les deux modes de combat.
+- **FR-04 - Campagne :** consulter la carte, les mondes débloqués, la progression persistante et le niveau recommandé informatif de chaque combat, puis lancer un combat disponible sans que ce niveau constitue une condition d'accès.
+- **FR-05 - Gestion d’équipe :** consulter les créatures possédées, composer une équipe valide d'une à six créatures appartenant à sa collection et utiliser cette équipe dans les deux modes de combat.
 - **FR-06 - Combat :** résoudre côté serveur un combat simple selon les règles Gen 4, avec une seule créature active par camp, déterminer son résultat et enregistrer celui-ci.
 - **FR-07 - Entraînement :** générer une équipe adverse adaptée à l’équipe active, appliquer la difficulté d’IA choisie et calculer des gains cohérents.
-- **FR-08 - Contenu de campagne :** charger les dresseurs et Boss depuis une configuration incluant leur équipe, leur `aiProfile` fixe, leurs catchlines et leur musique.
+- **FR-08 - Contenu de campagne :** charger les dresseurs et Boss depuis une configuration incluant leur équipe, leur `aiProfile` fixe, leurs catchlines, leur musique et la référence vers leur sprite local.
 - **FR-09 - Progression et récompenses :** enregistrer l’expérience, la monnaie et les déblocages obtenus, sans attribuer deux fois le même gain.
 - **FR-10 - Gacha :** effectuer un tirage sur un portail selon ses probabilités, contre de la monnaie virtuelle, puis ajouter la créature obtenue à la collection.
 - **FR-11 - Quêtes :** sélectionner des quêtes quotidiennes et hebdomadaires communes, puis conserver pour chaque joueur les compteurs, statuts et récompenses associés.
@@ -297,7 +303,7 @@ La validation fonctionnelle, la revue finale, les tests transversaux et la prép
 
 ### Issue tracker et suivi
 
-GitHub Projects est le tableau Kanban unique. Chaque issue contient un objectif, des critères d'acceptation, une priorité, un responsable et un lien vers la PR ou le commit concerné. La priorisation détaillée des exigences et du contenu MVP est maintenue dans ce tableau afin de pouvoir évoluer pendant la réalisation sans dupliquer cette information dans le document de cadrage.
+GitHub Projects est le tableau Kanban unique. Chaque issue contient un objectif, des critères d'acceptation, une priorité, un responsable et un lien vers la Pull Request concernée. La priorisation détaillée des exigences et du contenu MVP est maintenue dans ce tableau afin de pouvoir évoluer pendant la réalisation sans dupliquer cette information dans le document de cadrage.
 
 `Backlog` → `Ready` → `In progress` → `In review` → `Done`
 
