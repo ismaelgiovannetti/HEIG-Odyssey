@@ -4,7 +4,7 @@ HEIG Odyssey est un jeu web solo qui combine l'aventure d'un jeu Pokémon avec l
 
 ## MVP
 
-- campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat avec 5 Boss ;
+- campagne : 5 mondes Bachelor, 2 mondes Master et 1 monde Doctorat ;
 - entraînement procédural avec trois niveaux d'IA ;
 - gestion d'équipe et progression persistante ;
 - gacha sans microtransactions ;
