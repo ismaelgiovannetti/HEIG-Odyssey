@@ -1,0 +1,55 @@
+services:
+  app:
+    image: ${APP_IMAGE:-heig-odyssey:latest}
+    container_name: heig-odyssey-app-ci
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
+      - REDIS_URL=redis://redis:6379
+      - BETTER_AUTH_SECRET=ci-secret-for-testing-only-min-32-chars-long
+      - BETTER_AUTH_URL=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: heig-odyssey-postgres-ci
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: heig_odyssey_ci
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d heig_odyssey_ci"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: heig-odyssey-redis-ci
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+networks:
+  heig-odyssey-ci-network:
+    driver: bridge
