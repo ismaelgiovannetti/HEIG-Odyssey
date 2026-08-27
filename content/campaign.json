@@ -1,0 +1,828 @@
+{
+  "version": "1.0.0",
+  "worlds": [
+    {
+      "id": "bachelor-1",
+      "name": "Bachelor 1 - Type Normal",
+      "degree": "BACHELOR",
+      "description": "Première étape du cursus d'ingénierie. Apprenez les bases tactiques face aux créatures Normal.",
+      "stages": [
+        {
+          "id": "bachelor-1-stage-1",
+          "stageNumber": 1,
+          "name": "Laboratoire Normal - Étape 1",
+          "description": "Affrontez un étudiant de première année spécialisé dans les créatures de type Normal.",
+          "recommendedLevel": 6,
+          "trainerId": "trainer-b1-stage-1",
+          "prerequisiteStageId": null,
+          "rewardMoney": 40,
+          "rewardXp": 70
+        },
+        {
+          "id": "bachelor-1-stage-2",
+          "stageNumber": 2,
+          "name": "Laboratoire Normal - Étape 2",
+          "description": "Affrontez un étudiant de première année spécialisé dans les créatures de type Normal.",
+          "recommendedLevel": 8,
+          "trainerId": "trainer-b1-stage-2",
+          "prerequisiteStageId": "bachelor-1-stage-1",
+          "rewardMoney": 50,
+          "rewardXp": 90
+        },
+        {
+          "id": "bachelor-1-stage-3",
+          "stageNumber": 3,
+          "name": "Laboratoire Normal - Étape 3",
+          "description": "Affrontez un étudiant de première année spécialisé dans les créatures de type Normal.",
+          "recommendedLevel": 10,
+          "trainerId": "trainer-b1-stage-3",
+          "prerequisiteStageId": "bachelor-1-stage-2",
+          "rewardMoney": 60,
+          "rewardXp": 110
+        },
+        {
+          "id": "bachelor-1-stage-4",
+          "stageNumber": 4,
+          "name": "Laboratoire Normal - Étape 4",
+          "description": "Affrontez un étudiant de première année spécialisé dans les créatures de type Normal.",
+          "recommendedLevel": 12,
+          "trainerId": "trainer-b1-stage-4",
+          "prerequisiteStageId": "bachelor-1-stage-3",
+          "rewardMoney": 70,
+          "rewardXp": 130
+        },
+        {
+          "id": "bachelor-1-stage-5",
+          "stageNumber": 5,
+          "name": "Laboratoire Normal - Étape 5",
+          "description": "Affrontez un étudiant de première année spécialisé dans les créatures de type Normal.",
+          "recommendedLevel": 14,
+          "trainerId": "trainer-b1-stage-5",
+          "prerequisiteStageId": "bachelor-1-stage-4",
+          "rewardMoney": 80,
+          "rewardXp": 150
+        },
+        {
+          "id": "bachelor-1-stage-6",
+          "stageNumber": 6,
+          "name": "Examen Final Normal - Prof. Fouad",
+          "description": "Affrontez Fouad et son équipe énergique composée de Vigoroth et Capumain.",
+          "recommendedLevel": 16,
+          "trainerId": "boss-fouad",
+          "prerequisiteStageId": "bachelor-1-stage-5",
+          "rewardMoney": 150,
+          "rewardXp": 300
+        }
+      ]
+    },
+    {
+      "id": "bachelor-2",
+      "name": "Bachelor 2 - Type Plante",
+      "degree": "BACHELOR",
+      "description": "Deuxième étape du cursus. Maîtrisez le statut, les régénérations et les faiblesses Plante.",
+      "stages": [
+        {
+          "id": "bachelor-2-stage-1",
+          "stageNumber": 1,
+          "name": "Serre Botanique - Étape 1",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 17,
+          "trainerId": "trainer-b2-stage-1",
+          "prerequisiteStageId": "bachelor-1-stage-6",
+          "rewardMoney": 60,
+          "rewardXp": 120
+        },
+        {
+          "id": "bachelor-2-stage-2",
+          "stageNumber": 2,
+          "name": "Serre Botanique - Étape 2",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 18,
+          "trainerId": "trainer-b2-stage-2",
+          "prerequisiteStageId": "bachelor-2-stage-1",
+          "rewardMoney": 70,
+          "rewardXp": 140
+        },
+        {
+          "id": "bachelor-2-stage-3",
+          "stageNumber": 3,
+          "name": "Serre Botanique - Étape 3",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 19,
+          "trainerId": "trainer-b2-stage-3",
+          "prerequisiteStageId": "bachelor-2-stage-2",
+          "rewardMoney": 80,
+          "rewardXp": 160
+        },
+        {
+          "id": "bachelor-2-stage-4",
+          "stageNumber": 4,
+          "name": "Serre Botanique - Étape 4",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 20,
+          "trainerId": "trainer-b2-stage-4",
+          "prerequisiteStageId": "bachelor-2-stage-3",
+          "rewardMoney": 90,
+          "rewardXp": 180
+        },
+        {
+          "id": "bachelor-2-stage-5",
+          "stageNumber": 5,
+          "name": "Serre Botanique - Étape 5",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 21,
+          "trainerId": "trainer-b2-stage-5",
+          "prerequisiteStageId": "bachelor-2-stage-4",
+          "rewardMoney": 100,
+          "rewardXp": 200
+        },
+        {
+          "id": "bachelor-2-stage-6",
+          "stageNumber": 6,
+          "name": "Serre Botanique - Étape 6",
+          "description": "Affrontez les dresseurs de la serre expérimentale.",
+          "recommendedLevel": 22,
+          "trainerId": "trainer-b2-stage-6",
+          "prerequisiteStageId": "bachelor-2-stage-5",
+          "rewardMoney": 110,
+          "rewardXp": 220
+        },
+        {
+          "id": "bachelor-2-stage-7",
+          "stageNumber": 7,
+          "name": "Examen Final Plante - Prof. Nastaran",
+          "description": "Affrontez Nastaran avec Vortente, Rosélia et Boustiflor.",
+          "recommendedLevel": 26,
+          "trainerId": "boss-nastaran",
+          "prerequisiteStageId": "bachelor-2-stage-6",
+          "rewardMoney": 250,
+          "rewardXp": 500
+        }
+      ]
+    },
+    {
+      "id": "bachelor-3",
+      "name": "Bachelor 3 - Type Électrik",
+      "degree": "BACHELOR",
+      "description": "Troisième étape. Vitesse fulgurante, attaques spéciales et paralysie vous attendent.",
+      "stages": [
+        {
+          "id": "bachelor-3-stage-1",
+          "stageNumber": 1,
+          "name": "Centrale Haute Tension - Étape 1",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 27,
+          "trainerId": "trainer-b3-stage-1",
+          "prerequisiteStageId": "bachelor-2-stage-7",
+          "rewardMoney": 95,
+          "rewardXp": 185
+        },
+        {
+          "id": "bachelor-3-stage-2",
+          "stageNumber": 2,
+          "name": "Centrale Haute Tension - Étape 2",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 28,
+          "trainerId": "trainer-b3-stage-2",
+          "prerequisiteStageId": "bachelor-3-stage-1",
+          "rewardMoney": 110,
+          "rewardXp": 210
+        },
+        {
+          "id": "bachelor-3-stage-3",
+          "stageNumber": 3,
+          "name": "Centrale Haute Tension - Étape 3",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 29,
+          "trainerId": "trainer-b3-stage-3",
+          "prerequisiteStageId": "bachelor-3-stage-2",
+          "rewardMoney": 125,
+          "rewardXp": 235
+        },
+        {
+          "id": "bachelor-3-stage-4",
+          "stageNumber": 4,
+          "name": "Centrale Haute Tension - Étape 4",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 30,
+          "trainerId": "trainer-b3-stage-4",
+          "prerequisiteStageId": "bachelor-3-stage-3",
+          "rewardMoney": 140,
+          "rewardXp": 260
+        },
+        {
+          "id": "bachelor-3-stage-5",
+          "stageNumber": 5,
+          "name": "Centrale Haute Tension - Étape 5",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 31,
+          "trainerId": "trainer-b3-stage-5",
+          "prerequisiteStageId": "bachelor-3-stage-4",
+          "rewardMoney": 155,
+          "rewardXp": 285
+        },
+        {
+          "id": "bachelor-3-stage-6",
+          "stageNumber": 6,
+          "name": "Centrale Haute Tension - Étape 6",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 32,
+          "trainerId": "trainer-b3-stage-6",
+          "prerequisiteStageId": "bachelor-3-stage-5",
+          "rewardMoney": 170,
+          "rewardXp": 310
+        },
+        {
+          "id": "bachelor-3-stage-7",
+          "stageNumber": 7,
+          "name": "Centrale Haute Tension - Étape 7",
+          "description": "Défiez les ingénieurs en génie électrique et télécoms.",
+          "recommendedLevel": 33,
+          "trainerId": "trainer-b3-stage-7",
+          "prerequisiteStageId": "bachelor-3-stage-6",
+          "rewardMoney": 185,
+          "rewardXp": 335
+        },
+        {
+          "id": "bachelor-3-stage-8",
+          "stageNumber": 8,
+          "name": "Examen Final Électrik - Prof. Mosqueron",
+          "description": "Affrontez Mosqueron avec Luxio, Magnézone et Élektek.",
+          "recommendedLevel": 36,
+          "trainerId": "boss-mosqueron",
+          "prerequisiteStageId": "bachelor-3-stage-7",
+          "rewardMoney": 400,
+          "rewardXp": 800
+        }
+      ]
+    },
+    {
+      "id": "bachelor-4",
+      "name": "Bachelor 4 - Type Acier",
+      "degree": "BACHELOR",
+      "description": "Quatrième étape. Défenses massives, immunités Poison et résistances multiples.",
+      "stages": [
+        {
+          "id": "bachelor-4-stage-1",
+          "stageNumber": 1,
+          "name": "Fonderie de Précision - Étape 1",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 37,
+          "trainerId": "trainer-b4-stage-1",
+          "prerequisiteStageId": "bachelor-3-stage-8",
+          "rewardMoney": 140,
+          "rewardXp": 285
+        },
+        {
+          "id": "bachelor-4-stage-2",
+          "stageNumber": 2,
+          "name": "Fonderie de Précision - Étape 2",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 38,
+          "trainerId": "trainer-b4-stage-2",
+          "prerequisiteStageId": "bachelor-4-stage-1",
+          "rewardMoney": 160,
+          "rewardXp": 320
+        },
+        {
+          "id": "bachelor-4-stage-3",
+          "stageNumber": 3,
+          "name": "Fonderie de Précision - Étape 3",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 39,
+          "trainerId": "trainer-b4-stage-3",
+          "prerequisiteStageId": "bachelor-4-stage-2",
+          "rewardMoney": 180,
+          "rewardXp": 355
+        },
+        {
+          "id": "bachelor-4-stage-4",
+          "stageNumber": 4,
+          "name": "Fonderie de Précision - Étape 4",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 40,
+          "trainerId": "trainer-b4-stage-4",
+          "prerequisiteStageId": "bachelor-4-stage-3",
+          "rewardMoney": 200,
+          "rewardXp": 390
+        },
+        {
+          "id": "bachelor-4-stage-5",
+          "stageNumber": 5,
+          "name": "Fonderie de Précision - Étape 5",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 41,
+          "trainerId": "trainer-b4-stage-5",
+          "prerequisiteStageId": "bachelor-4-stage-4",
+          "rewardMoney": 220,
+          "rewardXp": 425
+        },
+        {
+          "id": "bachelor-4-stage-6",
+          "stageNumber": 6,
+          "name": "Fonderie de Précision - Étape 6",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 42,
+          "trainerId": "trainer-b4-stage-6",
+          "prerequisiteStageId": "bachelor-4-stage-5",
+          "rewardMoney": 240,
+          "rewardXp": 460
+        },
+        {
+          "id": "bachelor-4-stage-7",
+          "stageNumber": 7,
+          "name": "Fonderie de Précision - Étape 7",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 43,
+          "trainerId": "trainer-b4-stage-7",
+          "prerequisiteStageId": "bachelor-4-stage-6",
+          "rewardMoney": 260,
+          "rewardXp": 495
+        },
+        {
+          "id": "bachelor-4-stage-8",
+          "stageNumber": 8,
+          "name": "Fonderie de Précision - Étape 8",
+          "description": "Affrontez les spécialistes des matériaux lourds et résistances blindées.",
+          "recommendedLevel": 44,
+          "trainerId": "trainer-b4-stage-8",
+          "prerequisiteStageId": "bachelor-4-stage-7",
+          "rewardMoney": 280,
+          "rewardXp": 530
+        },
+        {
+          "id": "bachelor-4-stage-9",
+          "stageNumber": 9,
+          "name": "Examen Final Acier - Prof. Augier",
+          "description": "Affrontez Augier avec Bastiodon, Cizayox et Airmure.",
+          "recommendedLevel": 46,
+          "trainerId": "boss-augier",
+          "prerequisiteStageId": "bachelor-4-stage-8",
+          "rewardMoney": 600,
+          "rewardXp": 1200
+        }
+      ]
+    },
+    {
+      "id": "bachelor-5",
+      "name": "Bachelor 5 - Type Psy",
+      "degree": "BACHELOR",
+      "description": "Dernière étape du Bachelor. Affrontez la puissance psychique pour décrocher votre diplôme.",
+      "stages": [
+        {
+          "id": "bachelor-5-stage-1",
+          "stageNumber": 1,
+          "name": "Laboratoire d'IA & Cognition - Étape 1",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 47,
+          "trainerId": "trainer-b5-stage-1",
+          "prerequisiteStageId": "bachelor-4-stage-9",
+          "rewardMoney": 205,
+          "rewardXp": 400
+        },
+        {
+          "id": "bachelor-5-stage-2",
+          "stageNumber": 2,
+          "name": "Laboratoire d'IA & Cognition - Étape 2",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 48,
+          "trainerId": "trainer-b5-stage-2",
+          "prerequisiteStageId": "bachelor-5-stage-1",
+          "rewardMoney": 230,
+          "rewardXp": 450
+        },
+        {
+          "id": "bachelor-5-stage-3",
+          "stageNumber": 3,
+          "name": "Laboratoire d'IA & Cognition - Étape 3",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 49,
+          "trainerId": "trainer-b5-stage-3",
+          "prerequisiteStageId": "bachelor-5-stage-2",
+          "rewardMoney": 255,
+          "rewardXp": 500
+        },
+        {
+          "id": "bachelor-5-stage-4",
+          "stageNumber": 4,
+          "name": "Laboratoire d'IA & Cognition - Étape 4",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 50,
+          "trainerId": "trainer-b5-stage-4",
+          "prerequisiteStageId": "bachelor-5-stage-3",
+          "rewardMoney": 280,
+          "rewardXp": 550
+        },
+        {
+          "id": "bachelor-5-stage-5",
+          "stageNumber": 5,
+          "name": "Laboratoire d'IA & Cognition - Étape 5",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 51,
+          "trainerId": "trainer-b5-stage-5",
+          "prerequisiteStageId": "bachelor-5-stage-4",
+          "rewardMoney": 305,
+          "rewardXp": 600
+        },
+        {
+          "id": "bachelor-5-stage-6",
+          "stageNumber": 6,
+          "name": "Laboratoire d'IA & Cognition - Étape 6",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 52,
+          "trainerId": "trainer-b5-stage-6",
+          "prerequisiteStageId": "bachelor-5-stage-5",
+          "rewardMoney": 330,
+          "rewardXp": 650
+        },
+        {
+          "id": "bachelor-5-stage-7",
+          "stageNumber": 7,
+          "name": "Laboratoire d'IA & Cognition - Étape 7",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 53,
+          "trainerId": "trainer-b5-stage-7",
+          "prerequisiteStageId": "bachelor-5-stage-6",
+          "rewardMoney": 355,
+          "rewardXp": 700
+        },
+        {
+          "id": "bachelor-5-stage-8",
+          "stageNumber": 8,
+          "name": "Laboratoire d'IA & Cognition - Étape 8",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 54,
+          "trainerId": "trainer-b5-stage-8",
+          "prerequisiteStageId": "bachelor-5-stage-7",
+          "rewardMoney": 380,
+          "rewardXp": 750
+        },
+        {
+          "id": "bachelor-5-stage-9",
+          "stageNumber": 9,
+          "name": "Laboratoire d'IA & Cognition - Étape 9",
+          "description": "Testez votre anticipation contre les maîtres des pouvoirs psychiques.",
+          "recommendedLevel": 55,
+          "trainerId": "trainer-b5-stage-9",
+          "prerequisiteStageId": "bachelor-5-stage-8",
+          "rewardMoney": 405,
+          "rewardXp": 800
+        },
+        {
+          "id": "bachelor-5-stage-10",
+          "stageNumber": 10,
+          "name": "Examen de Diplôme Bachelor - Prof. Tori",
+          "description": "Affrontez Tori et son équipe psychique : Flagadoss, Gallame, Gardevoir, Kirlia et Noadkoko.",
+          "recommendedLevel": 56,
+          "trainerId": "boss-tori",
+          "prerequisiteStageId": "bachelor-5-stage-9",
+          "rewardMoney": 1000,
+          "rewardXp": 2500
+        }
+      ]
+    },
+    {
+      "id": "master-1",
+      "name": "Master 1 - Double Type Poison / Ténèbres",
+      "degree": "MASTER",
+      "description": "Première année de Master. Affrontez les tactiques avancées de statut Poison et dégâts Ténèbres.",
+      "stages": [
+        {
+          "id": "master-1-stage-1",
+          "stageNumber": 1,
+          "name": "Laboratoire Toxique & Sécurité - Étape 1",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 57,
+          "trainerId": "trainer-m1-stage-1",
+          "prerequisiteStageId": "bachelor-5-stage-10",
+          "rewardMoney": 335,
+          "rewardXp": 670
+        },
+        {
+          "id": "master-1-stage-2",
+          "stageNumber": 2,
+          "name": "Laboratoire Toxique & Sécurité - Étape 2",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 58,
+          "trainerId": "trainer-m1-stage-2",
+          "prerequisiteStageId": "master-1-stage-1",
+          "rewardMoney": 370,
+          "rewardXp": 740
+        },
+        {
+          "id": "master-1-stage-3",
+          "stageNumber": 3,
+          "name": "Laboratoire Toxique & Sécurité - Étape 3",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 59,
+          "trainerId": "trainer-m1-stage-3",
+          "prerequisiteStageId": "master-1-stage-2",
+          "rewardMoney": 405,
+          "rewardXp": 810
+        },
+        {
+          "id": "master-1-stage-4",
+          "stageNumber": 4,
+          "name": "Laboratoire Toxique & Sécurité - Étape 4",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 60,
+          "trainerId": "trainer-m1-stage-4",
+          "prerequisiteStageId": "master-1-stage-3",
+          "rewardMoney": 440,
+          "rewardXp": 880
+        },
+        {
+          "id": "master-1-stage-5",
+          "stageNumber": 5,
+          "name": "Laboratoire Toxique & Sécurité - Étape 5",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 61,
+          "trainerId": "trainer-m1-stage-5",
+          "prerequisiteStageId": "master-1-stage-4",
+          "rewardMoney": 475,
+          "rewardXp": 950
+        },
+        {
+          "id": "master-1-stage-6",
+          "stageNumber": 6,
+          "name": "Laboratoire Toxique & Sécurité - Étape 6",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 62,
+          "trainerId": "trainer-m1-stage-6",
+          "prerequisiteStageId": "master-1-stage-5",
+          "rewardMoney": 510,
+          "rewardXp": 1020
+        },
+        {
+          "id": "master-1-stage-7",
+          "stageNumber": 7,
+          "name": "Laboratoire Toxique & Sécurité - Étape 7",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 63,
+          "trainerId": "trainer-m1-stage-7",
+          "prerequisiteStageId": "master-1-stage-6",
+          "rewardMoney": 545,
+          "rewardXp": 1090
+        },
+        {
+          "id": "master-1-stage-8",
+          "stageNumber": 8,
+          "name": "Laboratoire Toxique & Sécurité - Étape 8",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 64,
+          "trainerId": "trainer-m1-stage-8",
+          "prerequisiteStageId": "master-1-stage-7",
+          "rewardMoney": 580,
+          "rewardXp": 1160
+        },
+        {
+          "id": "master-1-stage-9",
+          "stageNumber": 9,
+          "name": "Laboratoire Toxique & Sécurité - Étape 9",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 65,
+          "trainerId": "trainer-m1-stage-9",
+          "prerequisiteStageId": "master-1-stage-8",
+          "rewardMoney": 615,
+          "rewardXp": 1230
+        },
+        {
+          "id": "master-1-stage-10",
+          "stageNumber": 10,
+          "name": "Laboratoire Toxique & Sécurité - Étape 10",
+          "description": "Naviguez à travers les pièges des doubles types Poison et Ténèbres.",
+          "recommendedLevel": 66,
+          "trainerId": "trainer-m1-stage-10",
+          "prerequisiteStageId": "master-1-stage-9",
+          "rewardMoney": 650,
+          "rewardXp": 1300
+        },
+        {
+          "id": "master-1-stage-11",
+          "stageNumber": 11,
+          "name": "Épreuve Majeure Poison/Ténèbres - Doyen Gamba",
+          "description": "Affrontez Gamba et ses 6 créatures d'élite : Drascore, Ectoplasma, Spectrum, Dimoret, Colhomard et Cacturne.",
+          "recommendedLevel": 70,
+          "trainerId": "boss-gamba",
+          "prerequisiteStageId": "master-1-stage-10",
+          "rewardMoney": 1800,
+          "rewardXp": 4500
+        }
+      ]
+    },
+    {
+      "id": "master-2",
+      "name": "Master 2 - Double Type Dragon / Glace",
+      "degree": "MASTER",
+      "description": "Deuxième année de Master. La puissance dévastatrice des dragons alliée au contrôle absolu de la glace.",
+      "stages": [
+        {
+          "id": "master-2-stage-1",
+          "stageNumber": 1,
+          "name": "Pic Glaciaire des Dragons - Étape 1",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 71,
+          "trainerId": "trainer-m2-stage-1",
+          "prerequisiteStageId": "master-1-stage-11",
+          "rewardMoney": 550,
+          "rewardXp": 1100
+        },
+        {
+          "id": "master-2-stage-2",
+          "stageNumber": 2,
+          "name": "Pic Glaciaire des Dragons - Étape 2",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 72,
+          "trainerId": "trainer-m2-stage-2",
+          "prerequisiteStageId": "master-2-stage-1",
+          "rewardMoney": 600,
+          "rewardXp": 1200
+        },
+        {
+          "id": "master-2-stage-3",
+          "stageNumber": 3,
+          "name": "Pic Glaciaire des Dragons - Étape 3",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 73,
+          "trainerId": "trainer-m2-stage-3",
+          "prerequisiteStageId": "master-2-stage-2",
+          "rewardMoney": 650,
+          "rewardXp": 1300
+        },
+        {
+          "id": "master-2-stage-4",
+          "stageNumber": 4,
+          "name": "Pic Glaciaire des Dragons - Étape 4",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 74,
+          "trainerId": "trainer-m2-stage-4",
+          "prerequisiteStageId": "master-2-stage-3",
+          "rewardMoney": 700,
+          "rewardXp": 1400
+        },
+        {
+          "id": "master-2-stage-5",
+          "stageNumber": 5,
+          "name": "Pic Glaciaire des Dragons - Étape 5",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 75,
+          "trainerId": "trainer-m2-stage-5",
+          "prerequisiteStageId": "master-2-stage-4",
+          "rewardMoney": 750,
+          "rewardXp": 1500
+        },
+        {
+          "id": "master-2-stage-6",
+          "stageNumber": 6,
+          "name": "Pic Glaciaire des Dragons - Étape 6",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 76,
+          "trainerId": "trainer-m2-stage-6",
+          "prerequisiteStageId": "master-2-stage-5",
+          "rewardMoney": 800,
+          "rewardXp": 1600
+        },
+        {
+          "id": "master-2-stage-7",
+          "stageNumber": 7,
+          "name": "Pic Glaciaire des Dragons - Étape 7",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 77,
+          "trainerId": "trainer-m2-stage-7",
+          "prerequisiteStageId": "master-2-stage-6",
+          "rewardMoney": 850,
+          "rewardXp": 1700
+        },
+        {
+          "id": "master-2-stage-8",
+          "stageNumber": 8,
+          "name": "Pic Glaciaire des Dragons - Étape 8",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 78,
+          "trainerId": "trainer-m2-stage-8",
+          "prerequisiteStageId": "master-2-stage-7",
+          "rewardMoney": 900,
+          "rewardXp": 1800
+        },
+        {
+          "id": "master-2-stage-9",
+          "stageNumber": 9,
+          "name": "Pic Glaciaire des Dragons - Étape 9",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 79,
+          "trainerId": "trainer-m2-stage-9",
+          "prerequisiteStageId": "master-2-stage-8",
+          "rewardMoney": 950,
+          "rewardXp": 1900
+        },
+        {
+          "id": "master-2-stage-10",
+          "stageNumber": 10,
+          "name": "Pic Glaciaire des Dragons - Étape 10",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 80,
+          "trainerId": "trainer-m2-stage-10",
+          "prerequisiteStageId": "master-2-stage-9",
+          "rewardMoney": 1000,
+          "rewardXp": 2000
+        },
+        {
+          "id": "master-2-stage-11",
+          "stageNumber": 11,
+          "name": "Pic Glaciaire des Dragons - Étape 11",
+          "description": "Affrontez l'élite des dresseurs de dragons et créatures glaciaires.",
+          "recommendedLevel": 81,
+          "trainerId": "trainer-m2-stage-11",
+          "prerequisiteStageId": "master-2-stage-10",
+          "rewardMoney": 1050,
+          "rewardXp": 2100
+        },
+        {
+          "id": "master-2-stage-12",
+          "stageNumber": 12,
+          "name": "Examen de Diplôme Master - Doyen Auberson",
+          "description": "Affrontez Auberson et son équipe colossale : Mammochon, Carchacrok, Drattak, Oniglali, Cadoizo et Lokhlass.",
+          "recommendedLevel": 84,
+          "trainerId": "boss-auberson",
+          "prerequisiteStageId": "master-2-stage-11",
+          "rewardMoney": 3000,
+          "rewardXp": 8000
+        }
+      ]
+    },
+    {
+      "id": "doctorat",
+      "name": "Doctorat - La Thèse Finale",
+      "degree": "DOCTORAT",
+      "description": "Le sommet absolu de HEIG Odyssey. Affrontez les concepteurs du jeu et la direction suprême.",
+      "stages": [
+        {
+          "id": "doctorat-stage-1",
+          "stageNumber": 1,
+          "name": "Doctorat - Épreuve 1 : Tiago",
+          "description": "Affrontez Tiago avec son escouade aérienne légendaire (Ho-Oh, Xatu, Bekipan shiny, Étouraptor, Pijako, Roucarnage).",
+          "recommendedLevel": 90,
+          "trainerId": "boss-doc-tiago",
+          "prerequisiteStageId": "master-2-stage-12",
+          "rewardMoney": 5000,
+          "rewardXp": 12000
+        },
+        {
+          "id": "doctorat-stage-2",
+          "stageNumber": 2,
+          "name": "Doctorat - Épreuve 2 : Mo",
+          "description": "Affrontez Mo et sa composition dévastatrice (Simiabraz, Luxray shiny, Étouraptor, Carchacrok, Léviator, Dialga).",
+          "recommendedLevel": 93,
+          "trainerId": "boss-doc-mo",
+          "prerequisiteStageId": "doctorat-stage-1",
+          "rewardMoney": 6000,
+          "rewardXp": 15000
+        },
+        {
+          "id": "doctorat-stage-3",
+          "stageNumber": 3,
+          "name": "Doctorat - Épreuve 3 : Ismael",
+          "description": "Affrontez Ismael et son escouade dimensionnelle (Chapignon shiny, Wailord, Palkia, Ténéfix, Libégon, Kaorine).",
+          "recommendedLevel": 94,
+          "trainerId": "boss-doc-ismael",
+          "prerequisiteStageId": "doctorat-stage-2",
+          "rewardMoney": 7000,
+          "rewardXp": 18000
+        },
+        {
+          "id": "doctorat-stage-4",
+          "stageNumber": 4,
+          "name": "Doctorat - Épreuve 4 : Evan",
+          "description": "Affrontez Evan et ses créatures titanesques (Magirêve, Métalosse shiny, Braségali, Givrali, Torterra, Lugia).",
+          "recommendedLevel": 96,
+          "trainerId": "boss-doc-evan",
+          "prerequisiteStageId": "doctorat-stage-3",
+          "rewardMoney": 8000,
+          "rewardXp": 22000
+        },
+        {
+          "id": "doctorat-stage-5",
+          "stageNumber": 5,
+          "name": "Doctorat - Épreuve 5 : Prof. Hêche",
+          "description": "Affrontez le Professeur Hêche (Giratina shiny, Tyranocif, Dracolosse, Grodrive, Spiritomb, Rhinastoc).",
+          "recommendedLevel": 98,
+          "trainerId": "boss-doc-heche",
+          "prerequisiteStageId": "doctorat-stage-4",
+          "rewardMoney": 12000,
+          "rewardXp": 30000
+        },
+        {
+          "id": "doctorat-stage-6",
+          "stageNumber": 6,
+          "name": "Doctorat - Combat Ultime : Directeur Donini",
+          "description": "Le combat final du jeu contre le Directeur Donini (Pikachu, Ronflex, Florizarre, Tortank, Dracaufeu shiny, Arceus).",
+          "recommendedLevel": 100,
+          "trainerId": "boss-doc-donini",
+          "prerequisiteStageId": "doctorat-stage-5",
+          "rewardMoney": 25000,
+          "rewardXp": 50000
+        }
+      ]
+    }
+  ]
+}

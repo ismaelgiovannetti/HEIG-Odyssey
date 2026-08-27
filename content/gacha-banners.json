@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "banners": [
+    {
+      "id": "banner-standard-sinnoh",
+      "name": "Portail de Recrutement Standard",
+      "description": "Recrutez des créatures de la région de Sinnoh et Kanto avec votre monnaie gagnée en jeu.",
+      "costPokedollars": 100,
+      "rates": {
+        "common": 0.70,
+        "rare": 0.25,
+        "epic": 0.05,
+        "shinyRate": 0.01
+      },
+      "poolSpecies": [
+        "starly",
+        "shinx",
+        "bidoof",
+        "riolu",
+        "gible",
+        "ralts",
+        "larvitar",
+        "lucario",
+        "garchomp",
+        "togekiss"
+      ],
+      "isActive": true
+    }
+  ]
+}
