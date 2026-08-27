@@ -117,14 +117,42 @@ jobs:
         if: steps.app.outputs.exists == 'true'
         run: npm run build
 
-  # Exécute les tests d'intégration avant ou après une fusion dans dev.
+  # Exécute les tests d'intégration avec services éphémères avant ou après une fusion dans dev.
   integration-checks:
-    name: Integration CI
+    name: Integration CI (PostgreSQL & Redis)
     if: (github.event_name == 'push' && github.ref == 'refs/heads/dev') || github.event_name == 'pull_request'
     needs:
       - pull-request-policy
       - quick-checks
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: heig_odyssey_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/heig_odyssey_test?schema=public"
+      REDIS_URL: "redis://localhost:6379"
 
     steps:
       - name: Checkout repository
@@ -152,22 +180,21 @@ jobs:
         if: steps.app.outputs.exists == 'true'
         run: npm ci
 
-      - name: Available domain and integration tests
+      - name: Apply Prisma Migrations to Ephemeral Database
         if: steps.app.outputs.exists == 'true'
-        shell: bash
-        run: |
-          npm run test:combat --if-present
-          npm run test:integration --if-present
+        run: npx prisma migrate deploy
 
-      - name: Validate Docker Compose when available
+      - name: Run Combat and Integration Tests
+        if: steps.app.outputs.exists == 'true'
+        run: |
+          npm run test:combat
+          npm run test:integration
+
+      - name: Validate Docker Compose Configuration
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            docker compose config
-          else
-            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
-          fi
+          docker compose config
 
   # Exécute les contrôles complets pour une release de dev vers main.
   release-validation:
