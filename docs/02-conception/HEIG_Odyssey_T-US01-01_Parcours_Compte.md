@@ -35,7 +35,7 @@ Les contraintes retenues sont les suivantes :
 - comparaison insensible à la casse : `KimPossible` et `kimpossible` désignent le même identifiant ;
 - modification du nom d'utilisateur hors périmètre du MVP.
 
-Le champ `name` exigé par Better Auth reprend le nom d'utilisateur affiché. L'intégration peut employer les champs `username` et `displayUsername` fournis par le plugin Username.
+Le champ `name` exigé par Better Auth conserve le nom d'utilisateur affiché. Le champ `username` du plugin Username stocke sa forme normalisée et unique ; le champ redondant `displayUsername` est désactivé.
 
 ### 2.2 Vérification de l'adresse e-mail
 
