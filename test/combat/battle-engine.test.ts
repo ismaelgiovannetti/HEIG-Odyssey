@@ -19,12 +19,12 @@ describe("Gen 4 Battle Engine (US-06)", () => {
         priority: 0,
       },
       {
-        id: "razorleaf",
-        name: "Tranch'Herbe",
+        id: "vinewhip",
+        name: "Fouet Lianes",
         type: "Grass",
         category: "physical",
-        power: 55,
-        accuracy: 95,
+        power: 45,
+        accuracy: 100,
         pp: 25,
         maxPp: 25,
         priority: 0,
@@ -115,9 +115,9 @@ describe("Gen 4 Battle Engine (US-06)", () => {
       p2: { name: "Blue", team: [p2Piplup] },
     });
 
-    // P1 uses Razor Leaf (Grass, super effective against Water Piplup)
+    // P1 uses Vine Whip (Grass, super effective against Water Piplup, 100% accuracy)
     // P2 uses Water Gun (Water, resisted by Grass Turtwig)
-    engine.submitAction("p1", { type: "move", moveIndex: 1 }); // razorleaf
+    engine.submitAction("p1", { type: "move", moveIndex: 1 }); // vinewhip
     engine.submitAction("p2", { type: "move", moveIndex: 0 }); // watergun
 
     const result = engine.executeTurn();
