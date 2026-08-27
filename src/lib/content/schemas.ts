@@ -102,7 +102,7 @@ export const TrainerPokemonSchema = z.object({
   speciesId: z.string().min(1),
   nickname: z.string().optional(),
   level: z.number().int().min(1).max(100),
-  isShiny: z.boolean().default(false),
+  isShiny: z.boolean().optional().default(false),
   moves: z.array(MoveSchema).min(1).max(4),
   ivs: z
     .object({
@@ -113,11 +113,13 @@ export const TrainerPokemonSchema = z.object({
       spd: z.number().int().min(0).max(31).default(15),
       spe: z.number().int().min(0).max(31).default(15),
     })
+    .optional()
     .default({}),
-  nature: z.string().default("Hardy"),
+  nature: z.string().optional().default("Hardy"),
 });
 
 export type TrainerPokemon = z.infer<typeof TrainerPokemonSchema>;
+export type TrainerPokemonInput = z.input<typeof TrainerPokemonSchema>;
 
 export const TrainerSchema = z.object({
   id: z.string().min(1),
