@@ -1,0 +1,7593 @@
+{
+  "version": "1.0.0",
+  "description": "Pool exhaustif de recrutement gratuit des créatures stade 1 Gen 1 à 4 avec leurs attaques officielles de niveau 5",
+  "starters": [
+    {
+      "speciesId": "bulbasaur",
+      "name": "Bulbizarre",
+      "level": 5,
+      "description": "Pokémon de départ Bulbizarre (Grass/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "charmander",
+      "name": "Salamèche",
+      "level": 5,
+      "description": "Pokémon de départ Salamèche (Fire). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "squirtle",
+      "name": "Carapuce",
+      "level": 5,
+      "description": "Pokémon de départ Carapuce (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "caterpie",
+      "name": "Chenipan",
+      "level": 5,
+      "description": "Pokémon de départ Chenipan (Bug). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "stringshot",
+          "name": "Sécrétion",
+          "type": "Bug",
+          "category": "status",
+          "power": 0,
+          "accuracy": 95,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "weedle",
+      "name": "Aspicot",
+      "level": 5,
+      "description": "Pokémon de départ Aspicot (Bug/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "stringshot",
+          "name": "Sécrétion",
+          "type": "Bug",
+          "category": "status",
+          "power": 0,
+          "accuracy": 95,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "pidgey",
+      "name": "Roucool",
+      "level": 5,
+      "description": "Pokémon de départ Roucool (Normal/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "rattata",
+      "name": "Rattata",
+      "level": 5,
+      "description": "Pokémon de départ Rattata (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "spearow",
+      "name": "Piafabec",
+      "level": 5,
+      "description": "Pokémon de départ Piafabec (Normal/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "ekans",
+      "name": "Abo",
+      "level": 5,
+      "description": "Pokémon de départ Abo (Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "wrap",
+          "name": "Ligotage",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "sandshrew",
+      "name": "Sabelette",
+      "level": 5,
+      "description": "Pokémon de départ Sabelette (Ground). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "nidoranf",
+      "name": "Nidoran♀",
+      "level": 5,
+      "description": "Pokémon de départ Nidoran♀ (Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "nidoranm",
+      "name": "Nidoran♂",
+      "level": 5,
+      "description": "Pokémon de départ Nidoran♂ (Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "vulpix",
+      "name": "Goupix",
+      "level": 5,
+      "description": "Pokémon de départ Goupix (Fire). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "zubat",
+      "name": "Nosferapti",
+      "level": 5,
+      "description": "Pokémon de départ Nosferapti (Poison/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leechlife",
+          "name": "Vampirisme",
+          "type": "Bug",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "oddish",
+      "name": "Mystherbe",
+      "level": 5,
+      "description": "Pokémon de départ Mystherbe (Grass/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "sweetscent",
+          "name": "Doux Parfum",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "paras",
+      "name": "Paras",
+      "level": 5,
+      "description": "Pokémon de départ Paras (Bug/Grass). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "poisonpowder",
+          "name": "Poudre Toxik",
+          "type": "Poison",
+          "category": "status",
+          "power": 0,
+          "accuracy": 75,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "venonat",
+      "name": "Mimitoss",
+      "level": 5,
+      "description": "Pokémon de départ Mimitoss (Bug/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "disable",
+          "name": "Entrave",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 80,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "diglett",
+      "name": "Taupiqueur",
+      "level": 5,
+      "description": "Pokémon de départ Taupiqueur (Ground). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "meowth",
+      "name": "Miaouss",
+      "level": 5,
+      "description": "Pokémon de départ Miaouss (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "psyduck",
+      "name": "Psykokwak",
+      "level": 5,
+      "description": "Pokémon de départ Psykokwak (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "watersport",
+          "name": "Water Sport",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mankey",
+      "name": "Férosinge",
+      "level": 5,
+      "description": "Pokémon de départ Férosinge (Fighting). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "covet",
+          "name": "Implore",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "lowkick",
+          "name": "Low Kick",
+          "type": "Fighting",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "growlithe",
+      "name": "Caninos",
+      "level": 5,
+      "description": "Pokémon de départ Caninos (Fire). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "roar",
+          "name": "Roar",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": -6
+        }
+      ]
+    },
+    {
+      "speciesId": "poliwag",
+      "name": "Ptitard",
+      "level": 5,
+      "description": "Pokémon de départ Ptitard (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "watersport",
+          "name": "Water Sport",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "abra",
+      "name": "Abra",
+      "level": 5,
+      "description": "Pokémon de départ Abra (Psychic). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "teleport",
+          "name": "Téléport",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "machop",
+      "name": "Machoc",
+      "level": 5,
+      "description": "Pokémon de départ Machoc (Fighting). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "lowkick",
+          "name": "Low Kick",
+          "type": "Fighting",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "bellsprout",
+      "name": "Chétiflor",
+      "level": 5,
+      "description": "Pokémon de départ Chétiflor (Grass/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "vinewhip",
+          "name": "Fouet Lianes",
+          "type": "Grass",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "growth",
+          "name": "Growth",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "tentacool",
+      "name": "Tentacool",
+      "level": 5,
+      "description": "Pokémon de départ Tentacool (Water/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "geodude",
+      "name": "Racaillou",
+      "level": 5,
+      "description": "Pokémon de départ Racaillou (Rock/Ground). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "ponyta",
+      "name": "Ponyta",
+      "level": 5,
+      "description": "Pokémon de départ Ponyta (Fire). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "slowpoke",
+      "name": "Ramoloss",
+      "level": 5,
+      "description": "Pokémon de départ Ramoloss (Water/Psychic). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "curse",
+          "name": "Malédiction",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "yawn",
+          "name": "Bâillement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "magnemite",
+      "name": "Magnéti",
+      "level": 5,
+      "description": "Pokémon de départ Magnéti (Electric/Steel). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "metalsound",
+          "name": "Strido-Son",
+          "type": "Steel",
+          "category": "status",
+          "power": 0,
+          "accuracy": 85,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "farfetchd",
+      "name": "Canarticho",
+      "level": 5,
+      "description": "Pokémon de départ Canarticho (Normal/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "furycutter",
+          "name": "Fury Cutter",
+          "type": "Bug",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 95,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "poisonjab",
+          "name": "Poison Jab",
+          "type": "Poison",
+          "category": "physical",
+          "power": 80,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "doduo",
+      "name": "Doduo",
+      "level": 5,
+      "description": "Pokémon de départ Doduo (Normal/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "seel",
+      "name": "Otaria",
+      "level": 5,
+      "description": "Pokémon de départ Otaria (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "headbutt",
+          "name": "Coup d'Boule",
+          "type": "Normal",
+          "category": "physical",
+          "power": 70,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "grimer",
+      "name": "Tadmorv",
+      "level": 5,
+      "description": "Pokémon de départ Tadmorv (Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "poisongas",
+          "name": "Poison Gas",
+          "type": "Poison",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shellder",
+      "name": "Kokiyas",
+      "level": 5,
+      "description": "Pokémon de départ Kokiyas (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "withdraw",
+          "name": "Repli",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "gastly",
+      "name": "Fantominus",
+      "level": 5,
+      "description": "Pokémon de départ Fantominus (Ghost/Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "hypnosis",
+          "name": "Hypnose",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 60,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "spite",
+          "name": "Dépit",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "onix",
+      "name": "Onix",
+      "level": 5,
+      "description": "Pokémon de départ Onix (Rock/Ground). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bind",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 75,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "screech",
+          "name": "Grincement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 85,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "drowzee",
+      "name": "Soporifik",
+      "level": 5,
+      "description": "Pokémon de départ Soporifik (Psychic). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "hypnosis",
+          "name": "Hypnose",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 60,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "krabby",
+      "name": "Krabby",
+      "level": 5,
+      "description": "Pokémon de départ Krabby (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "visegrip",
+          "name": "Vise Grip",
+          "type": "Normal",
+          "category": "physical",
+          "power": 55,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "voltorb",
+      "name": "Voltorbe",
+      "level": 5,
+      "description": "Pokémon de départ Voltorbe (Electric). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "charge",
+          "name": "Chargeur",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "exeggcute",
+      "name": "Noeunoeuf",
+      "level": 5,
+      "description": "Pokémon de départ Noeunoeuf (Grass/Psychic). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "barrage",
+          "name": "Barrage",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "hypnosis",
+          "name": "Hypnose",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 60,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "uproar",
+          "name": "Uproar",
+          "type": "Normal",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "cubone",
+      "name": "Osselait",
+      "level": 5,
+      "description": "Pokémon de départ Osselait (Ground). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "lickitung",
+      "name": "Excelangue",
+      "level": 5,
+      "description": "Pokémon de départ Excelangue (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "koffing",
+      "name": "Smogo",
+      "level": 5,
+      "description": "Pokémon de départ Smogo (Poison). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "poisongas",
+          "name": "Poison Gas",
+          "type": "Poison",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "rhyhorn",
+      "name": "Rhinocorne",
+      "level": 5,
+      "description": "Pokémon de départ Rhinocorne (Ground/Rock). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "hornattack",
+          "name": "Horn Attack",
+          "type": "Normal",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "tangela",
+      "name": "Saquedeneu",
+      "level": 5,
+      "description": "Pokémon de départ Saquedeneu (Grass). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "constrict",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "ingrain",
+          "name": "Racines",
+          "type": "Grass",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "sleeppowder",
+          "name": "Poudre Dodo",
+          "type": "Grass",
+          "category": "status",
+          "power": 0,
+          "accuracy": 75,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "kangaskhan",
+      "name": "Kangourex",
+      "level": 5,
+      "description": "Pokémon de départ Kangourex (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "cometpunch",
+          "name": "Comet Punch",
+          "type": "Normal",
+          "category": "physical",
+          "power": 18,
+          "accuracy": 85,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "horsea",
+      "name": "Hypotrempe",
+      "level": 5,
+      "description": "Pokémon de départ Hypotrempe (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "smokescreen",
+          "name": "Brouillard",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "goldeen",
+      "name": "Poissirène",
+      "level": 5,
+      "description": "Pokémon de départ Poissirène (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "watersport",
+          "name": "Water Sport",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "staryu",
+      "name": "Stari",
+      "level": 5,
+      "description": "Pokémon de départ Stari (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "scyther",
+      "name": "Insécateur",
+      "level": 5,
+      "description": "Pokémon de départ Insécateur (Bug/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        },
+        {
+          "id": "vacuumwave",
+          "name": "Vacuum Wave",
+          "type": "Fighting",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        },
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "pinsir",
+      "name": "Scarabrute",
+      "level": 5,
+      "description": "Pokémon de départ Scarabrute (Bug). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "visegrip",
+          "name": "Vise Grip",
+          "type": "Normal",
+          "category": "physical",
+          "power": 55,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "bind",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 75,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "tauros",
+      "name": "Tauros",
+      "level": 5,
+      "description": "Pokémon de départ Tauros (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "rage",
+          "name": "Frénésie",
+          "type": "Normal",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "magikarp",
+      "name": "Magicarpe",
+      "level": 5,
+      "description": "Pokémon de départ Magicarpe (Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "lapras",
+      "name": "Lokhlass",
+      "level": 5,
+      "description": "Pokémon de départ Lokhlass (Water/Ice). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "sing",
+          "name": "Berceuse",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "mist",
+          "name": "Brume",
+          "type": "Ice",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "eevee",
+      "name": "Évoli",
+      "level": 5,
+      "description": "Pokémon de départ Évoli (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "helpinghand",
+          "name": "Helping Hand",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 5
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "porygon",
+      "name": "Porygon",
+      "level": 5,
+      "description": "Pokémon de départ Porygon (Normal). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "conversion",
+          "name": "Affinité",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "conversion2",
+          "name": "Affinité 2",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "sharpen",
+          "name": "Sharpen",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "omanyte",
+      "name": "Amonita",
+      "level": 5,
+      "description": "Pokémon de départ Amonita (Rock/Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "constrict",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "withdraw",
+          "name": "Repli",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "kabuto",
+      "name": "Kabuto",
+      "level": 5,
+      "description": "Pokémon de départ Kabuto (Rock/Water). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "aerodactyl",
+      "name": "Ptéra",
+      "level": 5,
+      "description": "Pokémon de départ Ptéra (Rock/Flying). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "firefang",
+          "name": "Fire Fang",
+          "type": "Fire",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 95,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "icefang",
+          "name": "Ice Fang",
+          "type": "Ice",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 95,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "scaryface",
+          "name": "Grimace",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 90,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "dratini",
+      "name": "Minidraco",
+      "level": 5,
+      "description": "Pokémon de départ Minidraco (Dragon). Stade 1 - Gen 1.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "wrap",
+          "name": "Ligotage",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "chikorita",
+      "name": "Germignon",
+      "level": 5,
+      "description": "Pokémon de départ Germignon (Grass). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "cyndaquil",
+      "name": "Héricendre",
+      "level": 5,
+      "description": "Pokémon de départ Héricendre (Fire). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "smokescreen",
+          "name": "Brouillard",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "totodile",
+      "name": "Kaiminus",
+      "level": 5,
+      "description": "Pokémon de départ Kaiminus (Water). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "sentret",
+      "name": "Fouinette",
+      "level": 5,
+      "description": "Pokémon de départ Fouinette (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "hoothoot",
+      "name": "Hoothoot",
+      "level": 5,
+      "description": "Pokémon de départ Hoothoot (Normal/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "hypnosis",
+          "name": "Hypnose",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 60,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "ledyba",
+      "name": "Coxy",
+      "level": 5,
+      "description": "Pokémon de départ Coxy (Bug/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "spinarak",
+      "name": "Mimigal",
+      "level": 5,
+      "description": "Pokémon de départ Mimigal (Bug/Poison). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "stringshot",
+          "name": "Sécrétion",
+          "type": "Bug",
+          "category": "status",
+          "power": 0,
+          "accuracy": 95,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scaryface",
+          "name": "Grimace",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 90,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "chinchou",
+      "name": "Loupio",
+      "level": 5,
+      "description": "Pokémon de départ Loupio (Water/Electric). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "pichu",
+      "name": "Pichu",
+      "level": 5,
+      "description": "Pokémon de départ Pichu (Electric). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "thundershock",
+          "name": "Éclair",
+          "type": "Electric",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "cleffa",
+      "name": "Mélo",
+      "level": 5,
+      "description": "Pokémon de départ Mélo (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "encore",
+          "name": "Encore",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 5,
+          "maxPp": 5,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "igglybuff",
+      "name": "Toudoudou",
+      "level": 5,
+      "description": "Pokémon de départ Toudoudou (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "sing",
+          "name": "Berceuse",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "togepi",
+      "name": "Togepi",
+      "level": 5,
+      "description": "Pokémon de départ Togepi (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "metronome",
+          "name": "Métronome",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "natu",
+      "name": "Natu",
+      "level": 5,
+      "description": "Pokémon de départ Natu (Psychic/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mareep",
+      "name": "Wattouat",
+      "level": 5,
+      "description": "Pokémon de départ Wattouat (Electric). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "hoppip",
+      "name": "Granivol",
+      "level": 5,
+      "description": "Pokémon de départ Granivol (Grass/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "synthesis",
+          "name": "Synthèse",
+          "type": "Grass",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 5,
+          "maxPp": 5,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "aipom",
+      "name": "Capumain",
+      "level": 5,
+      "description": "Pokémon de départ Capumain (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "sunkern",
+      "name": "Tournegrin",
+      "level": 5,
+      "description": "Pokémon de départ Tournegrin (Grass). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "growth",
+          "name": "Growth",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "megadrain",
+          "name": "Méga-Sangsue",
+          "type": "Grass",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "yanma",
+      "name": "Yanma",
+      "level": 5,
+      "description": "Pokémon de départ Yanma (Bug/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "wooper",
+      "name": "Axoloto",
+      "level": 5,
+      "description": "Pokémon de départ Axoloto (Water/Ground). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "murkrow",
+      "name": "Cornèbre",
+      "level": 5,
+      "description": "Pokémon de départ Cornèbre (Dark/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "pursuit",
+          "name": "Poursuite",
+          "type": "Dark",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "misdreavus",
+      "name": "Feuforêve",
+      "level": 5,
+      "description": "Pokémon de départ Feuforêve (Ghost). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "psywave",
+          "name": "Psywave",
+          "type": "Psychic",
+          "category": "special",
+          "power": 0,
+          "accuracy": 80,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "spite",
+          "name": "Dépit",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "girafarig",
+      "name": "Girafarig",
+      "level": 5,
+      "description": "Pokémon de départ Girafarig (Normal/Psychic). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "guardswap",
+          "name": "Guard Swap",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "pineco",
+      "name": "Pomdepik",
+      "level": 5,
+      "description": "Pokémon de départ Pomdepik (Bug). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "protect",
+          "name": "Abri",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 3
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "dunsparce",
+      "name": "Insolourdo",
+      "level": 5,
+      "description": "Pokémon de départ Insolourdo (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "rage",
+          "name": "Frénésie",
+          "type": "Normal",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "gligar",
+      "name": "Scorplane",
+      "level": 5,
+      "description": "Pokémon de départ Scorplane (Ground/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "snubbull",
+      "name": "Snubbull",
+      "level": 5,
+      "description": "Pokémon de départ Snubbull (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "firefang",
+          "name": "Fire Fang",
+          "type": "Fire",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 95,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "icefang",
+          "name": "Ice Fang",
+          "type": "Ice",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 95,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "scaryface",
+          "name": "Grimace",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 90,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "qwilfish",
+      "name": "Qwilfish",
+      "level": 5,
+      "description": "Pokémon de départ Qwilfish (Water/Poison). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "spikes",
+          "name": "Picots",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shuckle",
+      "name": "Caratroc",
+      "level": 5,
+      "description": "Pokémon de départ Caratroc (Bug/Rock). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "bide",
+          "name": "Patience",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "constrict",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "withdraw",
+          "name": "Repli",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "heracross",
+      "name": "Scarhino",
+      "level": 5,
+      "description": "Pokémon de départ Scarhino (Bug/Fighting). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "endure",
+          "name": "Tenacité",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 4
+        },
+        {
+          "id": "hornattack",
+          "name": "Horn Attack",
+          "type": "Normal",
+          "category": "physical",
+          "power": 65,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "nightslash",
+          "name": "Night Slash",
+          "type": "Dark",
+          "category": "physical",
+          "power": 70,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "sneasel",
+      "name": "Farfuret",
+      "level": 5,
+      "description": "Pokémon de départ Farfuret (Dark/Ice). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "taunt",
+          "name": "Provoc",
+          "type": "Dark",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "teddiursa",
+      "name": "Teddiursa",
+      "level": 5,
+      "description": "Pokémon de départ Teddiursa (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "covet",
+          "name": "Implore",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "faketears",
+          "name": "Croco Larme",
+          "type": "Dark",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "slugma",
+      "name": "Limagma",
+      "level": 5,
+      "description": "Pokémon de départ Limagma (Fire). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "smog",
+          "name": "Purédpois",
+          "type": "Poison",
+          "category": "special",
+          "power": 20,
+          "accuracy": 70,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "yawn",
+          "name": "Bâillement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "swinub",
+      "name": "Marcacrin",
+      "level": 5,
+      "description": "Pokémon de départ Marcacrin (Ice/Ground). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "odorsleuth",
+          "name": "Flair",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "corsola",
+      "name": "Corayon",
+      "level": 5,
+      "description": "Pokémon de départ Corayon (Water/Rock). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "remoraid",
+      "name": "Rémoraid",
+      "level": 5,
+      "description": "Pokémon de départ Rémoraid (Water). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "lockon",
+          "name": "Verrouillage",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 5,
+          "maxPp": 5,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "delibird",
+      "name": "Cadoizo",
+      "level": 5,
+      "description": "Pokémon de départ Cadoizo (Ice/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "present",
+          "name": "Cadeau",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 90,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "skarmory",
+      "name": "Airmure",
+      "level": 5,
+      "description": "Pokémon de départ Airmure (Steel/Flying). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "houndour",
+      "name": "Malosse",
+      "level": 5,
+      "description": "Pokémon de départ Malosse (Dark/Fire). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "howl",
+          "name": "Howl",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "phanpy",
+      "name": "Phanpy",
+      "level": 5,
+      "description": "Pokémon de départ Phanpy (Ground). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "odorsleuth",
+          "name": "Flair",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "stantler",
+      "name": "Cerfrousse",
+      "level": 5,
+      "description": "Pokémon de départ Cerfrousse (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "smeargle",
+      "name": "Queulorior",
+      "level": 5,
+      "description": "Pokémon de départ Queulorior (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "sketch",
+          "name": "Gribouille",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 1,
+          "maxPp": 1,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "tyrogue",
+      "name": "Debugant",
+      "level": 5,
+      "description": "Pokémon de départ Debugant (Fighting). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "fakeout",
+          "name": "Bluff",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "helpinghand",
+          "name": "Helping Hand",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 5
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "smoochum",
+      "name": "Lippouti",
+      "level": 5,
+      "description": "Pokémon de départ Lippouti (Ice/Psychic). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "elekid",
+      "name": "Élekid",
+      "level": 5,
+      "description": "Pokémon de départ Élekid (Electric). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "magby",
+      "name": "Magby",
+      "level": 5,
+      "description": "Pokémon de départ Magby (Fire). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "smog",
+          "name": "Purédpois",
+          "type": "Poison",
+          "category": "special",
+          "power": 20,
+          "accuracy": 70,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "miltank",
+      "name": "Écrémeuh",
+      "level": 5,
+      "description": "Pokémon de départ Écrémeuh (Normal). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "larvitar",
+      "name": "Embrylex",
+      "level": 5,
+      "description": "Pokémon de départ Embrylex (Rock/Ground). Stade 1 - Gen 2.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "sandstorm",
+          "name": "Tempête de Sable",
+          "type": "Rock",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "treecko",
+      "name": "Arcko",
+      "level": 5,
+      "description": "Pokémon de départ Arcko (Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "torchic",
+      "name": "Poussifeu",
+      "level": 5,
+      "description": "Pokémon de départ Poussifeu (Fire). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mudkip",
+      "name": "Gobou",
+      "level": 5,
+      "description": "Pokémon de départ Gobou (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "poochyena",
+      "name": "Medhyèna",
+      "level": 5,
+      "description": "Pokémon de départ Medhyèna (Dark). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "howl",
+          "name": "Howl",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "zigzagoon",
+      "name": "Zigzaton",
+      "level": 5,
+      "description": "Pokémon de départ Zigzaton (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "wurmple",
+      "name": "Chenipotte",
+      "level": 5,
+      "description": "Pokémon de départ Chenipotte (Bug). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "stringshot",
+          "name": "Sécrétion",
+          "type": "Bug",
+          "category": "status",
+          "power": 0,
+          "accuracy": 95,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "lotad",
+      "name": "Nénupiot",
+      "level": 5,
+      "description": "Pokémon de départ Nénupiot (Water/Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "seedot",
+      "name": "Grainipiot",
+      "level": 5,
+      "description": "Pokémon de départ Grainipiot (Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bide",
+          "name": "Patience",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "taillow",
+      "name": "Nirondelle",
+      "level": 5,
+      "description": "Pokémon de départ Nirondelle (Normal/Flying). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "wingull",
+      "name": "Goélise",
+      "level": 5,
+      "description": "Pokémon de départ Goélise (Water/Flying). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "ralts",
+      "name": "Tarsal",
+      "level": 5,
+      "description": "Pokémon de départ Tarsal (Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "surskit",
+      "name": "Arakdo",
+      "level": 5,
+      "description": "Pokémon de départ Arakdo (Bug/Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "shroomish",
+      "name": "Balignon",
+      "level": 5,
+      "description": "Pokémon de départ Balignon (Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "slakoth",
+      "name": "Parecool",
+      "level": 5,
+      "description": "Pokémon de départ Parecool (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "yawn",
+          "name": "Bâillement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "nincada",
+      "name": "Ningale",
+      "level": 5,
+      "description": "Pokémon de départ Ningale (Bug/Ground). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leechlife",
+          "name": "Vampirisme",
+          "type": "Bug",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "whismur",
+      "name": "Chuchmur",
+      "level": 5,
+      "description": "Pokémon de départ Chuchmur (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "uproar",
+          "name": "Uproar",
+          "type": "Normal",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "makuhita",
+      "name": "Makuhita",
+      "level": 5,
+      "description": "Pokémon de départ Makuhita (Fighting). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "azurill",
+      "name": "Azurill",
+      "level": 5,
+      "description": "Pokémon de départ Azurill (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "nosepass",
+      "name": "Tarinor",
+      "level": 5,
+      "description": "Pokémon de départ Tarinor (Rock). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "skitty",
+      "name": "Skitty",
+      "level": 5,
+      "description": "Pokémon de départ Skitty (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "fakeout",
+          "name": "Bluff",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "sableye",
+      "name": "Ténéfix",
+      "level": 5,
+      "description": "Pokémon de départ Ténéfix (Dark/Ghost). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mawile",
+      "name": "Mysdibule",
+      "level": 5,
+      "description": "Pokémon de départ Mysdibule (Steel). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "faketears",
+          "name": "Croco Larme",
+          "type": "Dark",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "aron",
+      "name": "Galekid",
+      "level": 5,
+      "description": "Pokémon de départ Galekid (Steel/Rock). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "meditite",
+      "name": "Méditikka",
+      "level": 5,
+      "description": "Pokémon de départ Méditikka (Fighting/Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bide",
+          "name": "Patience",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "meditate",
+          "name": "Meditate",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "electrike",
+      "name": "Dynavolt",
+      "level": 5,
+      "description": "Pokémon de départ Dynavolt (Electric). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "plusle",
+      "name": "Posipi",
+      "level": 5,
+      "description": "Pokémon de départ Posipi (Electric). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "minun",
+      "name": "Négapi",
+      "level": 5,
+      "description": "Pokémon de départ Négapi (Electric). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "volbeat",
+      "name": "Muciole",
+      "level": 5,
+      "description": "Pokémon de départ Muciole (Bug). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "flash",
+          "name": "Flash",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "confuseray",
+          "name": "Confuse Ray",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "doubleteam",
+          "name": "Reflet",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "illumise",
+      "name": "Lumivole",
+      "level": 5,
+      "description": "Pokémon de départ Lumivole (Bug). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sweetscent",
+          "name": "Doux Parfum",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "gulpin",
+      "name": "Gloupti",
+      "level": 5,
+      "description": "Pokémon de départ Gloupti (Poison). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "yawn",
+          "name": "Bâillement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "carvanha",
+      "name": "Carvanha",
+      "level": 5,
+      "description": "Pokémon de départ Carvanha (Water/Dark). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "wailmer",
+      "name": "Wailmer",
+      "level": 5,
+      "description": "Pokémon de départ Wailmer (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "numel",
+      "name": "Chamallot",
+      "level": 5,
+      "description": "Pokémon de départ Chamallot (Fire/Ground). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "torkoal",
+      "name": "Chartor",
+      "level": 5,
+      "description": "Pokémon de départ Chartor (Fire). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "smog",
+          "name": "Purédpois",
+          "type": "Poison",
+          "category": "special",
+          "power": 20,
+          "accuracy": 70,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "spoink",
+      "name": "Spoink",
+      "level": 5,
+      "description": "Pokémon de départ Spoink (Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "psywave",
+          "name": "Psywave",
+          "type": "Psychic",
+          "category": "special",
+          "power": 0,
+          "accuracy": 80,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "spinda",
+      "name": "Spinda",
+      "level": 5,
+      "description": "Pokémon de départ Spinda (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "uproar",
+          "name": "Uproar",
+          "type": "Normal",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "trapinch",
+      "name": "Kraknoix",
+      "level": 5,
+      "description": "Pokémon de départ Kraknoix (Ground). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "cacnea",
+      "name": "Cacnea",
+      "level": 5,
+      "description": "Pokémon de départ Cacnea (Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "swablu",
+      "name": "Tylton",
+      "level": 5,
+      "description": "Pokémon de départ Tylton (Normal/Flying). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "zangoose",
+      "name": "Mangriff",
+      "level": 5,
+      "description": "Pokémon de départ Mangriff (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "seviper",
+      "name": "Séviper",
+      "level": 5,
+      "description": "Pokémon de départ Séviper (Poison). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "wrap",
+          "name": "Ligotage",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "lunatone",
+      "name": "Séléroc",
+      "level": 5,
+      "description": "Pokémon de départ Séléroc (Rock/Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "solrock",
+      "name": "Solaroc",
+      "level": 5,
+      "description": "Pokémon de départ Solaroc (Rock/Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "barboach",
+      "name": "Barloche",
+      "level": 5,
+      "description": "Pokémon de départ Barloche (Water/Ground). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "mudslap",
+          "name": "Coud'Boue",
+          "type": "Ground",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "corphish",
+      "name": "Écrapince",
+      "level": 5,
+      "description": "Pokémon de départ Écrapince (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "baltoy",
+      "name": "Balbuto",
+      "level": 5,
+      "description": "Pokémon de départ Balbuto (Ground/Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "rapidspin",
+          "name": "Tour Rapide",
+          "type": "Normal",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "lileep",
+      "name": "Lilia",
+      "level": 5,
+      "description": "Pokémon de départ Lilia (Rock/Grass). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "constrict",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "anorith",
+      "name": "Anorith",
+      "level": 5,
+      "description": "Pokémon de départ Anorith (Rock/Bug). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "feebas",
+      "name": "Barpau",
+      "level": 5,
+      "description": "Pokémon de départ Barpau (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "castform",
+      "name": "Morphéo",
+      "level": 5,
+      "description": "Pokémon de départ Morphéo (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "ember",
+          "name": "Flammèche",
+          "type": "Fire",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "kecleon",
+      "name": "Kecleon",
+      "level": 5,
+      "description": "Pokémon de départ Kecleon (Normal). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "lick",
+          "name": "Léchouille",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "tailwhip",
+          "name": "Mimi-Queue",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shuppet",
+      "name": "Polichombr",
+      "level": 5,
+      "description": "Pokémon de départ Polichombr (Ghost). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "knockoff",
+          "name": "Sabotage",
+          "type": "Dark",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "screech",
+          "name": "Grincement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 85,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "duskull",
+      "name": "Skelénox",
+      "level": 5,
+      "description": "Pokémon de départ Skelénox (Ghost). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "nightshade",
+          "name": "Ombre Nocturne",
+          "type": "Ghost",
+          "category": "special",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "disable",
+          "name": "Entrave",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 80,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "tropius",
+      "name": "Tropius",
+      "level": 5,
+      "description": "Pokémon de départ Tropius (Grass/Flying). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "gust",
+          "name": "Tornade",
+          "type": "Flying",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "absol",
+      "name": "Absol",
+      "level": 5,
+      "description": "Pokémon de départ Absol (Dark). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "feint",
+          "name": "Feint",
+          "type": "Normal",
+          "category": "physical",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 2
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "wynaut",
+      "name": "Okéoké",
+      "level": 5,
+      "description": "Pokémon de départ Okéoké (Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "encore",
+          "name": "Encore",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 5,
+          "maxPp": 5,
+          "priority": 0
+        },
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "snorunt",
+      "name": "Stalgamin",
+      "level": 5,
+      "description": "Pokémon de départ Stalgamin (Ice). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "powdersnow",
+          "name": "Poudreuse",
+          "type": "Ice",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "doubleteam",
+          "name": "Reflet",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "spheal",
+      "name": "Obalie",
+      "level": 5,
+      "description": "Pokémon de départ Obalie (Ice/Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "powdersnow",
+          "name": "Poudreuse",
+          "type": "Ice",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "clamperl",
+      "name": "Coquiperl",
+      "level": 5,
+      "description": "Pokémon de départ Coquiperl (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "clamp",
+          "name": "Clamp",
+          "type": "Water",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 75,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "irondefense",
+          "name": "Mur de Fer",
+          "type": "Steel",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "whirlpool",
+          "name": "Whirlpool",
+          "type": "Water",
+          "category": "special",
+          "power": 15,
+          "accuracy": 70,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "relicanth",
+      "name": "Relicanth",
+      "level": 5,
+      "description": "Pokémon de départ Relicanth (Water/Rock). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "luvdisc",
+      "name": "Lovdisc",
+      "level": 5,
+      "description": "Pokémon de départ Lovdisc (Water). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "bagon",
+      "name": "Draby",
+      "level": 5,
+      "description": "Pokémon de départ Draby (Dragon). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "rage",
+          "name": "Frénésie",
+          "type": "Normal",
+          "category": "physical",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "beldum",
+      "name": "Terhal",
+      "level": 5,
+      "description": "Pokémon de départ Terhal (Steel/Psychic). Stade 1 - Gen 3.",
+      "moves": [
+        {
+          "id": "takedown",
+          "name": "Bélier",
+          "type": "Normal",
+          "category": "physical",
+          "power": 90,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "turtwig",
+      "name": "Tortipouss",
+      "level": 5,
+      "description": "Pokémon de départ Tortipouss (Grass). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "withdraw",
+          "name": "Repli",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "chimchar",
+      "name": "Ouisticram",
+      "level": 5,
+      "description": "Pokémon de départ Ouisticram (Fire). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "piplup",
+      "name": "Tiplouf",
+      "level": 5,
+      "description": "Pokémon de départ Tiplouf (Water). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "starly",
+      "name": "Étourmi",
+      "level": 5,
+      "description": "Pokémon de départ Étourmi (Normal/Flying). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "bidoof",
+      "name": "Keunotor",
+      "level": 5,
+      "description": "Pokémon de départ Keunotor (Normal). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "kricketot",
+      "name": "Crikzik",
+      "level": 5,
+      "description": "Pokémon de départ Crikzik (Bug). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "bide",
+          "name": "Patience",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shinx",
+      "name": "Lixy",
+      "level": 5,
+      "description": "Pokémon de départ Lixy (Electric). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "budew",
+      "name": "Rozbouton",
+      "level": 5,
+      "description": "Pokémon de départ Rozbouton (Grass/Poison). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "absorb",
+          "name": "Vol-Vie",
+          "type": "Grass",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "growth",
+          "name": "Growth",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "cranidos",
+      "name": "Kranidos",
+      "level": 5,
+      "description": "Pokémon de départ Kranidos (Rock). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "headbutt",
+          "name": "Coup d'Boule",
+          "type": "Normal",
+          "category": "physical",
+          "power": 70,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shieldon",
+      "name": "Dinoclier",
+      "level": 5,
+      "description": "Pokémon de départ Dinoclier (Rock/Steel). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "protect",
+          "name": "Abri",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 3
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "burmy",
+      "name": "Cheniti",
+      "level": 5,
+      "description": "Pokémon de départ Cheniti (Bug). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "protect",
+          "name": "Abri",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 3
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "combee",
+      "name": "Apitrini",
+      "level": 5,
+      "description": "Pokémon de départ Apitrini (Bug/Flying). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "gust",
+          "name": "Tornade",
+          "type": "Flying",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sweetscent",
+          "name": "Doux Parfum",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "pachirisu",
+      "name": "Pachirisu",
+      "level": 5,
+      "description": "Pokémon de départ Pachirisu (Electric). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "bide",
+          "name": "Patience",
+          "type": "Normal",
+          "category": "physical",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "buizel",
+      "name": "Mustébouée",
+      "level": 5,
+      "description": "Pokémon de départ Mustébouée (Water). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "sonicboom",
+          "name": "Sonic Boom",
+          "type": "Normal",
+          "category": "special",
+          "power": 0,
+          "accuracy": 90,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "watersport",
+          "name": "Water Sport",
+          "type": "Water",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "cherubi",
+      "name": "Ceribou",
+      "level": 5,
+      "description": "Pokémon de départ Ceribou (Grass). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growth",
+          "name": "Growth",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "shellos",
+      "name": "Sancoki",
+      "level": 5,
+      "description": "Pokémon de départ Sancoki (Water). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "mudslap",
+          "name": "Coud'Boue",
+          "type": "Ground",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "mudsport",
+          "name": "Mud Sport",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "harden",
+          "name": "Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "drifloon",
+      "name": "Baudrive",
+      "level": 5,
+      "description": "Pokémon de départ Baudrive (Ghost/Flying). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "constrict",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 10,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "minimize",
+          "name": "Lilliput",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "buneary",
+      "name": "Laporeille",
+      "level": 5,
+      "description": "Pokémon de départ Laporeille (Normal). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "splash",
+          "name": "Trempette",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "glameow",
+      "name": "Chaglam",
+      "level": 5,
+      "description": "Pokémon de départ Chaglam (Normal). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "fakeout",
+          "name": "Bluff",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 1
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "chingling",
+      "name": "Korillon",
+      "level": 5,
+      "description": "Pokémon de départ Korillon (Psychic). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "wrap",
+          "name": "Ligotage",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 85,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "stunky",
+      "name": "Moufouette",
+      "level": 5,
+      "description": "Pokémon de départ Moufouette (Poison/Dark). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "focusenergy",
+          "name": "Puissance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "scratch",
+          "name": "Griffe",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "poisongas",
+          "name": "Poison Gas",
+          "type": "Poison",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "bronzor",
+      "name": "Archéomire",
+      "level": 5,
+      "description": "Pokémon de départ Archéomire (Steel/Psychic). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "bonsly",
+      "name": "Manzaï",
+      "level": 5,
+      "description": "Pokémon de départ Manzaï (Rock). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "copycat",
+          "name": "Photocopie",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "faketears",
+          "name": "Croco Larme",
+          "type": "Dark",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mimejr",
+      "name": "Mime Jr.",
+      "level": 5,
+      "description": "Pokémon de départ Mime Jr. (Psychic). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "barrier",
+          "name": "Bouclier",
+          "type": "Psychic",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "confusion",
+          "name": "Choc Mental",
+          "type": "Psychic",
+          "category": "special",
+          "power": 50,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "tickle",
+          "name": "Chatouille",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "copycat",
+          "name": "Photocopie",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "happiny",
+      "name": "Ptiravi",
+      "level": 5,
+      "description": "Pokémon de départ Ptiravi (Normal). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "charm",
+          "name": "Charme",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "copycat",
+          "name": "Photocopie",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "chatot",
+      "name": "Pijako",
+      "level": 5,
+      "description": "Pokémon de départ Pijako (Normal/Flying). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "peck",
+          "name": "Picpic",
+          "type": "Flying",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "growl",
+          "name": "Rugissement",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "spiritomb",
+      "name": "Spiritomb",
+      "level": 5,
+      "description": "Pokémon de départ Spiritomb (Ghost/Dark). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "confuseray",
+          "name": "Confuse Ray",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "curse",
+          "name": "Malédiction",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "pursuit",
+          "name": "Poursuite",
+          "type": "Dark",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "shadowsneak",
+          "name": "Ombre Portée",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "gible",
+      "name": "Griknot",
+      "level": 5,
+      "description": "Pokémon de départ Griknot (Dragon/Ground). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "munchlax",
+      "name": "Goinfrex",
+      "level": 5,
+      "description": "Pokémon de départ Goinfrex (Normal). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "metronome",
+          "name": "Métronome",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "odorsleuth",
+          "name": "Flair",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "defensecurl",
+          "name": "Boul'Armure",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "riolu",
+      "name": "Riolu",
+      "level": 5,
+      "description": "Pokémon de départ Riolu (Fighting). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "endure",
+          "name": "Tenacité",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 4
+        },
+        {
+          "id": "foresight",
+          "name": "Clairvoyance",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        },
+        {
+          "id": "quickattack",
+          "name": "Vive-Attaque",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "speciesId": "hippopotas",
+      "name": "Hippopotas",
+      "level": 5,
+      "description": "Pokémon de départ Hippopotas (Ground). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "sandattack",
+          "name": "Jet de Sable",
+          "type": "Ground",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "skorupi",
+      "name": "Rapion",
+      "level": 5,
+      "description": "Pokémon de départ Rapion (Poison/Bug). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "bite",
+          "name": "Morsure",
+          "type": "Dark",
+          "category": "physical",
+          "power": 60,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "poisonsting",
+          "name": "Dard-Venin",
+          "type": "Poison",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "croagunk",
+      "name": "Cradopaud",
+      "level": 5,
+      "description": "Pokémon de départ Cradopaud (Poison/Fighting). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "mudslap",
+          "name": "Coud'Boue",
+          "type": "Ground",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "carnivine",
+      "name": "Vortente",
+      "level": 5,
+      "description": "Pokémon de départ Vortente (Grass). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "bind",
+          "name": "Étreinte",
+          "type": "Normal",
+          "category": "physical",
+          "power": 15,
+          "accuracy": 75,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        },
+        {
+          "id": "growth",
+          "name": "Growth",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 40,
+          "maxPp": 40,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "finneon",
+      "name": "Écayon",
+      "level": 5,
+      "description": "Pokémon de départ Écayon (Water). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "pound",
+          "name": "Écras'Face",
+          "type": "Normal",
+          "category": "physical",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "watergun",
+          "name": "Pistolet à O",
+          "type": "Water",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "mantyke",
+      "name": "Babimanta",
+      "level": 5,
+      "description": "Pokémon de départ Babimanta (Water/Flying). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "bubble",
+          "name": "Écume",
+          "type": "Water",
+          "category": "special",
+          "power": 20,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "tackle",
+          "name": "Charge",
+          "type": "Normal",
+          "category": "physical",
+          "power": 35,
+          "accuracy": 95,
+          "pp": 35,
+          "maxPp": 35,
+          "priority": 0
+        },
+        {
+          "id": "supersonic",
+          "name": "Ultrason",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 55,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "snover",
+      "name": "Blizzi",
+      "level": 5,
+      "description": "Pokémon de départ Blizzi (Grass/Ice). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "leer",
+          "name": "Groz'Yeux",
+          "type": "Normal",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "powdersnow",
+          "name": "Poudreuse",
+          "type": "Ice",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        },
+        {
+          "id": "razorleaf",
+          "name": "Tranch'Herbe",
+          "type": "Grass",
+          "category": "physical",
+          "power": 55,
+          "accuracy": 95,
+          "pp": 25,
+          "maxPp": 25,
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "speciesId": "rotom",
+      "name": "Motisma",
+      "level": 5,
+      "description": "Pokémon de départ Motisma (Electric/Ghost). Stade 1 - Gen 4.",
+      "moves": [
+        {
+          "id": "astonish",
+          "name": "Étonnement",
+          "type": "Ghost",
+          "category": "physical",
+          "power": 30,
+          "accuracy": 100,
+          "pp": 15,
+          "maxPp": 15,
+          "priority": 0
+        },
+        {
+          "id": "confuseray",
+          "name": "Confuse Ray",
+          "type": "Ghost",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 10,
+          "maxPp": 10,
+          "priority": 0
+        },
+        {
+          "id": "thundershock",
+          "name": "Éclair",
+          "type": "Electric",
+          "category": "special",
+          "power": 40,
+          "accuracy": 100,
+          "pp": 30,
+          "maxPp": 30,
+          "priority": 0
+        },
+        {
+          "id": "thunderwave",
+          "name": "Cage-Éclair",
+          "type": "Electric",
+          "category": "status",
+          "power": 0,
+          "accuracy": 100,
+          "pp": 20,
+          "maxPp": 20,
+          "priority": 0
+        }
+      ]
+    }
+  ]
+}
