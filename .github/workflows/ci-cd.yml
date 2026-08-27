@@ -115,6 +115,11 @@ jobs:
 
       - name: Build Next.js
         if: steps.app.outputs.exists == 'true'
+        # Better Auth exige un secret pendant l'analyse des routes au build.
+        env:
+          BETTER_AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+          # L'URL locale est factice et utilisée uniquement pendant le build.
+          BETTER_AUTH_URL: http://localhost:3000
         run: npm run build
 
   # Exécute les tests d'intégration avec services éphémères avant ou après une fusion dans dev.
@@ -194,7 +199,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker compose config
+          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
+            # Vérifie la structure sans exiger les secrets de production.
+            docker compose config --no-interpolate
+            docker compose config --variables
+          else
+            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
+          fi
 
   # Exécute les contrôles complets pour une release de dev vers main.
   release-validation:
@@ -244,7 +255,9 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            docker compose config
+            # Vérifie la structure sans exiger les secrets de production.
+            docker compose config --no-interpolate
+            docker compose config --variables
           else
             echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
           fi
@@ -371,12 +384,17 @@ jobs:
           IMAGE_NAME: ${{ github.repository }}
           GHCR_USERNAME: ${{ github.actor }}
           CR_PAT: ${{ secrets.CR_PAT }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT
+          envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT,BETTER_AUTH_SECRET,BETTER_AUTH_URL,NEXT_PUBLIC_APP_URL,RESEND_API_KEY,RESEND_FROM_EMAIL
           script: |
             set -euo pipefail
             cd /home/app/heig-odyssey

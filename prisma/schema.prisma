@@ -8,12 +8,13 @@ generator client {
 }
 
 // ----------------------------------------------------
-// 1. Better Auth Models (Standard Schema)
+// 1. Modèles Better Auth (schéma standard)
 // ----------------------------------------------------
 
 model User {
   id            String    @id @default(cuid())
   name          String
+  username      String?   @unique // Forme normalisée et unique du nom d'utilisateur
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
@@ -43,6 +44,7 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("session")
 }
 
@@ -50,6 +52,7 @@ model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
+  issuer                String    // Origine du compte exigée par Better Auth 1.7
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
@@ -62,6 +65,8 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@unique([issuer, accountId])
+  @@index([userId])
   @@map("account")
 }
 
@@ -73,6 +78,7 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  @@index([identifier])
   @@map("verification")
 }
 
