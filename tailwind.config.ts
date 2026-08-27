@@ -8,6 +8,8 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Les classes Tailwind utilisent les mêmes variables CSS que les
+      // composants afin de suivre automatiquement le thème clair ou sombre.
       colors: {
         background: "var(--color-bg)",
         "background-alt": "var(--color-bg-alt)",
@@ -15,22 +17,22 @@ const config: Config = {
         "surface-raised": "var(--color-surface-raised)",
         outline: "var(--color-outline)",
         primary: {
-          DEFAULT: "#C94036",
-          light: "#B72F28",
-          dark: "#8F251F",
+          DEFAULT: "var(--color-primary)",
+          light: "var(--color-primary-light)",
+          dark: "var(--color-primary-dark)",
         },
-        secondary: "#2C2C2C",
+        secondary: "var(--color-secondary)",
         text: {
-          DEFAULT: "#202020",
-          muted: "#566170",
+          DEFAULT: "var(--color-text)",
+          muted: "var(--color-text-muted)",
         },
-        border: "#8B96A5",
-        success: "#1F7545",
+        border: "var(--color-border)",
+        success: "var(--color-success)",
         nav: {
-          bg: "#A2332C",
-          text: "#FFFFFF",
-          muted: "#FBECEA",
-          control: "#7C241F",
+          bg: "var(--color-nav-bg)",
+          text: "var(--color-nav-text)",
+          muted: "var(--color-nav-muted)",
+          control: "var(--color-nav-control)",
         },
       },
       fontFamily: {
@@ -38,9 +40,9 @@ const config: Config = {
         sans: ["Inter", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        pixel: "4px 4px 0 #202020",
-        "pixel-sm": "2px 2px 0 #202020",
-        "pixel-lg": "6px 6px 0 #202020",
+        pixel: "4px 4px 0 var(--color-outline)",
+        "pixel-sm": "2px 2px 0 var(--color-outline)",
+        "pixel-lg": "6px 6px 0 var(--color-outline)",
       },
     },
   },

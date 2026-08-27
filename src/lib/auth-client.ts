@@ -32,6 +32,19 @@ type SignInInput = {
   callbackPath?: string;
 };
 
+const DEFAULT_POST_SIGN_IN_DESTINATION = "/dashboard";
+
+// La connexion passe toujours par une route serveur qui contrôle l'onboarding
+// avant d'envoyer le joueur vers sa destination finale.
+export function buildPostSignInCallback(callbackPath?: string): string {
+  const destination = sanitizeCallbackPath(
+    callbackPath,
+    DEFAULT_POST_SIGN_IN_DESTINATION
+  );
+
+  return `/auth/continue?next=${encodeURIComponent(destination)}`;
+}
+
 // Le nom affiché conserve sa casse, tandis que l'identifiant unique est normalisé.
 export function signUpWithEmail({ username, email, password, callbackPath }: SignUpInput) {
   // La valeur affichée garde sa casse et perd uniquement les espaces extérieurs.
@@ -56,7 +69,7 @@ export function signInWithIdentifier({
 }: SignInInput) {
   // Les espaces de saisie accidentels ne font pas échouer la connexion.
   const trimmedIdentifier = identifier.trim();
-  const callbackURL = sanitizeCallbackPath(callbackPath, "/");
+  const callbackURL = buildPostSignInCallback(callbackPath);
 
   // Le formulaire possède un seul champ. La présence de @ sélectionne la route
   // e-mail, car ce caractère est interdit dans les noms d'utilisateur.
@@ -76,4 +89,18 @@ export function signInWithIdentifier({
     rememberMe,
     callbackURL,
   });
+}
+
+// Le message affiché après cet appel reste volontairement générique afin de
+// ne pas permettre de vérifier si une adresse possède déjà un compte.
+export function requestVerificationEmail(email: string) {
+  return authClient.sendVerificationEmail({
+    email: email.trim().toLowerCase(),
+    callbackURL: "/login?verified=1",
+  });
+}
+
+// Cette fonction invalide la session active côté serveur avant la navigation.
+export function signOutCurrentSession() {
+  return authClient.signOut();
 }
