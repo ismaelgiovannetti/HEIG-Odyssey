@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -162,5 +162,116 @@ describe("interface d'onboarding", () => {
     );
     expect(onboardingMocks.replace).toHaveBeenCalledWith("/dashboard");
     expect(onboardingMocks.refresh).toHaveBeenCalledOnce();
+  });
+
+  it("permet de retenter le chargement après une erreur du catalogue", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: vi.fn().mockResolvedValue(catalogResponse),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<OnboardingFlow />);
+    await user.click(
+      screen.getByRole("button", { name: "Choisir mon premier partenaire" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Le catalogue ne peut pas être chargé pour le moment.",
+      ),
+    ).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Réessayer" }));
+
+    expect(
+      (await screen.findAllByRole("button", { name: /Bulbizarre/ })).length,
+    ).toBeGreaterThan(0);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("renvoie vers la connexion si la session expire pendant le recrutement", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue(catalogResponse),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          json: vi.fn().mockResolvedValue({
+            success: false,
+            error: "Authentification requise.",
+          }),
+        }),
+    );
+
+    render(<OnboardingFlow />);
+    await user.click(
+      screen.getByRole("button", { name: "Choisir mon premier partenaire" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Choisir Bulbizarre",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Confirmer le recrutement" }),
+    );
+
+    await waitFor(() => {
+      expect(onboardingMocks.replace).toHaveBeenCalledWith(
+        "/login?sessionExpired=1",
+      );
+    });
+  });
+
+  it("affiche un conflit contrôlé lorsque le recrutement est rejoué", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue(catalogResponse),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 409,
+          json: vi.fn().mockResolvedValue({
+            success: false,
+            error: "L'onboarding a déjà été complété pour ce compte.",
+          }),
+        }),
+    );
+
+    render(<OnboardingFlow />);
+    await user.click(
+      screen.getByRole("button", { name: "Choisir mon premier partenaire" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Choisir Bulbizarre",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Confirmer le recrutement" }),
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain(
+      "Ce recrutement a déjà été utilisé. Actualisez la page pour continuer.",
+    );
+    expect(
+      screen.queryByRole("heading", { name: /rejoint votre équipe/ }),
+    ).toBeNull();
   });
 });
