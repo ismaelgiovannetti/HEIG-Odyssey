@@ -5,6 +5,7 @@ import type { PokemonType } from "../content/schemas";
 
 const dex = Dex.forGen(4);
 
+/** Picks an action for the AI side according to the given profile ("random", "heuristic" or "expectiminimax"). */
 export function selectAIAction(
   profile: AIProfile,
   battleEngine: BattleEngine,
@@ -231,6 +232,7 @@ function selectBestSwitch(
   return bestSwitch;
 }
 
+/** Computes the combined Gen 4 type-effectiveness multiplier of an attack type against a (possibly dual-typed) target. */
 export function calculateTypeEffectiveness(
   attackType: PokemonType,
   targetTypes: PokemonType[]
