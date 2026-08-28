@@ -1,0 +1,79 @@
+# Environnement local : les ports de PostgreSQL et Redis sont volontairement
+# accessibles depuis la machine du développeur. La production utilise
+# compose.prod.yml, qui ne les publie jamais sur l'hôte.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: heig-odyssey-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/heig_odyssey?schema=public
+      - REDIS_URL=redis://redis:6379
+      - "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}"
+      - "BETTER_AUTH_URL=${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}"
+      - "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:?NEXT_PUBLIC_APP_URL is required}"
+      - "RESEND_API_KEY=${RESEND_API_KEY:?RESEND_API_KEY is required}"
+      - "RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:?RESEND_FROM_EMAIL is required}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - heig-odyssey-network
+    healthcheck:
+      # Force IPv4 : Next.js écoute sur 0.0.0.0 alors qu'Alpine peut résoudre
+      # localhost vers ::1 en priorité.
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: heig-odyssey-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: heig_odyssey
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - heig-odyssey-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d heig_odyssey"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: heig-odyssey-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - heig-odyssey-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  heig-odyssey-network:
+    driver: bridge
