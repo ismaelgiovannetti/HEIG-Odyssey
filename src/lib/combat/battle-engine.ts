@@ -17,26 +17,24 @@ import { getSpecies } from "../content/loader";
 
 const dex = Dex.forGen(4);
 
+interface BattleSideInfo {
+  name: string;
+  avatar?: string;
+  team: (TrainerPokemon | TrainerPokemonInput)[];
+}
+
 export interface BattleInitOptions {
   battleId?: string;
-  p1: {
-    name: string;
-    avatar?: string;
-    team: (TrainerPokemon | TrainerPokemonInput)[];
-  };
-  p2: {
-    name: string;
-    avatar?: string;
-    team: (TrainerPokemon | TrainerPokemonInput)[];
-  };
+  p1: BattleSideInfo;
+  p2: BattleSideInfo;
   seed?: PRNGSeed;
 }
 
 export class BattleEngine {
   public readonly battleId: string;
   private battle: Battle;
-  private p1Info: { name: string; avatar?: string; team: (TrainerPokemon | TrainerPokemonInput)[] };
-  private p2Info: { name: string; avatar?: string; team: (TrainerPokemon | TrainerPokemonInput)[] };
+  private p1Info: BattleSideInfo;
+  private p2Info: BattleSideInfo;
   private logCursor = 0;
   private accumulatedEvents: BattleEvent[] = [];
 
@@ -417,10 +415,7 @@ export class BattleEngine {
     };
   }
 
-  private buildSideState(
-    sideId: BattleSideId,
-    sideInfo: { name: string; avatar?: string; team: (TrainerPokemon | TrainerPokemonInput)[] }
-  ): BattleSideState {
+  private buildSideState(sideId: BattleSideId, sideInfo: BattleSideInfo): BattleSideState {
     const simSide = sideId === "p1" ? this.battle.p1 : this.battle.p2;
 
     const teamState: BattlePokemonState[] = simSide.pokemon.map((pkmn, index) => {
