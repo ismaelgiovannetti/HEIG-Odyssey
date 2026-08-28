@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { OnboardingScreen } from "@/components/onboarding/onboarding-screen";
-import { getServerSession } from "@/lib/auth/server-session";
-import { prisma } from "@/lib/prisma";
+import { getOnboardingPlayer } from "@/lib/player/application-player";
 
 export const metadata: Metadata = {
   title: "Premier recrutement - HEIG Odyssey",
@@ -15,23 +13,9 @@ export const metadata: Metadata = {
  * catalogue interactif de recrutement.
  */
 export default async function OnboardingPage() {
-  const session = await getServerSession();
+  // Le helper applique la matrice commune : anonyme vers la connexion, joueur
+  // prêt vers l'accueil et profil incomplet autorisé sur cette page.
+  const player = await getOnboardingPlayer();
 
-  // Le layout protège déjà cette route, mais cette vérification locale évite
-  // toute dépendance à l'ordre de rendu parallèle des composants Next.js.
-  if (!session?.user.id) {
-    redirect("/login?sessionExpired=1");
-  }
-
-  const profile = await prisma.userProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { hasCompletedOnboarding: true },
-  });
-
-  // L'onboarding est unique : une visite ultérieure rejoint directement le jeu.
-  if (profile?.hasCompletedOnboarding) {
-    redirect("/dashboard");
-  }
-
-  return <OnboardingScreen playerName={session.user.name} />;
+  return <OnboardingScreen playerName={player.name} />;
 }

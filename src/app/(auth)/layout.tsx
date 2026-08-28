@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { ACCESS_ROUTES } from "@/lib/auth/route-access";
 import { getServerSession } from "@/lib/auth/server-session";
 
 /**
@@ -13,7 +14,7 @@ export default async function PublicAuthLayout({
 
   // Un joueur déjà connecté n'a rien à faire sur les formulaires publics.
   if (session?.user.id) {
-    redirect("/auth/continue");
+    redirect(ACCESS_ROUTES.continue);
   }
 
   return children;

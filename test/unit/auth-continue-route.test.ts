@@ -106,7 +106,16 @@ describe("GET /auth/continue", () => {
   });
 
   // Ces valeurs couvrent les redirections externes et les boucles d'authentification.
-  it.each(["https://malicious.example", "//malicious.example", "/login", "/auth/continue"])(
+  it.each([
+    "https://malicious.example",
+    "//malicious.example",
+    "/login",
+    "/signup",
+    "/verify-email",
+    "/logout",
+    "/auth/continue",
+    "/onboarding",
+  ])(
     "remplace la destination interdite %s par le tableau de bord",
     async (destination) => {
       routeMocks.getSession.mockResolvedValue({ user: { id: "user-1" } });

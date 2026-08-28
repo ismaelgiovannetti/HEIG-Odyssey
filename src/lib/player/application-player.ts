@@ -3,6 +3,11 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
+import {
+  getAccessDestination,
+  getPlayerAccessState,
+  type PlayerAccessState,
+} from "@/lib/auth/route-access";
 import { getServerSession } from "@/lib/auth/server-session";
 import { prisma } from "@/lib/prisma";
 
@@ -12,19 +17,30 @@ export interface ApplicationPlayer {
   pokedollars: number;
 }
 
+interface AuthenticatedPlayerContext {
+  state: Exclude<PlayerAccessState, "anonymous">;
+  player: ApplicationPlayer;
+}
+
+export type PlayerAccessContext =
+  | { state: "anonymous" }
+  | AuthenticatedPlayerContext;
+
 /**
- * Charge l'identité minimale affichée dans le shell du jeu. Les redirections
- * sont réalisées côté serveur pour ne jamais rendre le jeu avant la connexion
- * et le recrutement initial.
+ * Lit une seule fois la session et l'état d'onboarding pendant un rendu. Le
+ * contexte ne contient que l'utilisateur issu de Better Auth : aucun userId
+ * fourni par le navigateur n'intervient dans la décision.
  */
-export const getApplicationPlayer = cache(
-  async (): Promise<ApplicationPlayer> => {
+export const getPlayerAccessContext = cache(
+  async (): Promise<PlayerAccessContext> => {
     const session = await getServerSession();
 
     if (!session?.user.id) {
-      redirect("/login?sessionExpired=1");
+      return { state: "anonymous" };
     }
 
+    // La clé de recherche provient exclusivement de la session serveur. Le
+    // navigateur ne peut donc pas demander le profil d'un autre joueur.
     const profile = await prisma.userProfile.findUnique({
       where: { userId: session.user.id },
       select: {
@@ -32,17 +48,58 @@ export const getApplicationPlayer = cache(
         hasCompletedOnboarding: true,
       },
     });
+    const state = getPlayerAccessState(
+      session.user.id,
+      profile?.hasCompletedOnboarding,
+    );
 
-    // Un compte encore incomplet doit terminer son unique recrutement avant
-    // d'accéder aux espaces de jeu depuis une URL saisie manuellement.
-    if (!profile?.hasCompletedOnboarding) {
-      redirect("/onboarding");
+    return {
+      state: state === "ready" ? "ready" : "onboarding-required",
+      player: {
+        id: session.user.id,
+        name: session.user.name,
+        // Un profil absent reste incomplet ; zéro sert uniquement à typer le
+        // contexte et n'ouvre jamais les pages de jeu.
+        pokedollars: profile?.pokedollars ?? 0,
+      },
+    };
+  },
+);
+
+/**
+ * Autorise uniquement un joueur connecté ayant terminé son onboarding. Cette
+ * fonction est partagée par toutes les pages qui affichent le shell du jeu.
+ */
+export const getApplicationPlayer = cache(
+  async (): Promise<ApplicationPlayer> => {
+    const context = await getPlayerAccessContext();
+
+    // redirect() interrompt le rendu Next.js : aucune donnée du shell n'est
+    // envoyée au navigateur tant que le joueur n'est pas prêt.
+    if (context.state !== "ready") {
+      redirect(getAccessDestination(context.state));
+    }
+
+    return context.player;
+  },
+);
+
+/**
+ * Autorise l'onboarding uniquement pour une session encore incomplète. Un
+ * joueur prêt retourne au dashboard et un visiteur anonyme à la connexion.
+ */
+export const getOnboardingPlayer = cache(
+  async (): Promise<Pick<ApplicationPlayer, "id" | "name">> => {
+    const context = await getPlayerAccessContext();
+
+    // Ce garde inverse empêche le rejeu de l'onboarding après le recrutement.
+    if (context.state !== "onboarding-required") {
+      redirect(getAccessDestination(context.state));
     }
 
     return {
-      id: session.user.id,
-      name: session.user.name,
-      pokedollars: profile.pokedollars,
+      id: context.player.id,
+      name: context.player.name,
     };
   },
 );
