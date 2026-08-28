@@ -6,6 +6,8 @@ export type BattlePhase = "action_selection" | "switch_required" | "finished";
 
 export type BattleSideId = "p1" | "p2";
 
+export type BattleStatus = "brn" | "par" | "slp" | "psn" | "tox" | "frz" | null;
+
 export interface BattleMoveInfo {
   id: string;
   name: string;
@@ -28,7 +30,7 @@ export interface BattlePokemonState {
   currentHp: number;
   maxHp: number;
   hpPercent: number;
-  status: "brn" | "par" | "slp" | "psn" | "tox" | "frz" | null;
+  status: BattleStatus;
   moves: BattleMoveInfo[];
   isShiny: boolean;
   isActive: boolean;
