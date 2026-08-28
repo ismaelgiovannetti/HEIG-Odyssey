@@ -1,4 +1,5 @@
 import { Battle, Dex, toID } from "@pkmn/sim";
+import type { PRNGSeed } from "@pkmn/sim";
 import type {
   BattleState,
   BattleSideState,
@@ -28,7 +29,7 @@ export interface BattleInitOptions {
     avatar?: string;
     team: (TrainerPokemon | TrainerPokemonInput)[];
   };
-  seed?: any;
+  seed?: PRNGSeed;
 }
 
 export class BattleEngine {
