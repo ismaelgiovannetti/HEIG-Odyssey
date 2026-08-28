@@ -137,7 +137,7 @@ test.describe("premier lancement du joueur", () => {
     await page.getByRole("button", { name: "Se connecter" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(
-      page.getByRole("heading", { name: `Bon retour, ${testUser.username}` }),
+      page.getByRole("heading", { name: `Bienvenue, ${testUser.username} !` }),
     ).toBeVisible();
   });
 });
