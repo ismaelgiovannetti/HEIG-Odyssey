@@ -63,6 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           test -f Dockerfile
+          test -f compose.ci.yml
+          test -f compose.prod.yml
           test -f landing-page/Dockerfile
           test -f landing-page/index.html
 
@@ -305,12 +307,30 @@ jobs:
             echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
           fi
 
+          # Valide également les substitutions sans utiliser de secret réel.
+          export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
+          export MIGRATION_IMAGE=heig-odyssey-migrate-validation:"$GITHUB_SHA"
+          export LANDING_IMAGE=heig-odyssey-landing-validation:"$GITHUB_SHA"
+          export POSTGRES_PASSWORD=release-validation-postgres-password
+          export BETTER_AUTH_SECRET=release-validation-auth-secret-at-least-32-characters
+          export BETTER_AUTH_URL=http://localhost:3000
+          export NEXT_PUBLIC_APP_URL=http://localhost:3000
+          export RESEND_API_KEY=re_release_validation
+          export RESEND_FROM_EMAIL="HEIG Odyssey <noreply@heig-odyssey.online>"
+
+          docker compose -f compose.ci.yml config >/dev/null
+          docker compose -f compose.prod.yml config >/dev/null
+
       - name: Build validation images
         shell: bash
         run: |
           set -euo pipefail
           docker build --tag heig-odyssey-validation:"$GITHUB_SHA" .
+          docker build --target migrator --tag heig-odyssey-migrate-validation:"$GITHUB_SHA" .
           docker build --tag heig-odyssey-landing-validation:"$GITHUB_SHA" ./landing-page
+
+          # Confirme que l'image dédiée contient bien le client de migration Prisma.
+          docker run --rm heig-odyssey-migrate-validation:"$GITHUB_SHA" --version
 
       - name: Smoke test landing image
         shell: bash
@@ -349,6 +369,7 @@ jobs:
           set -euo pipefail
           IMAGE_NAME_LOWER="$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           echo "APP_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "MIGRATION_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-migrate:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "LANDING_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-landing:${GITHUB_SHA}" >> "$GITHUB_ENV"
 
       - name: Build production images once
@@ -356,6 +377,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --tag "$APP_IMAGE" .
+          docker build --target migrator --tag "$MIGRATION_IMAGE" .
           docker build --tag "$LANDING_IMAGE" ./landing-page
 
       - name: Test exact production images
@@ -365,24 +387,18 @@ jobs:
 
           cleanup() {
             docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
-            docker rm -f app-ci landing-ci >/dev/null 2>&1 || true
           }
           trap cleanup EXIT
 
-          if [[ -f compose.ci.yml ]]; then
-            export APP_IMAGE LANDING_IMAGE
-            docker compose -f compose.ci.yml config
-            docker compose -f compose.ci.yml up -d --wait
-            HEALTH_URL="http://localhost:3000/api/health"
-          else
-            echo "compose.ci.yml absent : validation transitoire des conteneurs autonomes."
-            docker run -d --rm --name app-ci -p 3000:80 "$APP_IMAGE"
-            docker run -d --rm --name landing-ci -p 8080:80 "$LANDING_IMAGE"
-            HEALTH_URL="http://localhost:3000/health"
-          fi
+          export APP_IMAGE MIGRATION_IMAGE LANDING_IMAGE
+          docker compose -f compose.ci.yml config
+
+          # Applique le schéma avec l'image qui sera réellement publiée.
+          docker compose -f compose.ci.yml run --rm migrate
+          docker compose -f compose.ci.yml up -d --wait app landing
 
           for attempt in {1..15}; do
-            if curl --fail --silent --show-error "$HEALTH_URL" >/dev/null \
+            if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
               && curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
               exit 0
             fi
@@ -390,8 +406,6 @@ jobs:
           done
 
           docker compose -f compose.ci.yml logs 2>/dev/null || true
-          docker logs app-ci 2>/dev/null || true
-          docker logs landing-ci 2>/dev/null || true
           exit 1
 
       - name: Log in to GHCR
@@ -406,6 +420,7 @@ jobs:
         run: |
           set -euo pipefail
           docker push "$APP_IMAGE"
+          docker push "$MIGRATION_IMAGE"
           docker push "$LANDING_IMAGE"
 
   # Déploie sur le VPS uniquement après une fusion réussie dans main.
@@ -420,6 +435,21 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Le VPS reçoit toujours le Compose appartenant au même SHA que les images.
+      - name: Copy production Compose to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          source: compose.prod.yml
+          target: /home/app/heig-odyssey
+          overwrite: true
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -432,12 +462,13 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT,BETTER_AUTH_SECRET,BETTER_AUTH_URL,NEXT_PUBLIC_APP_URL,RESEND_API_KEY,RESEND_FROM_EMAIL
+          envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT,BETTER_AUTH_SECRET,BETTER_AUTH_URL,NEXT_PUBLIC_APP_URL,RESEND_API_KEY,RESEND_FROM_EMAIL,POSTGRES_PASSWORD
           script: |
             set -euo pipefail
             cd /home/app/heig-odyssey
@@ -448,13 +479,22 @@ jobs:
             configure_images() {
               local tag="$1"
               export APP_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}:${tag}"
+              export MIGRATION_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-migrate:${tag}"
               export LANDING_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-landing:${tag}"
             }
 
+            dc() {
+              docker compose -f compose.prod.yml "$@"
+            }
+
             smoke_test() {
-              for attempt in $(seq 1 15); do
+              local public_app_url="${BETTER_AUTH_URL%/}/api/health"
+
+              for attempt in $(seq 1 30); do
                 if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
-                  || curl --fail --silent --show-error http://localhost:3000/health >/dev/null; then
+                  && curl --fail --silent --show-error http://localhost:8080/health >/dev/null \
+                  && curl --fail --silent --show-error "$public_app_url" >/dev/null \
+                  && curl --fail --silent --show-error https://heig-odyssey.online/health >/dev/null; then
                   return 0
                 fi
                 sleep 2
@@ -462,19 +502,54 @@ jobs:
               return 1
             }
 
+            restore_previous() {
+              if [[ -z "$PREVIOUS_SHA" ]]; then
+                echo "Aucun SHA précédent connu : rollback impossible."
+                return 1
+              fi
+
+              configure_images "$PREVIOUS_SHA"
+              dc pull webapp landing-page || return 1
+              # Les migrations ne sont pas annulées automatiquement : elles doivent
+              # rester compatibles avec la version applicative précédente.
+              dc up -d --remove-orphans traefik webapp landing-page postgres redis || return 1
+              smoke_test
+            }
+
             echo "$CR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
             configure_images "$DEPLOY_SHA"
-            docker compose pull
+            dc config >/dev/null
+            dc --profile tools pull webapp landing-page migrate
 
-            if docker compose config --services | grep -qx app \
-              && docker compose run --rm app sh -lc 'test -f prisma/schema.prisma'; then
-              docker compose run --rm app npx prisma migrate deploy
-            else
-              echo "Migration Prisma non applicable au POC actuel."
+            # Le volume existant est conservé. Cette commande remplace seulement
+            # l'ancien mot de passe local par le secret de production actuel.
+            dc up -d --wait postgres redis
+            dc exec -T postgres sh -ec \
+              'psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set=ON_ERROR_STOP=on --set="new_password=$POSTGRES_PASSWORD"' <<'SQL'
+            ALTER ROLE postgres WITH PASSWORD :'new_password';
+            SQL
+
+            # L'image de migration possède Prisma, contrairement à l'image web minimale.
+            if ! dc --profile tools run --rm migrate; then
+              echo "La migration de la base de données a échoué."
+              if restore_previous; then
+                echo "Version ${PREVIOUS_SHA} restaurée."
+              else
+                echo "La restauration de ${PREVIOUS_SHA:-la version précédente} a échoué."
+              fi
+              exit 1
             fi
 
-            docker compose up -d --remove-orphans
+            if ! dc up -d --remove-orphans traefik webapp landing-page postgres redis; then
+              echo "Le démarrage de ${DEPLOY_SHA} a échoué."
+              if restore_previous; then
+                echo "Version ${PREVIOUS_SHA} restaurée."
+              else
+                echo "La restauration de ${PREVIOUS_SHA:-la version précédente} a échoué."
+              fi
+              exit 1
+            fi
 
             if smoke_test; then
               printf '%s\n' "$DEPLOY_SHA" > .deployed_sha
@@ -483,16 +558,7 @@ jobs:
 
             echo "Le smoke test a échoué pour ${DEPLOY_SHA}."
 
-            if [[ -z "$PREVIOUS_SHA" ]]; then
-              echo "Aucun SHA précédent connu : rollback impossible."
-              exit 1
-            fi
-
-            configure_images "$PREVIOUS_SHA"
-            docker compose pull
-            docker compose up -d --remove-orphans
-
-            if smoke_test; then
+            if restore_previous; then
               echo "Version ${PREVIOUS_SHA} restaurée."
               exit 1
             fi

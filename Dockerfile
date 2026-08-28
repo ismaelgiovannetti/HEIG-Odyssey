@@ -23,7 +23,20 @@ RUN BETTER_AUTH_SECRET=build-only-auth-secret-at-least-32-characters \
     BETTER_AUTH_URL=http://localhost:3000 \
     npm run build
 
-# 3. Image de production minimale
+# 3. Image dédiée aux migrations de production
+# Cette cible conserve Prisma sans alourdir le conteneur applicatif exposé.
+FROM deps AS migrator
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# L'utilisateur Node peut lire les migrations mais ne peut pas modifier l'image.
+USER node
+
+ENTRYPOINT ["./node_modules/.bin/prisma"]
+CMD ["migrate", "deploy"]
+
+# 4. Image de production minimale
 FROM base AS runner
 WORKDIR /app
 

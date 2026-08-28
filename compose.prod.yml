@@ -1,0 +1,151 @@
+# Déploiement VPS : seules les images immuables publiées par la CI sont utilisées.
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --api.insecure=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=admin@heig-odyssey.online
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Traefik lit les conteneurs publiés, sans pouvoir modifier Docker.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Le certificat ACME existant est conservé entre les déploiements.
+      - ./letsencrypt:/letsencrypt
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - frontend
+
+  webapp:
+    image: ${APP_IMAGE:?APP_IMAGE is required}
+    container_name: webapp
+    restart: unless-stopped
+    ports:
+      # Accès local de diagnostic ; l'accès public passe uniquement par Traefik.
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/heig_odyssey?schema=public
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?BETTER_AUTH_URL is required}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:?NEXT_PUBLIC_APP_URL is required}
+      RESEND_API_KEY: ${RESEND_API_KEY:?RESEND_API_KEY is required}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:?RESEND_FROM_EMAIL is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: heig-odyssey-frontend
+      traefik.http.routers.webapp.entrypoints: websecure
+      traefik.http.routers.webapp.rule: Host(`play.heig-odyssey.online`)
+      traefik.http.routers.webapp.tls.certresolver: myresolver
+      traefik.http.routers.webapp.service: webapp
+      # La nouvelle image Next.js écoute sur 3000, et non plus sur 80.
+      traefik.http.services.webapp.loadbalancer.server.port: "3000"
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  landing-page:
+    image: ${LANDING_IMAGE:?LANDING_IMAGE is required}
+    container_name: landing-page
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: heig-odyssey-frontend
+      traefik.http.routers.landing.entrypoints: websecure
+      traefik.http.routers.landing.rule: Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)
+      traefik.http.routers.landing.tls.certresolver: myresolver
+      traefik.http.routers.landing.service: landing
+      traefik.http.services.landing.loadbalancer.server.port: "80"
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Les migrations s'exécutent une seule fois avant le redémarrage applicatif.
+  migrate:
+    image: ${MIGRATION_IMAGE:?MIGRATION_IMAGE is required}
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/heig_odyssey?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: heig-odyssey-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: heig_odyssey
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d heig_odyssey"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: heig-odyssey-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  # Nom fixe utilisé par Traefik pour joindre explicitement les services web.
+  frontend:
+    name: heig-odyssey-frontend
+    driver: bridge
+  # PostgreSQL et Redis n'ont aucun accès direct à l'extérieur du réseau Docker.
+  backend:
+    name: heig-odyssey-backend
+    driver: bridge
+    internal: true

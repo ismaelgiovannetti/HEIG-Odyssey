@@ -1,15 +1,19 @@
+# Valide ensemble les trois images exactes qui seront publiées dans GHCR.
 services:
   app:
-    image: ${APP_IMAGE:-heig-odyssey:latest}
-    container_name: heig-odyssey-app-ci
+    image: ${APP_IMAGE:?APP_IMAGE is required}
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
-      - REDIS_URL=redis://redis:6379
-      - BETTER_AUTH_SECRET=ci-secret-for-testing-only-min-32-chars-long
-      - BETTER_AUTH_URL=http://localhost:3000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_SECRET: ci-secret-for-testing-only-min-32-chars-long
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # Ces valeurs ne servent qu'au démarrage du conteneur pendant le smoke test.
+      RESEND_API_KEY: re_ci_placeholder
+      RESEND_FROM_EMAIL: HEIG Odyssey <noreply@heig-odyssey.online>
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,15 +22,39 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 10
       start_period: 10s
 
+  landing:
+    image: ${LANDING_IMAGE:?LANDING_IMAGE is required}
+    ports:
+      - "8080:80"
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # Ce service ponctuel applique les migrations avec l'image dédiée testée.
+  migrate:
+    image: ${MIGRATION_IMAGE:?MIGRATION_IMAGE is required}
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - heig-odyssey-ci-network
+
   postgres:
     image: postgres:16-alpine
-    container_name: heig-odyssey-postgres-ci
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -41,7 +69,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: heig-odyssey-redis-ci
     networks:
       - heig-odyssey-ci-network
     healthcheck:

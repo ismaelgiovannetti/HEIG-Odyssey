@@ -1,3 +1,6 @@
+# Environnement local : les ports de PostgreSQL et Redis sont volontairement
+# accessibles depuis la machine du développeur. La production utilise
+# compose.prod.yml, qui ne les publie jamais sur l'hôte.
 services:
   app:
     build:
@@ -23,7 +26,9 @@ services:
     networks:
       - heig-odyssey-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      # Force IPv4 : Next.js écoute sur 0.0.0.0 alors qu'Alpine peut résoudre
+      # localhost vers ::1 en priorité.
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
