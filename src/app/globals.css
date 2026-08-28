@@ -2731,3 +2731,622 @@ body {
   .starter-loading-icon { animation-duration: 1.5s; }
   .onboarding-primary-button, .onboarding-secondary-button { transition: none; }
 }
+
+/* ============================================================
+   Application - navigation persistante et accueil du jeu
+   ============================================================ */
+
+.application-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 28px clamp(24px, 4vw, 70px);
+  background:
+    linear-gradient(180deg, rgb(201 64 54 / 9%), transparent 28%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      var(--color-scanline) 8px
+    ),
+    var(--color-bg);
+}
+
+.application-page::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 12px;
+  border-bottom: 3px solid var(--color-outline);
+  background: linear-gradient(90deg, #7c241f, var(--color-primary), #7c241f);
+  content: "";
+}
+
+.application-background-mark {
+  position: fixed;
+  z-index: -2;
+  width: 270px;
+  aspect-ratio: 1;
+  background: url("/pokeball-pixel.svg") center / contain no-repeat;
+  image-rendering: pixelated;
+  opacity: var(--color-orb-opacity);
+}
+
+.application-background-mark--one {
+  top: 10%;
+  left: max(-115px, calc(50% - 860px));
+  transform: rotate(-14deg);
+}
+
+.application-background-mark--two {
+  right: max(-125px, calc(50% - 870px));
+  bottom: 4%;
+  transform: rotate(17deg) scale(0.86);
+}
+
+.application-shell {
+  display: grid;
+  /* Le contenu central absorbe l'espace libre afin que le pied de page reste
+     collé au bas du cadre, y compris lorsque le navigateur est dézoomé. */
+  grid-template-rows: auto auto 1fr auto;
+  /* À fort dézoom, le viewport exprimé en pixels CSS devient très large. Le
+     cadre conserve donc au moins 72 % de cette largeur au lieu de former une
+     colonne étroite au centre de l'écran. */
+  width: max(min(100%, 1420px), 72vw);
+  /* Le plafond empêche la hauteur disponible créée par le dézoom de devenir
+     une grande surface vide sous le contenu réel. */
+  min-height: min(calc(100dvh - 56px), 1050px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 9px 9px 0 var(--color-outline);
+}
+
+.application-shell__topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 15px;
+  border-bottom: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+/* En-tête partagé : identité à gauche, navigation au centre, joueur à droite. */
+.application-header {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(18px, 3vw, 46px);
+  min-height: 82px;
+  padding: 12px clamp(20px, 3vw, 38px);
+  border-bottom: 3px solid var(--color-outline);
+  background: var(--color-bg-alt);
+}
+
+.application-brand {
+  display: block;
+  width: 190px;
+}
+
+.application-brand img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.application-navigation ul {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.application-navigation a {
+  position: relative;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 130ms ease, background 130ms ease;
+}
+
+.application-navigation a::after {
+  position: absolute;
+  right: 10px;
+  bottom: 2px;
+  left: 10px;
+  height: 3px;
+  background: transparent;
+  content: "";
+}
+
+.application-navigation a:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.application-navigation a.is-active {
+  color: var(--color-text);
+}
+
+.application-navigation a.is-active::after {
+  background: var(--color-primary);
+}
+
+.application-navigation a:focus-visible,
+.application-brand:focus-visible,
+.application-player__logout:focus-visible,
+.dashboard-mode-card:focus-visible,
+.dashboard-team__heading a:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+.application-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.application-player__balance {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: #c58a33;
+  font-size: 12px;
+}
+
+.application-player__balance strong {
+  color: var(--color-text);
+}
+
+.application-player__name {
+  max-width: 145px;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+}
+
+.application-player__logout {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.application-player__logout:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+}
+
+.application-shell__content {
+  padding: clamp(26px, 3.2vw, 46px);
+}
+
+.application-shell__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  padding: 12px clamp(20px, 3vw, 38px);
+  border-top: 3px solid var(--color-outline);
+  background: var(--color-strong-surface);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.dashboard-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.dashboard-heading__eyebrow,
+.dashboard-team__heading p,
+.mode-placeholder__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  color: var(--color-primary-light);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-heading h1 {
+  margin: 0;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: clamp(20px, 2.7vw, 34px);
+  line-height: 1.4;
+}
+
+.dashboard-heading > div:first-child > p:last-child {
+  margin: 10px 0 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+.dashboard-heading__status {
+  display: flex;
+  min-width: 190px;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.dashboard-heading__status strong {
+  color: var(--color-primary-light);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 15px;
+}
+
+.dashboard-heading__status span {
+  max-width: 100px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+/* Les quatre modes gardent la même structure mais possèdent un repère coloré. */
+.dashboard-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dashboard-mode-card {
+  --dashboard-mode-color: #4f8fb4;
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 225px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--dashboard-mode-color), transparent 86%), transparent 56%),
+    var(--color-bg-alt);
+  box-shadow: 5px 5px 0 var(--color-outline);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.dashboard-mode-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7px;
+  background: var(--dashboard-mode-color);
+  content: "";
+}
+
+.dashboard-mode-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--color-outline);
+}
+
+.dashboard-mode-card--campaign { --dashboard-mode-color: #4f8fb4; }
+.dashboard-mode-card--training { --dashboard-mode-color: #8973c4; }
+.dashboard-mode-card--team { --dashboard-mode-color: #4e9a69; }
+.dashboard-mode-card--gacha { --dashboard-mode-color: #c58a33; }
+
+.dashboard-mode-card__icon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin: 20px 20px 2px;
+  place-items: center;
+  border: 2px solid var(--color-outline);
+  background: var(--dashboard-mode-color);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  color: #fff;
+}
+
+.dashboard-mode-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  padding: 14px 20px 18px;
+}
+
+.dashboard-mode-card__content strong {
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.dashboard-mode-card__content > span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.dashboard-mode-card__action {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 15px 10px 20px;
+  border-top: 2px solid var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.dashboard-mode-card__action svg {
+  color: var(--dashboard-mode-color);
+}
+
+/* Six cases fixes rendent immédiatement visibles les places encore libres. */
+.dashboard-team {
+  margin-top: 34px;
+  padding-top: 25px;
+  border-top: 2px solid var(--color-border);
+}
+
+.dashboard-team__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 17px;
+}
+
+.dashboard-team__heading p {
+  margin-bottom: 7px;
+}
+
+.dashboard-team__heading h2 {
+  margin: 0;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dashboard-team__heading a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary-light);
+  font-size: 11px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.dashboard-team__slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.dashboard-team-slot {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 148px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 8px 11px;
+  border: 2px dashed var(--color-border);
+  background: var(--color-bg-alt);
+  text-align: center;
+}
+
+.dashboard-team-slot.is-filled {
+  border-style: solid;
+  background: var(--color-surface-raised);
+}
+
+.dashboard-team-slot__number {
+  position: absolute;
+  top: 6px;
+  left: 7px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.dashboard-team-slot > strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-team-slot > span:last-child {
+  color: var(--color-text-muted);
+  font-size: 9px;
+}
+
+.dashboard-team-slot__empty {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+  place-items: center;
+  border: 2px dashed var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 25px;
+}
+
+/* Les espaces non encore développés utilisent une arrivée commune et claire. */
+.mode-placeholder {
+  --mode-accent: #4f8fb4;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.18fr);
+  min-height: 510px;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 7px 7px 0 var(--color-outline);
+}
+
+.mode-placeholder--campaign { --mode-accent: #4f8fb4; }
+.mode-placeholder--training { --mode-accent: #8973c4; }
+.mode-placeholder--team { --mode-accent: #4e9a69; }
+.mode-placeholder--gacha { --mode-accent: #c58a33; }
+
+.mode-placeholder__visual {
+  display: grid;
+  place-items: center;
+  border-right: 3px solid var(--color-outline);
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--mode-accent), transparent 65%), transparent 52%),
+    repeating-linear-gradient(0deg, transparent 0, transparent 8px, var(--color-scanline) 9px),
+    var(--color-strong-surface);
+}
+
+.mode-placeholder__visual > span {
+  display: grid;
+  width: 126px;
+  height: 126px;
+  place-items: center;
+  border: 3px solid var(--color-outline);
+  background: var(--mode-accent);
+  box-shadow: 7px 7px 0 var(--color-outline);
+  color: #fff;
+}
+
+.mode-placeholder__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(36px, 6vw, 80px);
+}
+
+.mode-placeholder__content h1 {
+  margin: 0;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: clamp(24px, 3.4vw, 42px);
+  line-height: 1.4;
+}
+
+.mode-placeholder__content > p:not(.mode-placeholder__eyebrow) {
+  max-width: 680px;
+  margin: 20px 0 0;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.mode-placeholder__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-top: 26px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.mode-placeholder__status svg {
+  flex: 0 0 auto;
+  color: var(--mode-accent);
+}
+
+.mode-placeholder__back {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 9px;
+  margin-top: 28px;
+  padding: 11px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 8px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+/* Le shell se réorganise sur les petits écrans d'ordinateur, sans activer le
+   support mobile qui reste volontairement hors périmètre du MVP. */
+@media (max-width: 1260px) {
+  .application-header {
+    grid-template-columns: 170px minmax(0, 1fr) auto;
+    gap: 14px;
+    padding-inline: 20px;
+  }
+
+  .application-brand { width: 165px; }
+  .application-navigation a { padding-inline: 7px; font-size: 10px; }
+  .application-player__name { display: none; }
+  .dashboard-modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-mode-card { min-height: 205px; }
+  .dashboard-team__slots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 980px) {
+  .application-page { padding-inline: 20px; }
+
+  .application-header {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+
+  .application-brand { width: 145px; }
+
+  .application-navigation {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .application-navigation ul { justify-content: space-between; }
+  .application-player { grid-column: 2; grid-row: 1; justify-self: end; }
+  .mode-placeholder { grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr); }
+  .mode-placeholder__content { padding: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .application-navigation a,
+  .dashboard-mode-card {
+    transition: none;
+  }
+}
