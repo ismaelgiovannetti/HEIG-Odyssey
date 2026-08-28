@@ -16,7 +16,7 @@ export function MobileUnsupported() {
       <div className="mobile-unsupported__card">
         <div className="mobile-unsupported__topbar" aria-hidden="true">
           <span>HEIG-ODYSSEY</span>
-          <span>GEN-04</span>
+          <span>PDG</span>
         </div>
 
         <div className="mobile-unsupported__content">

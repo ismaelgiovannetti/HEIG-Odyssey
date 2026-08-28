@@ -21,16 +21,22 @@ export default async function LogoutPage() {
       eyebrow="Fin de session"
       title="Quitter l'aventure ?"
       description={`La session de ${session?.user.name ?? "ce dresseur"} sera invalidée sur cet appareil.`}
+      className="auth-card--logout"
+      showSecurityNote={false}
       footer={
         <p>
-          Vous préférez rester ? <Link href="/auth/continue">Retour au jeu</Link>
+          Vous préférez rester ?{" "}
+          <Link href="/auth/continue">Retour au jeu</Link>
         </p>
       }
     >
-      <p className="auth-instruction auth-instruction--centered">
-        Votre progression est déjà enregistrée. Vous pourrez reprendre exactement où vous vous êtes arrêté.
-      </p>
-      <LogoutButton />
+      <div className="auth-logout-content">
+        <p className="auth-instruction auth-instruction--centered">
+          Votre progression est déjà enregistrée. Vous pourrez reprendre
+          exactement où vous vous êtes arrêté.
+        </p>
+        <LogoutButton />
+      </div>
     </AuthShell>
   );
 }
