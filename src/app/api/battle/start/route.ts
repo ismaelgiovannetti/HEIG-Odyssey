@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BattleEngine } from "@/lib/combat/battle-engine";
 import { registerBattleSession } from "@/lib/combat/battle-session-store";
@@ -9,15 +10,41 @@ import {
   userPokemonToTrainerPokemon,
 } from "@/lib/team/team-validator";
 
-const StartBattleBodySchema = z.object({
-  userId: z.string().min(1),
-  stageId: z.string().optional(),
-  trainerId: z.string().optional(),
-});
+const BattleTargetIdSchema = z.string().trim().min(1).max(100);
+
+const StartBattleBodySchema = z
+  .object({
+    stageId: BattleTargetIdSchema.optional(),
+    trainerId: BattleTargetIdSchema.optional(),
+  })
+  .strict()
+  .superRefine(({ stageId, trainerId }, context) => {
+    // Une étape détermine son dresseur. Accepter les deux permettrait de
+    // combattre un adversaire faible pour obtenir les gains d'une autre étape.
+    if (Boolean(stageId) === Boolean(trainerId)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Indiquez soit une étape, soit un dresseur.",
+      });
+    }
+  });
+
+const AUTHENTICATION_REQUIRED_MESSAGE = "Authentification requise.";
+const BATTLE_START_FAILED_MESSAGE = "Impossible de démarrer le combat.";
 
 export async function POST(req: Request) {
   try {
-    const raw = await req.json();
+    // La session serveur est l'unique source de vérité pour l'identité du joueur.
+    const session = await auth.api.getSession({ headers: req.headers });
+
+    if (!session?.user.id) {
+      return NextResponse.json(
+        { success: false, error: AUTHENTICATION_REQUIRED_MESSAGE },
+        { status: 401 },
+      );
+    }
+
+    const raw: unknown = await req.json().catch(() => null);
     const parsed = StartBattleBodySchema.safeParse(raw);
 
     if (!parsed.success) {
@@ -27,9 +54,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const { userId, stageId, trainerId } = parsed.data;
+    const { stageId, trainerId } = parsed.data;
+    const userId = session.user.id;
 
-    // 1. Fetch player's active team from DB
+    // L'équipe chargée appartient obligatoirement au compte authentifié.
     const activeTeam = await prisma.userPokemon.findMany({
       where: {
         userId,
@@ -46,7 +74,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Determine Opponent Trainer
+    // Une étape de campagne impose le dresseur défini dans le contenu.
     let targetTrainerId = trainerId;
     if (stageId && !targetTrainerId) {
       const worlds = loadCampaign();
@@ -69,15 +97,15 @@ export async function POST(req: Request) {
     const opponentTrainer = getTrainer(targetTrainerId);
     if (!opponentTrainer) {
       return NextResponse.json(
-        { success: false, error: `Dresseur ${targetTrainerId} non configuré` },
+        { success: false, error: "Dresseur ou étape introuvable" },
         { status: 404 }
       );
     }
 
-    // 3. Convert player team
+    // Le format stocké en base est converti vers celui attendu par le moteur.
     const p1Team = activeTeam.map(userPokemonToTrainerPokemon);
 
-    // 4. Initialize BattleEngine
+    // Le moteur reçoit uniquement l'équipe du propriétaire authentifié.
     const engine = new BattleEngine({
       p1: {
         name: "Joueur",
@@ -90,7 +118,7 @@ export async function POST(req: Request) {
       },
     });
 
-    // 5. Register in session store
+    // La session de combat mémorise son propriétaire pour chaque action future.
     registerBattleSession(engine, userId, stageId, opponentTrainer.aiProfile);
 
     const initialState = engine.getState();
@@ -110,9 +138,11 @@ export async function POST(req: Request) {
       },
       state: initialState,
     });
-  } catch (error) {
+  } catch {
+    // Aucun détail technique ni identifiant interne n'est renvoyé au navigateur.
+    console.error("Échec du démarrage du combat.");
     return NextResponse.json(
-      { success: false, error: (error as Error).message },
+      { success: false, error: BATTLE_START_FAILED_MESSAGE },
       { status: 500 }
     );
   }

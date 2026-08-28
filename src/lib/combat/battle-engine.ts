@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { Battle, Dex, toID } from "@pkmn/sim";
 import type { PRNGSeed } from "@pkmn/sim";
 import type {
@@ -39,7 +40,9 @@ export class BattleEngine {
   private accumulatedEvents: BattleEvent[] = [];
 
   constructor(options: BattleInitOptions) {
-    this.battleId = options.battleId || `battle-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    // Un identifiant imprévisible évite qu'un autre joueur puisse deviner une
+    // session de combat active. L'autorisation reste néanmoins vérifiée côté API.
+    this.battleId = options.battleId ?? `battle-${randomUUID()}`;
     this.p1Info = options.p1;
     this.p2Info = options.p2;
 

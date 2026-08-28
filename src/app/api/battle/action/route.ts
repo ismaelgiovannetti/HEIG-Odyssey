@@ -1,24 +1,43 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { processBattleTurn } from "@/lib/combat/battle-session-store";
+import { auth } from "@/lib/auth";
+import {
+  BattleActionRejectedError,
+  BattleSessionUnavailableError,
+  processBattleTurn,
+} from "@/lib/combat/battle-session-store";
 
 const BattleActionBodySchema = z.object({
-  battleId: z.string().min(1),
+  battleId: z.string().trim().min(1).max(100),
   action: z.union([
     z.object({
       type: z.literal("move"),
       moveIndex: z.number().int().min(0).max(3),
-    }),
+    }).strict(),
     z.object({
       type: z.literal("switch"),
       targetPokemonIndex: z.number().int().min(0).max(5),
-    }),
+    }).strict(),
   ]),
-});
+}).strict();
+
+const AUTHENTICATION_REQUIRED_MESSAGE = "Authentification requise.";
+const BATTLE_UNAVAILABLE_MESSAGE = "Combat introuvable ou expiré.";
+const BATTLE_ACTION_FAILED_MESSAGE = "Impossible de traiter l'action de combat.";
 
 export async function POST(req: Request) {
   try {
-    const raw = await req.json();
+    // Better Auth valide le cookie avant toute lecture ou mutation du combat.
+    const session = await auth.api.getSession({ headers: req.headers });
+
+    if (!session?.user.id) {
+      return NextResponse.json(
+        { success: false, error: AUTHENTICATION_REQUIRED_MESSAGE },
+        { status: 401 },
+      );
+    }
+
+    const raw: unknown = await req.json().catch(() => null);
     const parsed = BattleActionBodySchema.safeParse(raw);
 
     if (!parsed.success) {
@@ -30,7 +49,8 @@ export async function POST(req: Request) {
 
     const { battleId, action } = parsed.data;
 
-    const result = await processBattleTurn(battleId, action);
+    // Le stockage compare cet identifiant au propriétaire enregistré du combat.
+    const result = await processBattleTurn(battleId, session.user.id, action);
 
     return NextResponse.json({
       success: true,
@@ -40,9 +60,25 @@ export async function POST(req: Request) {
       rewards: result.rewards,
     });
   } catch (error) {
+    if (error instanceof BattleSessionUnavailableError) {
+      return NextResponse.json(
+        { success: false, error: BATTLE_UNAVAILABLE_MESSAGE },
+        { status: 404 },
+      );
+    }
+
+    if (error instanceof BattleActionRejectedError) {
+      return NextResponse.json(
+        { success: false, error: "Action invalide" },
+        { status: 400 },
+      );
+    }
+
+    // Les erreurs inattendues restent côté serveur sans exposer leur message.
+    console.error("Échec du traitement d'une action de combat.");
     return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 400 }
+      { success: false, error: BATTLE_ACTION_FAILED_MESSAGE },
+      { status: 500 },
     );
   }
 }

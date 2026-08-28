@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BattleEngine } from "@/lib/combat/battle-engine";
 import {
+  BattleSessionUnavailableError,
   registerBattleSession,
   getBattleSession,
   processBattleTurn,
@@ -104,8 +105,17 @@ describe("Battle Vertical Slice Integration (T-US06-06)", () => {
     };
     (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
 
-    // Execute 1 turn (Thunderbolt kills level 5 Magikarp in 1 hit)
-    const result = await processBattleTurn(engine.battleId, { type: "move", moveIndex: 0 });
+    // Un autre compte ne peut ni lire ni faire avancer ce combat.
+    await expect(
+      processBattleTurn(engine.battleId, "other-user", { type: "move", moveIndex: 0 }),
+    ).rejects.toBeInstanceOf(BattleSessionUnavailableError);
+
+    // Le propriétaire peut jouer : Tonnerre met K.O. le Magicarpe au premier tour.
+    const result = await processBattleTurn(
+      engine.battleId,
+      "user-1",
+      { type: "move", moveIndex: 0 },
+    );
 
     expect(result.turnResult).toBeDefined();
     expect(result.turnResult.events.length).toBeGreaterThan(0);
