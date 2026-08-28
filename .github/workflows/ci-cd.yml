@@ -217,6 +217,41 @@ jobs:
       - integration-checks
     runs-on: ubuntu-latest
 
+    # Le parcours Playwright utilise une base isolée, créée uniquement pour ce job.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: heig_odyssey_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/heig_odyssey_e2e?schema=public"
+      REDIS_URL: "redis://localhost:6379"
+      BETTER_AUTH_SECRET: "e2e-only-auth-secret-at-least-32-characters"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      # Les comptes E2E sont injectés en base : ces valeurs ne servent jamais à envoyer.
+      RESEND_API_KEY: "re_e2e_placeholder"
+      RESEND_FROM_EMAIL: "HEIG Odyssey <noreply@heig-odyssey.online>"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -243,11 +278,19 @@ jobs:
         if: steps.app.outputs.exists == 'true'
         run: npm ci
 
-      - name: Pull Request browser checks when available
+      - name: Apply Prisma migrations to E2E database
+        if: steps.app.outputs.exists == 'true'
+        run: npx prisma migrate deploy
+
+      - name: Install Chromium for Playwright
+        if: steps.app.outputs.exists == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Pull Request browser checks
         if: steps.app.outputs.exists == 'true'
         shell: bash
         run: |
-          npm run test:e2e --if-present -- --project=chromium
+          npm run test:e2e -- --project=chromium
           npm run test:a11y --if-present
 
       - name: Validate Docker Compose when available

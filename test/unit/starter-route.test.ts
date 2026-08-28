@@ -57,7 +57,7 @@ describe("POST /api/starter/choose", () => {
       createRequest({
         userId: "victim-user",
         speciesId: "turtwig",
-      })
+      }),
     );
 
     expect(response.status).toBe(400);
@@ -78,7 +78,7 @@ describe("POST /api/starter/choose", () => {
       createRequest({
         speciesId: "turtwig",
         nickname: "Torti",
-      })
+      }),
     );
 
     expect(response.status).toBe(201);
@@ -86,7 +86,33 @@ describe("POST /api/starter/choose", () => {
     expect(selectStarterMock).toHaveBeenCalledWith(
       "authenticated-user",
       "turtwig",
-      "Torti"
+      "Torti",
+    );
+  });
+
+  // Le service traduit un second recrutement en conflit sans exposer de
+  // détail interne ni relancer une autre opération d'écriture.
+  it("retourne un conflit lorsque la requête de recrutement est rejouée", async () => {
+    getSessionMock.mockResolvedValue({
+      user: { id: "authenticated-user" },
+    });
+    selectStarterMock.mockRejectedValue(
+      new Error("L'onboarding a déjà été complété pour ce compte."),
+    );
+
+    const response = await POST(createRequest({ speciesId: "chimchar" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body).toEqual({
+      success: false,
+      error: "L'onboarding a déjà été complété pour ce compte.",
+    });
+    expect(selectStarterMock).toHaveBeenCalledOnce();
+    expect(selectStarterMock).toHaveBeenCalledWith(
+      "authenticated-user",
+      "chimchar",
+      undefined,
     );
   });
 });
