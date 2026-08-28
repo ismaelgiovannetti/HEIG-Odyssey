@@ -9,6 +9,10 @@ type AuthShellProps = {
   children: ReactNode;
   footer?: ReactNode;
   eyebrow?: string;
+  /** Permet une variante visuelle ciblée sans dupliquer la structure. */
+  className?: string;
+  /** La note reste active par défaut sur les écrans qui saisissent un compte. */
+  showSecurityNote?: boolean;
 };
 
 /**
@@ -21,6 +25,8 @@ export function AuthShell({
   children,
   footer,
   eyebrow = "Terminal dresseur",
+  className = "",
+  showSecurityNote = true,
 }: AuthShellProps) {
   return (
     <main className="auth-page" id="main-content">
@@ -30,17 +36,30 @@ export function AuthShell({
       </a>
 
       {/* Ces marques sont décoratives et sont ignorées par les lecteurs d'écran. */}
-      <div className="auth-background-mark auth-background-mark--one" aria-hidden="true" />
-      <div className="auth-background-mark auth-background-mark--two" aria-hidden="true" />
+      <div
+        className="auth-background-mark auth-background-mark--one"
+        aria-hidden="true"
+      />
+      <div
+        className="auth-background-mark auth-background-mark--two"
+        aria-hidden="true"
+      />
 
-      <section className="auth-card" aria-labelledby="auth-title">
+      <section
+        className={`auth-card${className ? ` ${className}` : ""}`}
+        aria-labelledby="auth-title"
+      >
         <div className="auth-card__topline" aria-hidden="true">
           <span>HEIG-ODYSSEY</span>
-          <span>GEN-04</span>
+          <span>PDG</span>
         </div>
 
         <header className="auth-card__header">
-          <Link className="auth-brand" href="/" aria-label="Retour à l'accueil HEIG Odyssey">
+          <Link
+            className="auth-brand"
+            href="/"
+            aria-label="Retour à l'accueil HEIG Odyssey"
+          >
             <Image
               src="/heig-odyssey-logo.png"
               alt="HEIG Odyssey"
@@ -62,12 +81,20 @@ export function AuthShell({
           {children}
         </div>
 
-        {footer ? <footer className="auth-card__footer">{footer}</footer> : null}
+        {footer ? (
+          <footer className="auth-card__footer">{footer}</footer>
+        ) : null}
 
-        <div className="auth-security-note">
-          <ShieldCheck aria-hidden="true" size={17} />
-          <span>Connexion protégée - vos informations restent confidentielles.</span>
-        </div>
+        {/* Le dashboard et le logout peuvent masquer cette note, car aucune
+            donnée d'authentification n'y est saisie. */}
+        {showSecurityNote ? (
+          <div className="auth-security-note">
+            <ShieldCheck aria-hidden="true" size={17} />
+            <span>
+              Connexion protégée - vos informations restent confidentielles.
+            </span>
+          </div>
+        ) : null}
       </section>
     </main>
   );

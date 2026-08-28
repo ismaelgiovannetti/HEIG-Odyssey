@@ -39,6 +39,7 @@ export default async function DashboardPlaceholderPage() {
       eyebrow="Session active"
       title={`Bon retour, ${session.user.name}`}
       description="Votre compte est prêt et votre progression a été chargée."
+      showSecurityNote={false}
       footer={
         <p>
           Terminer la session ? <Link href="/logout">Se déconnecter</Link>
@@ -49,7 +50,10 @@ export default async function DashboardPlaceholderPage() {
         <Gamepad2 aria-hidden="true" size={30} />
         <div>
           <h2>Accueil du jeu en préparation</h2>
-          <p>Le tableau de bord complet sera réalisé dans la tâche dédiée au shell applicatif.</p>
+          <p>
+            Le tableau de bord complet sera réalisé dans la tâche dédiée au
+            shell applicatif.
+          </p>
         </div>
       </div>
     </AuthShell>
