@@ -2886,11 +2886,14 @@ body {
   background: var(--color-primary);
 }
 
+/* Tous les contrôles du shell partagent un focus contrasté et indépendant de
+   leur couleur de mode afin de rester repérables au clavier. */
 .application-navigation a:focus-visible,
 .application-brand:focus-visible,
 .application-player__logout:focus-visible,
 .dashboard-mode-card:focus-visible,
-.dashboard-team__heading a:focus-visible {
+.dashboard-team__heading a:focus-visible,
+.mode-placeholder__back:focus-visible {
   outline: 3px solid var(--color-primary-light);
   outline-offset: 3px;
 }
