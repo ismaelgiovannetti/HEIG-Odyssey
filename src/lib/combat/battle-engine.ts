@@ -9,6 +9,7 @@ import type {
   TurnExecutionResult,
   BattleSideId,
   BattlePhase,
+  BattleStatus,
 } from "./types";
 import type { TrainerPokemon, TrainerPokemonInput, Move, PokemonType } from "../content/schemas";
 import { getSpecies } from "../content/loader";
@@ -455,7 +456,7 @@ export class BattleEngine {
         currentHp,
         maxHp,
         hpPercent,
-        status: (pkmn.status as any) || null,
+        status: (pkmn.status || null) as BattleStatus,
         moves: moveInfos,
         isShiny: pkmn.set.shiny ?? false,
         isActive,
