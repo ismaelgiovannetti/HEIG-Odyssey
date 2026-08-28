@@ -86,16 +86,19 @@ export class BattleEngine {
     });
   }
 
+  /** Escape hatch to the underlying @pkmn/sim Battle instance. */
   public getRawBattle(): Battle {
     return this.battle;
   }
 
+  /** True once both sides have submitted their choice for the current turn. */
   public isTurnReady(): boolean {
     const p1Done = this.battle.p1.isChoiceDone() || this.battle.p1.requestState === "";
     const p2Done = this.battle.p2.isChoiceDone() || this.battle.p2.requestState === "";
     return p1Done && p2Done;
   }
 
+  /** Lists the moves/switches a side may currently choose from. */
   public getValidActions(side: BattleSideId): BattleAction[] {
     if (this.battle.ended) return [];
 
@@ -143,6 +146,7 @@ export class BattleEngine {
     return actions;
   }
 
+  /** Submits a side's chosen action for the current turn. */
   public submitAction(side: BattleSideId, action: BattleAction): boolean {
     if (this.battle.ended) return false;
 
@@ -156,6 +160,7 @@ export class BattleEngine {
     return this.battle.choose(side, choiceStr);
   }
 
+  /** Parses raw @pkmn/sim protocol lines emitted since the last call into BattleEvents. */
   public parseNewLogs(): BattleEvent[] {
     const newLogs = this.battle.log.slice(this.logCursor);
     this.logCursor = this.battle.log.length;
@@ -368,6 +373,7 @@ export class BattleEngine {
     return events;
   }
 
+  /** Resolves the turn once both sides have submitted an action, returning the resulting events and state. */
   public executeTurn(): TurnExecutionResult {
     const events = this.parseNewLogs();
     const state = this.getState();
@@ -379,6 +385,7 @@ export class BattleEngine {
     };
   }
 
+  /** Builds a serializable snapshot of the current battle state. */
   public getState(): BattleState {
     const p1State = this.buildSideState("p1", this.p1Info);
     const p2State = this.buildSideState("p2", this.p2Info);
