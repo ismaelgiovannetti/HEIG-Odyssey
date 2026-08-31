@@ -64,6 +64,8 @@ export async function getCampaignProgressForUser(
     where: { userId },
   });
 
+  // Ces deux index évitent de relire la réponse Prisma pour chaque étape du
+  // contenu, tout en distinguant une progression créée d'une victoire acquise.
   const progressByStageId = new Map(
     userProgressList.map((p) => [p.stageId, p]),
   );
@@ -155,7 +157,8 @@ export async function getCampaignProgressForUser(
     };
   });
 
-  // Déterminer le monde actif suggéré (premier monde accessible non encore terminé, ou le premier)
+  // La reprise privilégie le premier monde encore jouable ; le premier monde
+  // sert uniquement de repli lorsque la campagne est entièrement terminée.
   const currentWorld =
     worldViews.find((w) => w.status === "ACCESSIBLE" && !w.isCompleted) ??
     worldViews.find((w) => w.status === "ACCESSIBLE") ??
@@ -210,7 +213,7 @@ export async function canUserAccessStage(
     };
   }
 
-  // Si pas de prérequis, étape immédiatement accessible
+  // Une racine de campagne ne dépend d'aucune ligne de progression existante.
   if (targetStage.prerequisiteStageId === null) {
     return {
       allowed: true,
@@ -220,7 +223,8 @@ export async function canUserAccessStage(
     };
   }
 
-  // Vérification stricte du prérequis en base de données
+  // L'autorisation est recalculée depuis la base et ne fait jamais confiance
+  // au statut affiché précédemment dans le navigateur.
   const prereqProgress = await prisma.campaignProgress.findUnique({
     where: {
       userId_stageId: {

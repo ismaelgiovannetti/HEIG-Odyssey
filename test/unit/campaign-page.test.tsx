@@ -134,45 +134,34 @@ describe("CampaignMap Component (US-07)", () => {
     render(<CampaignMap overview={sampleOverview} />);
 
     expect(
-      screen.getByRole("heading", { name: /Progression de la Campagne/i }),
+      screen.getByRole("heading", { name: /Campagne - Bachelor 1/i }),
     ).toBeDefined();
 
-    expect(screen.getByText("Bachelor 1 - Type Normal")).toBeDefined();
-    expect(screen.getByText("1 / 6")).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /Bachelor 1 - Type Normal/i }),
+    ).toBeDefined();
   });
 
   it("distingue les étapes terminées, accessibles et verrouillées", () => {
     render(<CampaignMap overview={sampleOverview} />);
 
-    // Étape 1 (Terminée)
-    expect(screen.getByText("Victoire validée")).toBeDefined();
+    // Les états sont portés par les nœuds afin d'être visibles et annoncés au clavier.
     expect(
-      screen.getByRole("button", { name: /Rejouer : Laboratoire Normal - Étape 1/i }),
+      screen.getByRole("button", { name: /Étape 1 - Terminée/i }),
     ).toBeDefined();
-
-    // Étape 2 (Accessible)
-    expect(screen.getByText("Disponible")).toBeDefined();
-    expect(
-      screen.getByRole("button", {
-        name: /Lancer le combat : Laboratoire Normal - Étape 2/i,
-      }),
-    ).toBeDefined();
-
-    // Étape 3 (Verrouillée)
-    expect(screen.getAllByText("Verrouillé").length).toBeGreaterThan(0);
-    const lockedButton = screen
-      .getAllByRole("button", { name: /Verrouillé/i })
-      .find((btn) => btn.hasAttribute("disabled"));
-    expect(lockedButton).toBeDefined();
-    expect(lockedButton!.hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /Étape 2 - Disponible/i })).toBeDefined();
+    expect(screen.getByRole("button", { name: /Étape 3 - Verrouillée/i })).toBeDefined();
   });
 
-  it("affiche clairement le niveau recommandé comme indication non-bloquante", () => {
+  it("présente la difficulté sans utiliser le niveau comme verrou d'interface", () => {
     render(<CampaignMap overview={sampleOverview} />);
 
-    expect(screen.getAllByText(/Niveau recommandé :/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("6")).toBeDefined();
-    expect(screen.getAllByText("(non-bloquant)").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/Difficulté 1 sur 5/i)).toBeDefined();
+    expect(
+      screen
+        .getByRole("button", { name: /Lancer le combat : Laboratoire Normal - Étape 2/i })
+        .hasAttribute("disabled"),
+    ).toBe(false);
   });
 
   it("permet de basculer vers un autre monde", async () => {
@@ -184,8 +173,8 @@ describe("CampaignMap Component (US-07)", () => {
     });
     await user.click(b2Tab);
 
-    expect(screen.getByText("Bachelor 2 - Combat & Vol")).toBeDefined();
-    expect(screen.getByText("Deuxième monde de la campagne.")).toBeDefined();
+    expect(screen.getByRole("heading", { name: /Campagne - Bachelor 2/i })).toBeDefined();
+    expect(screen.getByText("Arène Combat - Étape 1")).toBeDefined();
   });
 
   it("lance un combat lors du clic sur le bouton défier d'une étape accessible", async () => {

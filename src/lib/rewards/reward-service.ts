@@ -57,7 +57,8 @@ export async function grantBattleRewards({
     };
   }
 
-  // Find stage rewards and cross-world next stage in campaign configuration
+  // La liste aplatie conserve le monde propriétaire de chaque étape : la
+  // suivante peut ainsi appartenir au monde suivant sans perdre cette clé.
   const worlds = loadCampaign();
   const allStages = worlds.flatMap((w) =>
     w.stages.map((s) => ({ ...s, worldId: w.id }))
@@ -73,6 +74,8 @@ export async function grantBattleRewards({
     stageConfig = allStages[foundIdx];
     worldId = stageConfig.worldId;
     if (foundIdx + 1 < allStages.length) {
+      // L'ordre du contenu constitue l'unique ordre de progression, y compris
+      // à la frontière entre deux mondes.
       nextStageId = allStages[foundIdx + 1].id;
       nextWorldId = allStages[foundIdx + 1].worldId;
     }

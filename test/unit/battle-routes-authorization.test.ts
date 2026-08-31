@@ -141,6 +141,7 @@ describe("autorisation du démarrage d'un combat", () => {
   });
 
   it("refuse le lancement d'une étape de campagne verrouillée avec code 403", async () => {
+    // La route doit arrêter le flux avant toute création de session de combat.
     mocks.canUserAccessStage.mockResolvedValue({
       allowed: false,
       reason: "Cette étape est verrouillée.",
@@ -159,6 +160,7 @@ describe("autorisation du démarrage d'un combat", () => {
   });
 
   it("autorise le lancement d'une étape de campagne débloquée avec code 200", async () => {
+    // Le dresseur provient du contrôle serveur et non du corps de la requête.
     mocks.canUserAccessStage.mockResolvedValue({
       allowed: true,
       trainerId: "trainer-1",
