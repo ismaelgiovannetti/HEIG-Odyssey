@@ -37,6 +37,9 @@ describe("Team Validation & Stats Calculation (US-05)", () => {
     gender: "M",
     isShiny: false,
     teamPosition,
+    // Une créature active n'occupe aucune case du PC.
+    boxNumber: null,
+    boxSlot: null,
     caughtAt: new Date(),
   });
 

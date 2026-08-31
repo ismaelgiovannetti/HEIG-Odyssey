@@ -1,102 +1,94 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { getApplicationOrigin } from "@/lib/auth/environment";
+import { UpdateTeamBodySchema } from "@/lib/team/team-contract";
 import {
-  getPlayerCollection,
-  updateActiveTeam,
-  TeamCompositionInvalidError,
-  TeamPokemonNotOwnedError,
+  getPlayerCollection, updateActiveTeam, TeamCompositionInvalidError,
+  TeamPokemonNotOwnedError, TeamRevisionConflictError, TeamOnboardingRequiredError,
+  PcCapacityExceededError,
 } from "@/lib/team/team-service";
 
-const AUTHENTICATION_REQUIRED_MESSAGE = "Authentification requise.";
-const TEAM_READ_FAILED_MESSAGE = "Impossible de charger la collection.";
-const TEAM_UPDATE_FAILED_MESSAGE = "Impossible de mettre à jour l'équipe active.";
+// Les réponses contiennent une collection privée, y compris après une erreur.
+function json(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+}
 
-// L'identité du joueur vient uniquement de la session ; seuls les identifiants
-// des créatures à placer en équipe sont acceptés depuis le navigateur.
-const UpdateTeamBodySchema = z
-  .object({
-    teamPokemonIds: z.array(z.string().trim().min(1)).min(1).max(6),
-  })
-  .strict()
-  .refine(
-    (data) => new Set(data.teamPokemonIds).size === data.teamPokemonIds.length,
-    {
-      message: "La liste des créatures ne peut pas contenir de doublons.",
-      path: ["teamPokemonIds"],
-    }
-  );
+function handleError(error: unknown, operation: "lecture" | "sauvegarde") {
+  if (error instanceof TeamPokemonNotOwnedError) return json({ success: false, error: error.message }, 404);
+  if (error instanceof TeamCompositionInvalidError) {
+    return json({ success: false, error: error.message, details: error.reasons }, 400);
+  }
+  if (error instanceof TeamRevisionConflictError) return json({ success: false, code: "COLLECTION_CHANGED", error: error.message }, 409);
+  if (error instanceof PcCapacityExceededError) return json({ success: false, code: "PC_FULL", error: error.message }, 409);
+  if (error instanceof TeamOnboardingRequiredError) return json({ success: false, error: error.message }, 403);
 
+  // Pas de corps de requête, cookie ou erreur Prisma dans les journaux publics.
+  console.error(`Échec de la ${operation} de la collection.`);
+  return json({ success: false, error: "Impossible de traiter la collection pour le moment." }, 500);
+}
+
+/** GET n'accepte aucun userId : la session est la seule source de l'identité. */
 export async function GET(req: Request) {
   try {
     const session = await auth.api.getSession({ headers: req.headers });
+    if (!session?.user.id) return json({ success: false, error: "Authentification requise." }, 401);
+    if (!session.user.emailVerified) return json({ success: false, error: "Vérifiez votre adresse e-mail." }, 403);
+    return json({ success: true, ...await getPlayerCollection(session.user.id) });
+  } catch (error) {
+    return handleError(error, "lecture");
+  }
+}
 
-    if (!session?.user.id) {
-      return NextResponse.json(
-        { success: false, error: AUTHENTICATION_REQUIRED_MESSAGE },
-        { status: 401 }
-      );
+/** Lit au maximum 256 Kio, même si Content-Length est absent ou mensonger. */
+async function readBody(req: Request): Promise<unknown> {
+  const reader = req.body?.getReader();
+  if (!reader) return null;
+  const decoder = new TextDecoder();
+  let size = 0;
+  let text = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 256 * 1024) {
+        await reader.cancel();
+        throw new RangeError("TEAM_BODY_TOO_LARGE");
+      }
+      text += decoder.decode(value, { stream: true });
     }
-
-    const pokemon = await getPlayerCollection(session.user.id);
-
-    return NextResponse.json({
-      success: true,
-      count: pokemon.length,
-      pokemon,
-    });
-  } catch {
-    console.error("Échec de la lecture de la collection.");
-    return NextResponse.json(
-      { success: false, error: TEAM_READ_FAILED_MESSAGE },
-      { status: 500 }
-    );
+    return JSON.parse(text + decoder.decode());
+  } finally {
+    reader.releaseLock();
   }
 }
 
 export async function PUT(req: Request) {
   try {
     const session = await auth.api.getSession({ headers: req.headers });
+    if (!session?.user.id) return json({ success: false, error: "Authentification requise." }, 401);
+    if (!session.user.emailVerified) return json({ success: false, error: "Vérifiez votre adresse e-mail." }, 403);
 
-    if (!session?.user.id) {
-      return NextResponse.json(
-        { success: false, error: AUTHENTICATION_REQUIRED_MESSAGE },
-        { status: 401 }
-      );
+    // L'origine validée vient de la configuration, jamais de l'en-tête Host du proxy.
+    if (req.headers.get("origin") !== getApplicationOrigin()) {
+      return json({ success: false, error: "Origine de la requête refusée." }, 403);
+    }
+    if (req.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
+      return json({ success: false, error: "Un corps JSON est requis." }, 415);
     }
 
-    const raw: unknown = await req.json().catch(() => null);
+    let raw: unknown;
+    try {
+      raw = await readBody(req);
+    } catch (error) {
+      return json({ success: false, error: "Corps de requête invalide ou trop volumineux." }, error instanceof RangeError ? 413 : 400);
+    }
     const parsed = UpdateTeamBodySchema.safeParse(raw);
+    if (!parsed.success) return json({ success: false, error: "Requête invalide.", details: parsed.error.issues }, 400);
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Requête invalide", details: parsed.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const team = await updateActiveTeam(session.user.id, parsed.data.teamPokemonIds);
-
-    return NextResponse.json({ success: true, team });
+    // Le client fournit uniquement le rangement et la version qu'il a consultée.
+    return json({ success: true, ...await updateActiveTeam(session.user.id, parsed.data) });
   } catch (error) {
-    if (error instanceof TeamPokemonNotOwnedError) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 404 }
-      );
-    }
-
-    if (error instanceof TeamCompositionInvalidError) {
-      return NextResponse.json(
-        { success: false, error: error.message, details: error.reasons },
-        { status: 400 }
-      );
-    }
-
-    console.error("Échec de la mise à jour de l'équipe active.");
-    return NextResponse.json(
-      { success: false, error: TEAM_UPDATE_FAILED_MESSAGE },
-      { status: 500 }
-    );
+    return handleError(error, "sauvegarde");
   }
 }

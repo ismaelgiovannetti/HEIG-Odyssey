@@ -1,128 +1,85 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 import {
-  getPlayerCollection,
-  updateActiveTeam,
-  TeamCompositionInvalidError,
-  TeamPokemonNotOwnedError,
+  getPlayerCollection, updateActiveTeam, TeamCompositionInvalidError,
+  TeamPokemonNotOwnedError, TeamRevisionConflictError, TeamOnboardingRequiredError,
 } from "@/lib/team/team-service";
-import { prisma } from "@/lib/prisma";
-import type { UserPokemon } from "@prisma/client";
+import { teamPokemon } from "../helpers/team-fixtures";
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    userPokemon: {
-      findMany: vi.fn(),
-    },
-    $transaction: vi.fn(),
-  },
-}));
+const mocks = vi.hoisted(() => {
+  const tx = {
+    $queryRaw: vi.fn(), $executeRaw: vi.fn(),
+    userProfile: { findUnique: vi.fn(), update: vi.fn() },
+    userPokemon: { findMany: vi.fn() },
+  };
+  return { tx, transaction: vi.fn(async (callback: (client: typeof tx) => Promise<unknown>) => callback(tx)) };
+});
+vi.mock("@/lib/prisma", () => ({ prisma: { $transaction: mocks.transaction } }));
 
-function mockPokemon(overrides: Partial<UserPokemon> & { id: string }): UserPokemon {
-  return {
-    userId: "user-1",
-    speciesId: "turtwig",
-    nickname: null,
-    level: 5,
-    experience: 0,
-    currentHp: 20,
-    maxHp: 20,
-    ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-    evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-    moves: [],
-    ability: "Overgrow",
-    nature: "Hardy",
-    gender: "GENDERLESS",
-    isShiny: false,
-    teamPosition: null,
-    caughtAt: new Date(),
-    ...overrides,
-  } as UserPokemon;
-}
+const active = teamPokemon({ id: "p1", teamPosition: 1, boxNumber: null, boxSlot: null, nickname: "Torti" });
+const stored = teamPokemon({ id: "p2", speciesId: "chimchar" });
 
-describe("Team Service (T-US05-02)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.tx.$queryRaw.mockResolvedValue([{ id: "profile-1" }]);
+  mocks.tx.$executeRaw.mockResolvedValue(2);
+  mocks.tx.userProfile.findUnique.mockResolvedValue({ hasCompletedOnboarding: true, collectionRevision: 4 });
+  mocks.tx.userProfile.update.mockResolvedValue({ collectionRevision: 5 });
+  mocks.tx.userPokemon.findMany.mockResolvedValue([active, stored]);
+});
+
+describe("service équipe et PC", () => {
+  it("lit un instantané privé avec les attaques possédées et les dimensions des boîtes", async () => {
+    const result = await getPlayerCollection("user-1");
+    expect(result).toMatchObject({ revision: 4, count: 2, pc: { columns: 7, rows: 10 } });
+    expect(result.pc.boxes).toHaveLength(15);
+    expect(result.team).toHaveLength(1);
+    expect(result.pokemon[0]).toMatchObject({ id: "p1", name: "Torti", moves: [{ id: "tackle", pp: 0 }] });
+    expect(result.pokemon[0]).not.toHaveProperty("userId");
+    expect(result.pokemon[0].stats?.hp).toBe(21);
+    expect(mocks.tx.userPokemon.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "user-1" } }));
+    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   });
 
-  describe("getPlayerCollection", () => {
-    it("lit toute la collection du joueur, équipe active comprise", async () => {
-      (prisma.userPokemon.findMany as any).mockResolvedValue([
-        mockPokemon({ id: "p1", teamPosition: 1, nickname: "Torti" }),
-        mockPokemon({ id: "p2", teamPosition: null, speciesId: "chimchar" }),
-      ]);
-
-      const collection = await getPlayerCollection("user-1");
-
-      expect(prisma.userPokemon.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { userId: "user-1" } }),
-      );
-      expect(collection).toHaveLength(2);
-      expect(collection[0]).toMatchObject({ id: "p1", name: "Torti", teamPosition: 1 });
-      expect(collection[1]).toMatchObject({ id: "p2", teamPosition: null });
-      // Le nom d'espèce sert de repli lorsqu'aucun surnom n'a été donné.
-      expect(collection[1].name).not.toBe("");
-    });
+  it("refuse l'accès avant la fin du recrutement initial", async () => {
+    mocks.tx.userProfile.findUnique.mockResolvedValue({ hasCompletedOnboarding: false });
+    await expect(getPlayerCollection("user-1")).rejects.toBeInstanceOf(TeamOnboardingRequiredError);
+    await expect(updateActiveTeam("user-1", { expectedRevision: 4, teamPokemonIds: ["p1"] })).rejects.toBeInstanceOf(TeamOnboardingRequiredError);
+    expect(mocks.tx.$executeRaw).not.toHaveBeenCalled();
   });
 
-  describe("updateActiveTeam", () => {
-    function mockTransaction(owned: UserPokemon[]) {
-      const tx = {
-        userPokemon: {
-          findMany: vi
-            .fn()
-            .mockResolvedValueOnce(owned) // vérification de propriété
-            .mockResolvedValueOnce(owned), // relecture finale
-          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
-          update: vi.fn().mockResolvedValue({}),
-        },
-      };
-      (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
-      return tx;
-    }
+  it("refuse un identifiant absent de la collection sans écrire", async () => {
+    await expect(updateActiveTeam("user-1", { expectedRevision: 4, teamPokemonIds: ["foreign"] })).rejects.toBeInstanceOf(TeamPokemonNotOwnedError);
+    expect(mocks.tx.$executeRaw).not.toHaveBeenCalled();
+  });
 
-    it("refuse une créature qui n'appartient pas au joueur", async () => {
-      mockTransaction([mockPokemon({ id: "p1" })]); // un seul trouvé pour deux demandés
+  it("revérifie les entrées même lors d'un appel direct au service", async () => {
+    await expect(updateActiveTeam("user-1", { expectedRevision: 4, teamPokemonIds: [] })).rejects.toBeInstanceOf(TeamCompositionInvalidError);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
 
-      await expect(updateActiveTeam("user-1", ["p1", "p2"])).rejects.toBeInstanceOf(
-        TeamPokemonNotOwnedError,
-      );
-    });
+  it("refuse une équipe entièrement K.O.", async () => {
+    mocks.tx.userPokemon.findMany.mockResolvedValue([{ ...active, currentHp: 0 }, stored]);
+    await expect(updateActiveTeam("user-1", { expectedRevision: 4, teamPokemonIds: ["p1"] })).rejects.toBeInstanceOf(TeamCompositionInvalidError);
+    expect(mocks.tx.$executeRaw).not.toHaveBeenCalled();
+  });
 
-    it("refuse une composition invalide (toutes les créatures K.O.)", async () => {
-      mockTransaction([
-        mockPokemon({ id: "p1", currentHp: 0 }),
-        mockPokemon({ id: "p2", currentHp: 0 }),
-      ]);
+  it("verrouille le joueur puis refuse la version d'un ancien onglet", async () => {
+    await expect(updateActiveTeam("user-1", { expectedRevision: 3, teamPokemonIds: ["p2"] })).rejects.toBeInstanceOf(TeamRevisionConflictError);
+    expect(mocks.tx.$queryRaw.mock.calls[0][0].sql).toContain("FOR UPDATE");
+    expect(mocks.tx.userPokemon.findMany).not.toHaveBeenCalled();
+    expect(mocks.tx.userProfile.update).not.toHaveBeenCalled();
+  });
 
-      await expect(updateActiveTeam("user-1", ["p1", "p2"])).rejects.toBeInstanceOf(
-        TeamCompositionInvalidError,
-      );
-    });
-
-    it("met à jour les positions et libère les créatures retirées de l'équipe", async () => {
-      const tx = mockTransaction([
-        mockPokemon({ id: "p1", currentHp: 20, teamPosition: 1 }),
-        mockPokemon({ id: "p2", currentHp: 20, teamPosition: 1 }),
-      ]);
-
-      const result = await updateActiveTeam("user-1", ["p1", "p2"]);
-
-      // Les créatures actives non reprises dans la nouvelle liste retournent en collection.
-      expect(tx.userPokemon.updateMany).toHaveBeenCalledWith({
-        where: { userId: "user-1", teamPosition: { not: null }, id: { notIn: ["p1", "p2"] } },
-        data: { teamPosition: null },
-      });
-
-      expect(tx.userPokemon.update).toHaveBeenNthCalledWith(1, {
-        where: { id: "p1" },
-        data: { teamPosition: 1 },
-      });
-      expect(tx.userPokemon.update).toHaveBeenNthCalledWith(2, {
-        where: { id: "p2" },
-        data: { teamPosition: 2 },
-      });
-
-      expect(result).toHaveLength(2);
-    });
+  it("enregistre l'échange puis renvoie la version et le rangement relus", async () => {
+    const updated = [{ ...stored, teamPosition: 1, boxNumber: null, boxSlot: null }, { ...active, teamPosition: null, boxNumber: 1, boxSlot: 1 }];
+    mocks.tx.userPokemon.findMany.mockResolvedValueOnce([active, stored]).mockResolvedValueOnce(updated);
+    const result = await updateActiveTeam("user-1", { expectedRevision: 4, teamPokemonIds: ["p2"] });
+    expect(mocks.tx.$executeRaw).toHaveBeenCalledTimes(1);
+    expect(mocks.tx.$executeRaw.mock.calls[0][0].values).toContain("user-1");
+    expect(mocks.tx.userProfile.update).toHaveBeenCalledWith({ where: { userId: "user-1" }, data: { collectionRevision: { increment: 1 } } });
+    expect(result.revision).toBe(5);
+    expect(result.team[0].id).toBe("p2");
+    expect(result.pokemon.find((p) => p.id === "p1")).toMatchObject({ boxNumber: 1, boxSlot: 1 });
   });
 });
