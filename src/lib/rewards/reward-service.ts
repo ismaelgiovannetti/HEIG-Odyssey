@@ -2,12 +2,16 @@ import { prisma } from "../prisma";
 import { loadCampaign, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
 import { BattleResult } from "@prisma/client";
+import type { CampaignStage } from "../content/schemas";
+import { snapshotBattleParticipants } from "../combat/battle-participants";
 
 export interface GrantBattleRewardsParams {
   userId: string;
   battleId: string;
   stageId: string;
   winner: "p1" | "p2";
+  // Identifiants capturés par le serveur au lancement, jamais par le navigateur.
+  playerPokemonIds: readonly string[];
 }
 
 export interface BattleRewardResult {
@@ -29,7 +33,7 @@ export interface BattleRewardResult {
 }
 
 export function calculateXpForNextLevel(currentLevel: number): number {
-  // Medium-Fast leveling curve approximation: (Level + 1)^3 - Level^3
+  // Seuil de la courbe d'expérience moyenne : différence entre deux niveaux au cube.
   return Math.floor(Math.pow(currentLevel + 1, 3) - Math.pow(currentLevel, 3));
 }
 
@@ -38,13 +42,16 @@ export async function grantBattleRewards({
   battleId,
   stageId,
   winner,
+  playerPokemonIds,
 }: GrantBattleRewardsParams): Promise<BattleRewardResult> {
-  // 1. Check idempotency: if battleRecord already exists for this battleId
+  const participantIds = snapshotBattleParticipants(playerPokemonIds);
+  // Un résultat déjà enregistré ne doit jamais attribuer de nouveaux gains.
   const existingBattle = await prisma.battleRecord.findUnique({
     where: { idempotencyKey: battleId },
   });
 
   if (existingBattle) {
+    if (existingBattle.userId !== userId) throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
     const profile = await prisma.userProfile.findUnique({ where: { userId } });
     return {
       isAlreadyClaimed: true,
@@ -85,7 +92,7 @@ export async function grantBattleRewards({
   const xpReward = winner === "p1" ? stageConfig?.rewardXp || 100 : 0;
 
   return await prisma.$transaction(async (tx) => {
-    // 1. Update User Profile balance
+    // Monnaie, expérience, progression et résultat font partie de la même transaction.
     const updatedProfile = await tx.userProfile.upsert({
       where: { userId },
       create: {
@@ -100,17 +107,19 @@ export async function grantBattleRewards({
 
     const teamLeveledUp: BattleRewardResult["teamLeveledUp"] = [];
 
-    // 2. Grant XP and level up player's active team
+    // On retrouve les participants réels, même s'ils sont désormais rangés dans le PC.
+    // Ce contrôle d'appartenance protège également les appels internes au service.
+    const participants = await tx.userPokemon.findMany({
+      where: { userId, id: { in: [...participantIds] } },
+      orderBy: { id: "asc" },
+    });
+    if (participants.length !== participantIds.length) throw new Error("BATTLE_PARTICIPANTS_UNAVAILABLE");
+
+    // Seuls ces participants reçoivent l'expérience, pas leurs éventuels remplaçants.
     if (winner === "p1" && xpReward > 0) {
-      const activeTeam = await tx.userPokemon.findMany({
-        where: { userId, teamPosition: { not: null } },
-        orderBy: { teamPosition: "asc" },
-      });
+      const xpPerMember = Math.max(1, Math.floor(xpReward / participants.length));
 
-      // Distribute XP among conscious/active members
-      const xpPerMember = Math.max(1, Math.floor(xpReward / Math.max(1, activeTeam.length)));
-
-      for (const member of activeTeam) {
+      for (const member of participants) {
         let currentLevel = member.level;
         let currentExp = member.experience + xpPerMember;
         let leveledUp = false;
@@ -127,12 +136,13 @@ export async function grantBattleRewards({
         }
 
         const species = getSpecies(member.speciesId);
-        const ivs = (member.ivs as any) || { hp: 15 };
+        const ivs = member.ivs;
+        const hpIv = ivs && typeof ivs === "object" && !Array.isArray(ivs) && typeof ivs.hp === "number" ? ivs.hp : 15;
         const newMaxHp = species
-          ? calculateMaxHp(species.baseStats.hp, currentLevel, ivs.hp ?? 15, 0)
+          ? calculateMaxHp(species.baseStats.hp, currentLevel, hpIv, 0)
           : member.maxHp;
 
-        // Restore some HP on level up or maintain ratio
+        // Le gain de PV maximum accompagne la montée de niveau.
         const newCurrentHp = Math.min(newMaxHp, member.currentHp + (newMaxHp - member.maxHp));
 
         await tx.userPokemon.update({
@@ -159,7 +169,7 @@ export async function grantBattleRewards({
       }
     }
 
-    // 3. Update CampaignProgress
+    // Une victoire valide termine l'étape et débloque la suivante.
     if (winner === "p1") {
       await tx.campaignProgress.upsert({
         where: {
@@ -181,7 +191,7 @@ export async function grantBattleRewards({
         },
       });
 
-      // Unlock next stage if exists
+      // La dernière étape du monde n'a pas de successeur dans cette liste.
       if (nextStageId) {
         await tx.campaignProgress.upsert({
           where: {
@@ -201,14 +211,14 @@ export async function grantBattleRewards({
       }
     }
 
-    // 4. Record Battle in BattleRecord for strict idempotency
+    // La clé unique du combat empêche de valider deux attributions de gains.
     await tx.battleRecord.create({
       data: {
         userId,
         battleType: "CAMPAIGN",
         opponentId: stageConfig?.trainerId || stageId,
         opponentTeamSnapshot: {},
-        playerTeamSnapshot: {},
+        playerTeamSnapshot: { pokemonIds: [...participantIds] },
         idempotencyKey: battleId,
         result: winner === "p1" ? BattleResult.VICTORY : BattleResult.DEFEAT,
         turnsCount: 1,

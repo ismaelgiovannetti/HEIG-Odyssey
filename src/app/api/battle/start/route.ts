@@ -123,7 +123,11 @@ export async function POST(req: Request) {
     });
 
     // La session de combat mémorise son propriétaire pour chaque action future.
-    registerBattleSession(engine, userId, stageId, opponentTrainer.aiProfile);
+    // Les identifiants proviennent de la même lecture que l'équipe donnée au moteur.
+    // Déplacer ensuite un participant vers le PC ne transfère pas son XP à son remplaçant.
+    registerBattleSession(
+      engine, userId, activeTeam.map((pokemon) => pokemon.id), stageId, opponentTrainer.aiProfile,
+    );
 
     const initialState = engine.getState();
 
