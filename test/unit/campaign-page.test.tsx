@@ -146,12 +146,16 @@ describe("CampaignMap Component (US-07)", () => {
 
     // Étape 1 (Terminée)
     expect(screen.getByText("Victoire validée")).toBeDefined();
-    expect(screen.getByRole("button", { name: /Rejouer/i })).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /Rejouer : Laboratoire Normal - Étape 1/i }),
+    ).toBeDefined();
 
     // Étape 2 (Accessible)
     expect(screen.getByText("Disponible")).toBeDefined();
     expect(
-      screen.getByRole("button", { name: /Défier l'adversaire/i }),
+      screen.getByRole("button", {
+        name: /Lancer le combat : Laboratoire Normal - Étape 2/i,
+      }),
     ).toBeDefined();
 
     // Étape 3 (Verrouillée)
@@ -166,7 +170,7 @@ describe("CampaignMap Component (US-07)", () => {
   it("affiche clairement le niveau recommandé comme indication non-bloquante", () => {
     render(<CampaignMap overview={sampleOverview} />);
 
-    expect(screen.getByText("Niveau recommandé :")).toBeDefined();
+    expect(screen.getAllByText(/Niveau recommandé :/i).length).toBeGreaterThan(0);
     expect(screen.getByText("6")).toBeDefined();
     expect(screen.getAllByText("(non-bloquant)").length).toBeGreaterThan(0);
   });
@@ -203,7 +207,7 @@ describe("CampaignMap Component (US-07)", () => {
     render(<CampaignMap overview={sampleOverview} />);
 
     const challengeButton = screen.getByRole("button", {
-      name: /Défier l'adversaire/i,
+      name: /Lancer le combat : Laboratoire Normal - Étape 2/i,
     });
     await user.click(challengeButton);
 
