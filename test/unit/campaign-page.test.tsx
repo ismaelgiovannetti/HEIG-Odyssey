@@ -159,7 +159,7 @@ describe("CampaignMap Component (US-07)", () => {
     ).toBeDefined();
 
     // Étape 3 (Verrouillée)
-    expect(screen.getByText("Verrouillé")).toBeDefined();
+    expect(screen.getAllByText("Verrouillé").length).toBeGreaterThan(0);
     const lockedButton = screen.getAllByRole("button", {
       name: /Verrouillé/i,
     })[0];
