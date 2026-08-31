@@ -81,19 +81,27 @@ describe("Battle Vertical Slice Integration (T-US06-06)", () => {
       p2: { name: "Trainer", team: p2Team },
     });
 
-    registerBattleSession(engine, "user-1", "bachelor-1-stage-1", "random");
+    const participantIds = ["pkmn-1"];
+    registerBattleSession(engine, "user-1", participantIds, "bachelor-1-stage-1", "random");
+    // Le stockage garde une copie : modifier le tableau d'origine ne change pas le combat.
+    participantIds[0] = "replacement";
 
     const session = getBattleSession(engine.battleId);
     expect(session).toBeDefined();
+    expect(session?.playerPokemonIds).toEqual(["pkmn-1"]);
+    expect(Object.isFrozen(session?.playerPokemonIds)).toBe(true);
 
-    // Mock prisma for end-of-battle rewards
+    // Ce scénario couvre le moteur et les services ; PostgreSQL est simulé ici.
     (prisma.battleRecord.findUnique as any).mockResolvedValue(null);
     const mockTx = {
       userProfile: {
         upsert: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 150 }),
       },
       userPokemon: {
-        findMany: vi.fn().mockResolvedValue([]),
+        findMany: vi.fn().mockResolvedValue([{
+          id: "pkmn-1", userId: "user-1", speciesId: "pikachu", level: 50,
+          experience: 0, currentHp: 100, maxHp: 100, ivs: { hp: 15 }, nickname: null,
+        }]),
         update: vi.fn(),
       },
       campaignProgress: {
@@ -122,9 +130,12 @@ describe("Battle Vertical Slice Integration (T-US06-06)", () => {
     expect(result.turnResult.state.phase).toBe("finished");
     expect(result.turnResult.state.winner).toBe("p1");
 
-    // End-of-battle rewards should have been automatically triggered and returned
+    // La fin du combat transmet automatiquement les participants aux récompenses.
     expect(result.rewards).toBeDefined();
     expect(result.rewards?.moneyEarned).toBeGreaterThan(0);
     expect(result.rewards?.stageCompleted).toBe(true);
+    expect(mockTx.userPokemon.findMany).toHaveBeenCalledWith({
+      where: { userId: "user-1", id: { in: ["pkmn-1"] } }, orderBy: { id: "asc" },
+    });
   });
 });
