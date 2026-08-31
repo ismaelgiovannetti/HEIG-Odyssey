@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BattleEngine } from "@/lib/combat/battle-engine";
 import { registerBattleSession } from "@/lib/combat/battle-session-store";
-import { getTrainer, loadCampaign } from "@/lib/content/loader";
+import { canUserAccessStage } from "@/lib/campaign/campaign-service";
+import { getTrainer } from "@/lib/content/loader";
 import {
   validateTeamComposition,
   userPokemonToTrainerPokemon,
@@ -74,17 +75,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Une étape de campagne impose le dresseur défini dans le contenu.
+    // Une étape de campagne impose le dresseur défini dans le contenu et exige l'autorisation d'accès.
     let targetTrainerId = trainerId;
-    if (stageId && !targetTrainerId) {
-      const worlds = loadCampaign();
-      for (const w of worlds) {
-        const found = w.stages.find((s) => s.id === stageId);
-        if (found) {
-          targetTrainerId = found.trainerId;
-          break;
-        }
+    if (stageId) {
+      const accessCheck = await canUserAccessStage(userId, stageId);
+      if (!accessCheck.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
+          },
+          { status: 403 }
+        );
       }
+      targetTrainerId = accessCheck.trainerId;
     }
 
     if (!targetTrainerId) {

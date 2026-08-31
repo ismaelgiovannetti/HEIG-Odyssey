@@ -57,21 +57,24 @@ export async function grantBattleRewards({
     };
   }
 
-  // Find stage rewards in campaign configuration
+  // Find stage rewards and cross-world next stage in campaign configuration
   const worlds = loadCampaign();
-  let stageConfig: any = null;
+  const allStages = worlds.flatMap((w) =>
+    w.stages.map((s) => ({ ...s, worldId: w.id }))
+  );
+
+  let stageConfig: (typeof allStages)[number] | null = null;
   let nextStageId: string | null = null;
+  let nextWorldId: string = "bachelor-1";
   let worldId = "bachelor-1";
 
-  for (const world of worlds) {
-    const foundIdx = world.stages.findIndex((s) => s.id === stageId);
-    if (foundIdx !== -1) {
-      stageConfig = world.stages[foundIdx];
-      worldId = world.id;
-      if (foundIdx + 1 < world.stages.length) {
-        nextStageId = world.stages[foundIdx + 1].id;
-      }
-      break;
+  const foundIdx = allStages.findIndex((s) => s.id === stageId);
+  if (foundIdx !== -1) {
+    stageConfig = allStages[foundIdx];
+    worldId = stageConfig.worldId;
+    if (foundIdx + 1 < allStages.length) {
+      nextStageId = allStages[foundIdx + 1].id;
+      nextWorldId = allStages[foundIdx + 1].worldId;
     }
   }
 
@@ -186,7 +189,7 @@ export async function grantBattleRewards({
           },
           create: {
             userId,
-            worldId,
+            worldId: nextWorldId,
             stageId: nextStageId,
             isCompleted: false,
           },
