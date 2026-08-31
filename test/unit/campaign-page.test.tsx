@@ -160,11 +160,11 @@ describe("CampaignMap Component (US-07)", () => {
 
     // Étape 3 (Verrouillée)
     expect(screen.getAllByText("Verrouillé").length).toBeGreaterThan(0);
-    const lockedButton = screen.getAllByRole("button", {
-      name: /Verrouillé/i,
-    })[0];
+    const lockedButton = screen
+      .getAllByRole("button", { name: /Verrouillé/i })
+      .find((btn) => btn.hasAttribute("disabled"));
     expect(lockedButton).toBeDefined();
-    expect(lockedButton.hasAttribute("disabled")).toBe(true);
+    expect(lockedButton!.hasAttribute("disabled")).toBe(true);
   });
 
   it("affiche clairement le niveau recommandé comme indication non-bloquante", () => {
