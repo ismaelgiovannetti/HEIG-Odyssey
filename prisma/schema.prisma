@@ -277,3 +277,31 @@ model UserQuestProgress {
   @@index([userId, isCompleted])
   @@map("user_quest_progress")
 }
+
+// ----------------------------------------------------
+// 8. Event Outbox (Transactional Event Log - US-17)
+// ----------------------------------------------------
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
+
+model OutboxEvent {
+  id            String       @id @default(cuid())
+  eventId       String       @unique
+  eventType     String
+  aggregateType String       // "BATTLE" | "TRAINING"
+  aggregateId   String       // ex: battleId
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  retryCount    Int          @default(0)
+  lastError     String?
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("outbox_event")
+}
+
