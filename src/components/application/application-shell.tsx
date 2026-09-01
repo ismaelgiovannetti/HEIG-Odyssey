@@ -64,10 +64,6 @@ export function ApplicationShell({
 
   return (
     <main className="application-page">
-      <a className="skip-link" href="#application-content">
-        Aller au contenu principal
-      </a>
-
       <div
         className="application-background-mark application-background-mark--one"
         aria-hidden="true"

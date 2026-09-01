@@ -31,8 +31,8 @@ beforeEach(() => {
 describe("service équipe et PC", () => {
   it("lit un instantané privé avec les attaques possédées et les dimensions des boîtes", async () => {
     const result = await getPlayerCollection("user-1");
-    expect(result).toMatchObject({ revision: 4, count: 2, pc: { columns: 7, rows: 10 } });
-    expect(result.pc.boxes).toHaveLength(15);
+    expect(result).toMatchObject({ revision: 4, count: 2, pc: { columns: 7, rows: 5 } });
+    expect(result.pc.boxes).toHaveLength(20);
     expect(result.team).toHaveLength(1);
     expect(result.pokemon[0]).toMatchObject({ id: "p1", name: "Torti", moves: [{ id: "tackle", pp: 0 }] });
     expect(result.pokemon[0]).not.toHaveProperty("userId");

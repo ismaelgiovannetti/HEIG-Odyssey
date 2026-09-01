@@ -1,9 +1,11 @@
 import { prisma } from "../prisma";
 import { loadCampaign, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
-import { BattleResult } from "@prisma/client";
+import { BattleResult, OutboxStatus, type Prisma } from "@prisma/client";
 import type { CampaignStage } from "../content/schemas";
 import { snapshotBattleParticipants } from "../combat/battle-participants";
+import { createDomainEvent, type BattleCompletedPayload } from "../events/contracts";
+import { triggerOutboxFlush } from "../events/publisher";
 
 export interface GrantBattleRewardsParams {
   userId: string;
@@ -64,28 +66,34 @@ export async function grantBattleRewards({
     };
   }
 
-  // Les gains sont lus dans le contenu serveur, pas dans la requête du joueur.
+  // La liste aplatie conserve le monde propriétaire de chaque étape : la
+  // suivante peut ainsi appartenir au monde suivant sans perdre cette clé.
   const worlds = loadCampaign();
-  let stageConfig: CampaignStage | null = null;
+  const allStages = worlds.flatMap((w) =>
+    w.stages.map((s) => ({ ...s, worldId: w.id }))
+  );
+
+  let stageConfig: (typeof allStages)[number] | null = null;
   let nextStageId: string | null = null;
+  let nextWorldId: string = "bachelor-1";
   let worldId = "bachelor-1";
 
-  for (const world of worlds) {
-    const foundIdx = world.stages.findIndex((s) => s.id === stageId);
-    if (foundIdx !== -1) {
-      stageConfig = world.stages[foundIdx];
-      worldId = world.id;
-      if (foundIdx + 1 < world.stages.length) {
-        nextStageId = world.stages[foundIdx + 1].id;
-      }
-      break;
+  const foundIdx = allStages.findIndex((s) => s.id === stageId);
+  if (foundIdx !== -1) {
+    stageConfig = allStages[foundIdx];
+    worldId = stageConfig.worldId;
+    if (foundIdx + 1 < allStages.length) {
+      // L'ordre du contenu constitue l'unique ordre de progression, y compris
+      // à la frontière entre deux mondes.
+      nextStageId = allStages[foundIdx + 1].id;
+      nextWorldId = allStages[foundIdx + 1].worldId;
     }
   }
 
   const moneyReward = winner === "p1" ? stageConfig?.rewardMoney || 50 : 0;
   const xpReward = winner === "p1" ? stageConfig?.rewardXp || 100 : 0;
 
-  return await prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     // Monnaie, expérience, progression et résultat font partie de la même transaction.
     const updatedProfile = await tx.userProfile.upsert({
       where: { userId },
@@ -196,7 +204,7 @@ export async function grantBattleRewards({
           },
           create: {
             userId,
-            worldId,
+            worldId: nextWorldId,
             stageId: nextStageId,
             isCompleted: false,
           },
@@ -223,6 +231,42 @@ export async function grantBattleRewards({
       },
     });
 
+    // Enregistrement transactionnel de l'événement Outbox (T-US17-02)
+    const battleEventPayload: BattleCompletedPayload = {
+      userId,
+      battleId,
+      battleType: "CAMPAIGN",
+      stageId,
+      worldId,
+      opponentId: stageConfig?.trainerId || stageId,
+      result: winner === "p1" ? "VICTORY" : "DEFEAT",
+      winner,
+      turnsCount: 1,
+      xpGained: xpReward,
+      moneyGained: moneyReward,
+      playerPokemonIds: [...participantIds],
+      playerTeamSpecies: participants.map((p) => p.speciesId),
+    };
+
+    const domainEvent = createDomainEvent({
+      eventType: "battle.completed",
+      aggregateType: "BATTLE",
+      aggregateId: battleId,
+      payload: battleEventPayload,
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        eventId: domainEvent.eventId,
+        eventType: domainEvent.eventType,
+        aggregateType: domainEvent.aggregateType,
+        aggregateId: domainEvent.aggregateId,
+        payload: domainEvent as unknown as Prisma.InputJsonValue,
+        status: OutboxStatus.PENDING,
+      },
+    });
+
+
     return {
       isAlreadyClaimed: false,
       moneyEarned: moneyReward,
@@ -233,4 +277,10 @@ export async function grantBattleRewards({
       teamLeveledUp,
     };
   });
+
+  // Déclenchement de la publication vers Redis Streams (T-US17-03)
+  triggerOutboxFlush();
+
+  return txResult;
 }
+

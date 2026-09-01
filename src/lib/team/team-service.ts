@@ -79,7 +79,7 @@ export async function updateActiveTeam(userId: string, input: UpdateTeamInput): 
     });
 
     if (changed.length > 0) {
-      // Une seule écriture pour toute la collection, au lieu de 1 050 allers-retours.
+      // Une seule écriture pour toute la collection, sans un aller-retour par créature.
       // Les contraintes différées de la migration permettent l'échange de deux cases.
       const rows = changed.map((location) => Prisma.sql`(
         ${location.pokemonId}::text, ${location.teamPosition}::integer,
