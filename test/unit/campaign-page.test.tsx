@@ -263,11 +263,18 @@ describe("CampaignMap Component (US-07)", () => {
     await user.click(challengeButton);
 
     await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith("/api/battle/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stageId: "bachelor-1-stage-2" }),
-      });
+      // Le test verrouille les options de sécurité utiles sans devenir fragile
+      // si une option Fetch supplémentaire est ajoutée ultérieurement.
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        "/api/battle/start",
+        expect.objectContaining({
+          method: "POST",
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stageId: "bachelor-1-stage-2" }),
+        }),
+      );
     });
 
     await waitFor(() => {
