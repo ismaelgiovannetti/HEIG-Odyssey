@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       // Les classes Tailwind utilisent les mêmes variables CSS que les
-      // composants afin de suivre automatiquement le thème clair ou sombre.
+      // composants afin de conserver la palette sombre unique dans toute l.application.
       colors: {
         background: "var(--color-bg)",
         "background-alt": "var(--color-bg-alt)",

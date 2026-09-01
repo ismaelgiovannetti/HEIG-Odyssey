@@ -5,52 +5,6 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
-  --color-bg: #F8FAFC;
-  --color-bg-alt: #EEF2F7;
-  --color-surface: #FFFFFF;
-  --color-surface-raised: #E2E8F0;
-  --color-outline: #202020;
-
-  --color-primary: #C94036;
-  --color-primary-light: #B72F28;
-  --color-primary-dark: #8F251F;
-
-  --color-secondary: #2C2C2C;
-  --color-text: #202020;
-  --color-text-muted: #566170;
-  --color-border: #8B96A5;
-  --color-success: #1F7545;
-  --color-nav-bg: #A2332C;
-  --color-nav-text: #FFFFFF;
-  --color-nav-muted: #FBECEA;
-  --color-nav-control: #7C241F;
-
-  --color-strong-surface: #2C2C2C;
-  --color-input: #FFFFFF;
-  --color-input-hover: #FBFCFE;
-  --color-placeholder: #7A8492;
-  --color-scanline: rgba(32, 32, 32, 0.025);
-  --color-orb-opacity: 0.055;
-  --color-error-border: #8F1F1F;
-  --color-error-bg: #FFF0F0;
-  --color-error-text: #7B1C1C;
-  --color-success-border: #175F39;
-  --color-success-bg: #E9F7EF;
-  --color-success-text: #174D31;
-  --color-info-border: #315D80;
-  --color-info-bg: #EDF6FC;
-  --color-info-text: #244762;
-  --color-quest-xp: #176F75;
-  --color-quest-header-bg: #8E2B27;
-  --color-quest-header-text: #F7FAFC;
-  --color-quest-daily-icon: #FFD166;
-  --color-quest-weekly-icon: #7DD3FC;
-  --color-quest-timer: #86EFAC;
-  --color-quest-timer-urgent: #B42318;
-}
-
-:root[data-theme="dark"] {
   color-scheme: dark;
   --color-bg: #10141A;
   --color-bg-alt: #171D25;
@@ -102,7 +56,6 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   margin: 0;
   padding: 0;
-  transition: background-color 180ms ease, color 180ms ease;
 }
 
 .pixel-btn {
@@ -263,7 +216,7 @@ body {
   text-transform: uppercase;
 }
 
-:root[data-theme="dark"] .home-eyebrow {
+.home-eyebrow {
   color: var(--color-primary-light);
 }
 
@@ -280,11 +233,6 @@ body {
 .home-hero h1 span {
   color: var(--color-primary-light);
   text-shadow: 3px 3px 0 var(--color-outline);
-}
-
-:root:not([data-theme="dark"]) .home-hero h1 span {
-  color: var(--color-primary);
-  text-shadow: 2px 2px 0 rgb(32 32 32 / 16%);
 }
 
 .home-lead {
@@ -569,10 +517,6 @@ body {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-:root:not([data-theme="dark"]) .home-pillar span {
-  color: var(--color-primary-dark);
 }
 
 .home-pillar h2 {
@@ -1191,11 +1135,11 @@ body {
   color: var(--color-info-text);
 }
 
-:root[data-theme="dark"] .auth-eyebrow,
-:root[data-theme="dark"] .auth-card__footer a,
-:root[data-theme="dark"] .auth-switch a,
-:root[data-theme="dark"] .auth-recovery-link a,
-:root[data-theme="dark"] .auth-next-step > svg {
+.auth-eyebrow,
+.auth-card__footer a,
+.auth-switch a,
+.auth-recovery-link a,
+.auth-next-step > svg {
   color: var(--color-primary-light);
 }
 
@@ -1258,132 +1202,7 @@ body {
   line-height: 1.55;
 }
 
-/* Contrôle flottant partagé avec l'identité visuelle de la landing page. */
-.app-theme-toggle {
-  position: fixed;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(20px, env(safe-area-inset-bottom));
-  z-index: 300;
-  display: grid;
-  width: 60px;
-  height: 60px;
-  place-items: center;
-  padding: 0;
-  border: 3px solid var(--color-outline);
-  border-radius: 50%;
-  background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
-  box-shadow: 6px 6px 0 var(--color-outline);
-  color: var(--color-text);
-  cursor: pointer;
-  isolation: isolate;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 300ms ease;
-}
-
-.app-theme-toggle::before {
-  position: absolute;
-  top: 50%;
-  right: calc(100% + 13px);
-  width: max-content;
-  padding: 7px 10px;
-  border: 2px solid var(--color-outline);
-  background: var(--color-surface);
-  box-shadow: 3px 3px 0 var(--color-outline);
-  color: var(--color-text);
-  content: attr(data-tooltip);
-  font-size: 12px;
-  font-weight: 800;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(8px, -50%);
-  transition: opacity 150ms ease, transform 150ms ease;
-  white-space: nowrap;
-}
-
-.app-theme-toggle::after {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  z-index: -1;
-  width: 17px;
-  height: 17px;
-  border-right: 3px solid var(--color-outline);
-  border-bottom: 3px solid var(--color-outline);
-  background: var(--color-primary-dark);
-  clip-path: polygon(0 0, 100% 35%, 100% 100%, 35% 100%);
-  content: "";
-}
-
-.app-theme-toggle:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--color-outline);
-}
-
-.app-theme-toggle:hover::before,
-.app-theme-toggle:focus-visible::before {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.app-theme-toggle:focus-visible {
-  outline: 3px solid var(--color-primary-light);
-  outline-offset: 4px;
-}
-
-.app-theme-toggle__orb {
-  position: relative;
-  display: block;
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  border: 3px solid var(--color-outline);
-  border-radius: 50%;
-  background: linear-gradient(
-    to bottom,
-    #FFD166 0 46%,
-    var(--color-outline) 46% 54%,
-    #FFF8E6 54% 100%
-  );
-}
-
-.app-theme-toggle__sun,
-.app-theme-toggle__moon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transition: opacity 220ms ease, transform 280ms ease;
-}
-
-.app-theme-toggle__sun {
-  color: #8A5700;
-  opacity: 1;
-  transform: translate(-50%, -50%) rotate(0) scale(1);
-}
-
-.app-theme-toggle__moon {
-  color: #D9D8FF;
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(-75deg) scale(0.55);
-}
-
-:root[data-theme="dark"] .app-theme-toggle__orb {
-  background: linear-gradient(
-    to bottom,
-    #202A43 0 46%,
-    var(--color-outline) 46% 54%,
-    #111625 54% 100%
-  );
-}
-
-:root[data-theme="dark"] .app-theme-toggle__sun {
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(75deg) scale(0.55);
-}
-
-:root[data-theme="dark"] .app-theme-toggle__moon {
-  opacity: 1;
-  transform: translate(-50%, -50%) rotate(0) scale(1);
-}
-
+/* Utilitaire commun aux textes réservés aux technologies d.assistance. */
 .visually-hidden {
   position: absolute !important;
   width: 1px !important;
@@ -1649,19 +1468,6 @@ body {
   .auth-background-mark {
     display: none;
   }
-
-  .app-theme-toggle {
-    right: max(14px, env(safe-area-inset-right));
-    bottom: max(14px, env(safe-area-inset-bottom));
-    width: 52px;
-    height: 52px;
-    box-shadow: 4px 4px 0 var(--color-outline);
-  }
-
-  .app-theme-toggle__orb {
-    width: 34px;
-    height: 34px;
-  }
 }
 
 /* Bloque aussi les téléphones utilisés horizontalement. */
@@ -1681,16 +1487,6 @@ body {
       radial-gradient(circle at 90% 80%, rgb(188 71 63 / 10%), transparent 28%),
       var(--color-bg);
   }
-
-  .app-theme-toggle {
-    width: 50px;
-    height: 50px;
-  }
-
-  .app-theme-toggle__orb {
-    width: 32px;
-    height: 32px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1707,11 +1503,7 @@ body {
   }
 
   .auth-field input,
-  .skip-link,
-  .app-theme-toggle,
-  .app-theme-toggle::before,
-  .app-theme-toggle__sun,
-  .app-theme-toggle__moon {
+  .skip-link {
     transition: none;
   }
 }

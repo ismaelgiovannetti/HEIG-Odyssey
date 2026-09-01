@@ -7,49 +7,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* --- Palette principale : rouge, blanc et noir de la Poké Ball --- */
-  color-scheme: light;
-  --color-bg: #F8FAFC;
-  --color-bg-alt: #EEF2F7;
-  --color-surface: #FFFFFF;
-  --color-surface-raised: #E2E8F0;
-  --color-outline: #202020;
+  /* --- Palette sombre unique : rouge, blanc et noir de la Poké Ball --- */
+  color-scheme: dark;
+  --color-bg: #10141A;
+  --color-bg-alt: #171D25;
+  --color-surface: #202733;
+  --color-surface-raised: #2B3543;
+  --color-outline: #080B10;
 
   --color-primary: #C94036;
-  --color-primary-light: #B72F28;
-  --color-primary-dark: #8F251F;
+  --color-primary-light: #FF7A70;
+  --color-primary-dark: #7A1F1A;
   --color-on-primary: #FFFFFF;
 
-  --color-secondary: #2C2C2C;
+  --color-secondary: #E7ECF3;
 
   --color-accent: #C94036;
   --color-on-accent: #FFFFFF;
 
-  --color-text: #202020;
-  --color-text-muted: #566170;
-  --color-border: #8B96A5;
+  --color-text: #F4F7FB;
+  --color-text-muted: #B8C2CE;
+  --color-border: #59687A;
 
   --color-success: #1F7545;
 
-  --color-nav-bg: #A2332C;
+  --color-nav-bg: #81251F;
   --color-nav-text: #FFFFFF;
-  --color-nav-muted: #FBECEA;
-  --color-nav-control: #7C241F;
-  --color-footer-bg: #202024;
-  --color-footer-text: #FFFFFF;
-  --color-footer-muted: #D1CEC8;
-  --color-starter-card: #DFEAF6;
-  --color-starter-border: #3D4551;
-  --color-champion: #B77908;
+  --color-nav-muted: #FCE9E7;
+  --color-nav-control: #551612;
+  --color-footer-bg: #080B10;
+  --color-footer-text: #F4F7FB;
+  --color-footer-muted: #B7C0CA;
+  --color-starter-card: #263140;
+  --color-starter-border: #65758A;
+  --color-champion: #9A6500;
   --color-nightmare: #D51F1F;
-  --color-nightmare-dark: #750B0B;
-  --color-primary-soft: rgba(201, 64, 54, 0.12);
-  --color-scanline: rgba(32, 32, 32, 0.045);
-  --color-title-shadow: #D5DDE7;
-  --color-orb-shadow: rgba(32, 32, 32, 0.2);
-  --orb-opacity-min: 0.08;
-  --orb-opacity-max: 0.14;
-  --hero-motif-opacity: 0.08;
+  --color-nightmare-dark: #700C0C;
+  --color-primary-soft: rgba(214, 75, 64, 0.18);
+  --color-scanline: rgba(255, 255, 255, 0.035);
+  --color-title-shadow: #3A4553;
+  --color-orb-shadow: rgba(0, 0, 0, 0.68);
+  --orb-opacity-min: 0.11;
+  --orb-opacity-max: 0.18;
+  --hero-motif-opacity: 0.06;
   --header-offset: 70px;
   --header-visual-height: 71px;
 
@@ -120,7 +120,6 @@ body {
   font-size: 17px;
   line-height: 1.6;
   min-height: 100dvh;
-  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 img,
@@ -2504,241 +2503,8 @@ main>#top::after {
   }
 }
 
-/* ============================================================
-   Sélecteur de thème et palette sombre
-   ============================================================ */
-.theme-toggle {
-  --toggle-tail: var(--color-primary-dark);
-  position: fixed;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(20px, env(safe-area-inset-bottom));
-  z-index: 300;
-  display: none;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  padding: 0;
-  border: 3px solid var(--color-outline);
-  border-radius: 50%;
-  background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
-  box-shadow: 6px 6px 0 var(--color-outline);
-  color: var(--color-text);
-  cursor: pointer;
-  isolation: isolate;
-  transition: transform var(--transition-base), box-shadow var(--transition-base),
-    background 360ms ease, border-color 360ms ease;
-}
-
-.theme-ready .theme-toggle {
-  display: grid;
-}
-
-.theme-toggle::before {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: calc(100% + 14px);
-  top: 50%;
-  width: max-content;
-  max-width: 180px;
-  padding: 8px 11px;
-  border: 2px solid var(--color-outline);
-  background: var(--color-surface);
-  box-shadow: 3px 3px 0 var(--color-outline);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(8px, -50%);
-  transition: opacity var(--transition-base), transform var(--transition-base),
-    background-color 360ms ease, color 360ms ease;
-  white-space: nowrap;
-}
-
-.theme-toggle::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  right: -2px;
-  bottom: -2px;
-  width: 18px;
-  height: 18px;
-  background: var(--toggle-tail);
-  border-right: 3px solid var(--color-outline);
-  border-bottom: 3px solid var(--color-outline);
-  clip-path: polygon(0 0, 100% 35%, 100% 100%, 35% 100%);
-  transition: background-color 360ms ease, border-color 360ms ease;
-}
-
-.theme-toggle:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--color-outline);
-}
-
-.theme-toggle:hover::before,
-.theme-toggle:focus-visible::before {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.theme-toggle:focus-visible {
-  outline: 3px solid #FFFFFF;
-  outline-offset: 4px;
-}
-
-.theme-toggle-orb {
-  position: relative;
-  display: block;
-  width: 43px;
-  height: 43px;
-  overflow: hidden;
-  border: 3px solid var(--color-outline);
-  border-radius: 50%;
-  background: linear-gradient(to bottom,
-      #FFD166 0 46%,
-      var(--color-outline) 46% 54%,
-      #FFF8E6 54% 100%);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
-  transition: background 420ms steps(5, end), border-color 360ms ease;
-}
-
-.theme-icon {
-  position: absolute;
-  z-index: 2;
-  inset: 4px;
-  width: 29px;
-  height: 29px;
-  transition: opacity 360ms steps(4, end), transform 480ms steps(6, end);
-}
-
-.theme-icon--sun {
-  color: #8A5700;
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-
-.sun-disc {
-  fill: #FFD166;
-  stroke: var(--color-outline);
-  stroke-width: 2;
-}
-
-.sun-pokeball-line {
-  fill: none;
-  stroke: var(--color-outline);
-  stroke-width: 2;
-}
-
-.sun-pokeball-core {
-  fill: #FFFFFF;
-  stroke: var(--color-outline);
-  stroke-width: 1.8;
-}
-
-.theme-icon--moon {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.55);
-}
-
-.moon-crescent {
-  fill: #D9D8FF;
-  stroke: #111625;
-  stroke-width: 1.8;
-}
-
-.moon-star {
-  fill: #FFD166;
-  stroke: #111625;
-  stroke-width: 1;
-}
-
-.moon-pokeball {
-  fill: #F4F6FB;
-  stroke: #111625;
-  stroke-width: 1.4;
-}
-
-.moon-pokeball-line {
-  stroke: #C94036;
-  stroke-width: 1.4;
-}
-
-.moon-pokeball-core {
-  fill: #FFFFFF;
-  stroke: #111625;
-  stroke-width: 1;
-}
-
-.theme-toggle.is-switching .theme-toggle-orb {
-  animation: theme-capture 520ms steps(6, end);
-}
-
-@keyframes theme-capture {
-  0% {
-    transform: rotate(0) scale(1);
-  }
-
-  35% {
-    transform: rotate(-18deg) scale(0.82);
-    filter: brightness(1.4);
-  }
-
-  70% {
-    transform: rotate(12deg) scale(1.1);
-  }
-
-  100% {
-    transform: rotate(0) scale(1);
-  }
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-bg: #10141A;
-  --color-bg-alt: #171D25;
-  --color-surface: #202733;
-  --color-surface-raised: #2B3543;
-  --color-outline: #080B10;
-
-  --color-primary: #C94036;
-  --color-primary-light: #FF7A70;
-  --color-primary-dark: #7A1F1A;
-  --color-on-primary: #FFFFFF;
-
-  --color-secondary: #E7ECF3;
-  --color-accent: #C94036;
-  --color-on-accent: #FFFFFF;
-
-  --color-text: #F4F7FB;
-  --color-text-muted: #B8C2CE;
-  --color-border: #59687A;
-  --color-success: #1F7545;
-
-  --color-nav-bg: #81251F;
-  --color-nav-text: #FFFFFF;
-  --color-nav-muted: #FCE9E7;
-  --color-nav-control: #551612;
-  --color-footer-bg: #080B10;
-  --color-footer-text: #F4F7FB;
-  --color-footer-muted: #B7C0CA;
-  --color-starter-card: #263140;
-  --color-starter-border: #65758A;
-
-  --color-champion: #9A6500;
-  --color-nightmare: #D51F1F;
-  --color-nightmare-dark: #700C0C;
-  --color-primary-soft: rgba(214, 75, 64, 0.18);
-  --color-scanline: rgba(255, 255, 255, 0.035);
-  --color-title-shadow: #3A4553;
-  --color-orb-shadow: rgba(0, 0, 0, 0.68);
-  --orb-opacity-min: 0.11;
-  --orb-opacity-max: 0.18;
-  --hero-motif-opacity: 0.06;
-}
-
-:root[data-theme="dark"] .site-header {
+/* Ajustements de contraste de la palette sombre unique. */
+.site-header {
   background: linear-gradient(90deg,
       #45110E 0%,
       var(--color-nav-bg) 28%,
@@ -2747,196 +2513,131 @@ main>#top::after {
       #45110E 100%);
 }
 
-:root[data-theme="dark"] .hero-screen {
+.hero-screen {
   background:
     linear-gradient(rgba(9, 12, 17, 0.18), rgba(9, 12, 17, 0.18)),
     url('../assets/battle-arena-background-v2.jpg') center 52% / cover no-repeat;
 }
 
-:root[data-theme="dark"] .hero-screen-dialog {
+.hero-screen-dialog {
   background: rgba(25, 31, 40, 0.94);
   border-color: var(--color-primary-light);
   color: var(--color-text);
 }
 
-:root[data-theme="dark"] .hero-screen-dialog b {
+.hero-screen-dialog b {
   color: #FF8C83;
 }
 
-:root[data-theme="dark"] .menu-card:nth-child(1) .menu-card-tag {
+.menu-card:nth-child(1) .menu-card-tag {
   color: #8DBAFF;
 }
 
-:root[data-theme="dark"] .menu-card:nth-child(2) .menu-card-tag {
+.menu-card:nth-child(2) .menu-card-tag {
   color: #FFB46B;
 }
 
-:root[data-theme="dark"] .menu-card:nth-child(3) .menu-card-tag {
+.menu-card:nth-child(3) .menu-card-tag {
   color: #75D59E;
 }
 
-:root[data-theme="dark"] .menu-card:nth-child(4) .menu-card-tag {
+.menu-card:nth-child(4) .menu-card-tag {
   color: #C7A0F0;
 }
 
-:root[data-theme="dark"] .diff-card--easy {
+.diff-card--easy {
   --diff-panel: #173128;
   --diff-panel-deep: #214937;
   --diff-text: #D9F4E4;
   --diff-highlight: #91DFAD;
 }
 
-:root[data-theme="dark"] .diff-card--normal {
+.diff-card--normal {
   --diff-panel: #382C12;
   --diff-panel-deep: #574114;
   --diff-text: #FFE9B2;
   --diff-highlight: #FFD36A;
 }
 
-:root[data-theme="dark"] .diff-card--hard {
+.diff-card--hard {
   --diff-panel: #391818;
   --diff-panel-deep: #5A2020;
   --diff-text: #FFD8D4;
   --diff-highlight: #FF918A;
 }
 
-:root[data-theme="dark"] .threat-item:nth-child(1) .threat-item-tag {
+.threat-item:nth-child(1) .threat-item-tag {
   color: #B9C0FF;
 }
 
-:root[data-theme="dark"] .threat-item:nth-child(2) .threat-item-tag {
+.threat-item:nth-child(2) .threat-item-tag {
   color: #8DD2FF;
 }
 
-:root[data-theme="dark"] .threat-item:nth-child(3) .threat-item-tag {
+.threat-item:nth-child(3) .threat-item-tag {
   color: #F2A5C2;
 }
 
-:root[data-theme="dark"] .starter-tile {
+.starter-tile {
   background: var(--color-starter-card);
 }
 
-:root[data-theme="dark"] .version-card--now {
+.version-card--now {
   background: linear-gradient(135deg, #34201F, #4B2724);
 }
 
-:root[data-theme="dark"] .version-card--next {
+.version-card--next {
   background: linear-gradient(135deg, #202832, #2B3542);
 }
 
-:root[data-theme="dark"] .version-card--next .version-badge {
+.version-card--next .version-badge {
   background: #3A4654;
 }
 
-:root[data-theme="dark"] .version-card--next .version-list li::before {
+.version-card--next .version-list li::before {
   background: #3A4654;
   color: #F4F7FB;
 }
 
-:root[data-theme="dark"] .trainer-card {
+.trainer-card {
   --member-soft: color-mix(in srgb, var(--member-color) 20%, var(--color-surface));
   border-color: var(--member-color);
   box-shadow: 6px 6px 0 var(--color-outline);
 }
 
-:root[data-theme="dark"] .trainer-card--tiago {
+.trainer-card--tiago {
   --member-color: #5F9FC4;
 }
 
-:root[data-theme="dark"] .trainer-card--ismael {
+.trainer-card--ismael {
   --member-color: #60A989;
 }
 
-:root[data-theme="dark"] .trainer-card--evan {
+.trainer-card--evan {
   --member-color: #C49A43;
 }
 
-:root[data-theme="dark"] .trainer-card--mo {
+.trainer-card--mo {
   --member-color: #9A7BC2;
 }
 
-:root[data-theme="dark"] .trainer-card:hover {
+.trainer-card:hover {
   border-color: var(--member-color);
   box-shadow: 9px 9px 0 var(--color-outline);
 }
 
-:root[data-theme="dark"] .trainer-photo {
+.trainer-photo {
   border-color: var(--member-color);
 }
 
-:root[data-theme="dark"] .trainer-role {
+.trainer-role {
   color: color-mix(in srgb, var(--member-color) 72%, #FFFFFF);
 }
 
-:root[data-theme="dark"] .trainer-tag {
+.trainer-tag {
   color: #FFFFFF;
   background: var(--member-dark);
   border-color: color-mix(in srgb, var(--member-color) 78%, #FFFFFF);
-}
-
-:root[data-theme="dark"] .theme-toggle {
-  --toggle-tail: #181D35;
-  background: linear-gradient(145deg, #343C73, #171C35);
-  border-color: #C94036;
-  box-shadow: 6px 6px 0 var(--color-outline);
-}
-
-:root[data-theme="dark"] .theme-toggle-orb {
-  background: linear-gradient(to bottom,
-      #4E4D8D 0 46%,
-      var(--color-outline) 46% 54%,
-      #202837 54% 100%);
-}
-
-:root[data-theme="dark"] .theme-icon--sun {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.55);
-}
-
-:root[data-theme="dark"] .theme-icon--moon {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-
-.theme-changing body,
-.theme-changing .section-alt,
-.theme-changing .menu-card,
-.theme-changing .odyssey-answer,
-.theme-changing .answer-path,
-.theme-changing .summary-band,
-.theme-changing .diff-card,
-.theme-changing .threat-item,
-.theme-changing .starter-tile,
-.theme-changing .version-card,
-.theme-changing .trainer-card,
-.theme-changing .trainer-body,
-.theme-changing .cta-band,
-.theme-changing .site-footer {
-  transition: background-color 360ms ease, background 360ms ease, color 360ms ease,
-    border-color 360ms ease, box-shadow 360ms ease;
-}
-
-@media (max-width: 479px) {
-  .theme-toggle {
-    right: max(14px, env(safe-area-inset-right));
-    bottom: max(14px, env(safe-area-inset-bottom));
-    width: 58px;
-    height: 58px;
-  }
-
-  .theme-toggle::before {
-    display: none;
-  }
-
-  .theme-toggle-orb {
-    width: 39px;
-    height: 39px;
-  }
-
-  .theme-icon {
-    width: 25px;
-    height: 25px;
-  }
 }
 
 /* ============================================================
