@@ -28,7 +28,7 @@ const StartBattleBodySchema = z
     difficulty: z.enum(["easy", "normal", "hard"]).optional(),
   })
   .strict()
-  .superRefine(({ stageId, trainerId, mode }, context) => {
+  .superRefine(({ stageId, trainerId, mode, difficulty }, context) => {
     if (mode === "training") {
       if (stageId || trainerId) {
         context.addIssue({
@@ -37,6 +37,15 @@ const StartBattleBodySchema = z
         });
       }
       return;
+    }
+
+    // La difficulté appartient exclusivement à l'entraînement. En campagne,
+    // le profil d'IA est imposé par la configuration serveur du dresseur.
+    if (difficulty) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La difficulté ne peut être choisie qu'en entraînement.",
+      });
     }
 
     // Mode campagne par défaut

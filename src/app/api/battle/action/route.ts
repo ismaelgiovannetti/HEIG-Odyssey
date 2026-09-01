@@ -9,6 +9,8 @@ import {
 
 const BattleActionBodySchema = z.object({
   battleId: z.string().trim().min(1).max(100),
+  expectedTurn: z.number().int().nonnegative(),
+  expectedPhase: z.enum(["action_selection", "switch_required"]),
   action: z.union([
     z.object({
       type: z.literal("move"),
@@ -50,7 +52,12 @@ export async function POST(req: Request) {
     const { battleId, action } = parsed.data;
 
     // Le stockage compare cet identifiant au propriétaire enregistré du combat.
-    const result = await processBattleTurn(battleId, session.user.id, action);
+    const result = await processBattleTurn(
+      battleId,
+      session.user.id,
+      action,
+      { turn: parsed.data.expectedTurn, phase: parsed.data.expectedPhase },
+    );
 
     return NextResponse.json({
       success: true,
@@ -69,8 +76,12 @@ export async function POST(req: Request) {
 
     if (error instanceof BattleActionRejectedError) {
       return NextResponse.json(
-        { success: false, error: "Action invalide" },
-        { status: 400 },
+        {
+          success: false,
+          error: "Le combat a déjà avancé. L'état affiché a été actualisé.",
+          state: error.state,
+        },
+        { status: 409 },
       );
     }
 

@@ -396,10 +396,9 @@ export class BattleEngine {
     let phase: BattlePhase = "action_selection";
     if (this.battle.ended) {
       phase = "finished";
-    } else if (
-      this.battle.p1.requestState === "switch" ||
-      this.battle.p2.requestState === "switch"
-    ) {
+    } else if (this.battle.p1.requestState === "switch") {
+      // La phase exposée à l'interface décrit uniquement l'action attendue
+      // du joueur. Les remplacements adverses sont résolus côté serveur.
       phase = "switch_required";
     }
 

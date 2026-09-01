@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BrainCircuit,
-  Coins,
   Dices,
   Home,
   LogOut,
@@ -11,6 +10,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
@@ -59,10 +59,6 @@ export function ApplicationShell({
   pokedollars,
   children,
 }: Readonly<ApplicationShellProps>) {
-  // Le format suisse ajoute les séparateurs de milliers sans modifier la
-  // valeur entière conservée dans PostgreSQL.
-  const formattedBalance = new Intl.NumberFormat("fr-CH").format(pokedollars);
-
   return (
     <main className="application-page">
       <div
@@ -123,15 +119,7 @@ export function ApplicationShell({
             {/* Le raccourci reste proche des informations du joueur sans faire
                 partie des destinations de la navigation principale. */}
             <QuestPanel />
-            <span
-              className="application-player__balance"
-              title="Solde de Pokédollars"
-              aria-label={`${formattedBalance} Pokédollars`}
-            >
-              <Coins aria-hidden="true" size={18} />
-              <strong>{formattedBalance}</strong>
-              <span aria-hidden="true">₽</span>
-            </span>
+            <PlayerBalance initialBalance={pokedollars} />
             <span className="application-player__name">{playerName}</span>
             <Link
               className="application-player__logout"

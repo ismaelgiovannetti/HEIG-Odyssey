@@ -1,0 +1,853 @@
+/* ============================================================
+   Entraînement et combat partagé
+   ============================================================ */
+
+.application-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+  color: var(--color-primary-light);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Boutons partagés par la préparation, le combat et son résultat. */
+.battle-primary-button,
+.battle-secondary-button,
+.battle-quiet-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 17px;
+  border: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  box-shadow: 4px 4px 0 var(--color-outline);
+  color: #fff;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 8px;
+  line-height: 1.55;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.battle-secondary-button {
+  background: var(--color-surface-raised);
+}
+
+.battle-quiet-button {
+  min-height: 40px;
+  border-width: 2px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text-muted);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.battle-primary-button:hover:not(:disabled),
+.battle-secondary-button:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--color-outline);
+}
+
+.battle-quiet-button:hover:not(:disabled) {
+  border-color: var(--color-primary-light);
+  color: var(--color-text);
+}
+
+.battle-primary-button:disabled,
+.battle-secondary-button:disabled,
+.battle-quiet-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.training-hub,
+.training-preview,
+.battle-interface,
+.battle-result {
+  width: 100%;
+  min-width: 0;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 7px 7px 0 var(--color-outline);
+}
+
+.training-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+}
+
+.training-hub__hero,
+.training-preview__header,
+.battle-interface__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 20px 22px;
+  border: 3px solid var(--color-outline);
+  background:
+    linear-gradient(105deg, rgb(137 115 196 / 16%), transparent 58%),
+    var(--color-bg-alt);
+  box-shadow: 4px 4px 0 var(--color-outline);
+}
+
+.training-hub__hero h1,
+.training-preview__header h1,
+.battle-interface__header h1,
+.battle-result h1 {
+  margin: 0;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: clamp(18px, 2.1vw, 27px);
+  line-height: 1.45;
+}
+
+.training-hub__hero > div:first-child > p:last-child,
+.training-preview__header > div > p:last-child,
+.battle-interface__header > div > p:last-child {
+  max-width: 760px;
+  margin: 9px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.training-hub__summary {
+  display: grid;
+  min-width: 190px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 13px 15px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.training-hub__summary svg {
+  grid-row: 1 / 3;
+  color: #9a86d5;
+}
+
+.training-hub__summary span,
+.training-hub__summary small {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.training-hub__summary strong {
+  color: var(--color-primary-light);
+  font-family: "Press Start 2P", monospace;
+  font-size: 12px;
+}
+
+.training-hub__summary small {
+  grid-column: 2 / 4;
+}
+
+.training-section,
+.training-difficulties {
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.training-section__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.training-section__heading span,
+.training-difficulties legend span {
+  display: block;
+  margin-bottom: 5px;
+  color: #9a86d5;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.training-section__heading h2,
+.training-difficulties legend {
+  margin: 0;
+  color: var(--color-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.training-section__heading a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary-light);
+  font-size: 10px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.training-team-list,
+.training-preview__versus ul {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.training-team-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 9px 10px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.training-team-card__slot {
+  position: absolute;
+  top: 6px;
+  left: 7px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 8px;
+}
+
+.training-team-card__info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.training-team-card strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-team-card span,
+.training-team-card small {
+  color: var(--color-text-muted);
+  font-size: 8px;
+}
+
+.training-team-card__hp {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border: 2px solid var(--color-outline);
+  background: var(--color-strong-surface);
+}
+
+.training-team-card__hp > span {
+  display: block;
+  height: 100%;
+  background: var(--color-success);
+}
+
+.training-team-card small.is-fainted {
+  color: var(--color-error-border);
+  font-weight: 850;
+}
+
+.training-empty-team,
+.training-state-card {
+  display: flex;
+  min-height: 160px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.training-state-card {
+  min-height: 360px;
+}
+
+.training-state-card svg {
+  color: #9a86d5;
+}
+
+.training-state-card > strong {
+  color: var(--color-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+}
+
+.training-state-card > span {
+  max-width: 540px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.training-state-card > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.training-state-card.is-error svg {
+  color: var(--color-error-border);
+}
+
+.training-difficulties {
+  padding-top: 12px;
+}
+
+.training-difficulties legend {
+  padding: 0 8px;
+}
+
+.training-difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.training-difficulty-grid label {
+  --difficulty-color: #70b5e4;
+  position: relative;
+  display: flex;
+  min-height: 156px;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px 17px;
+  border: 3px solid var(--color-outline);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--difficulty-color), transparent 86%), transparent 58%),
+    var(--color-surface);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  cursor: pointer;
+}
+
+.training-difficulty-grid label[data-difficulty="easy"] { --difficulty-color: #55c98b; }
+.training-difficulty-grid label[data-difficulty="normal"] { --difficulty-color: #70b5e4; }
+.training-difficulty-grid label[data-difficulty="hard"] { --difficulty-color: #ff7a70; }
+
+.training-difficulty-grid label.is-selected {
+  border-color: var(--difficulty-color);
+  box-shadow: 0 0 0 2px var(--color-outline), 5px 5px 0 var(--color-outline);
+}
+
+.training-difficulty-grid input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.training-difficulty-grid input:focus-visible + .training-difficulty-card__marker {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.training-difficulty-card__marker {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--difficulty-color);
+  border-radius: 50%;
+}
+
+.is-selected .training-difficulty-card__marker {
+  background: var(--difficulty-color);
+  box-shadow: inset 0 0 0 3px var(--color-surface);
+}
+
+.training-difficulty-grid label > strong {
+  color: var(--difficulty-color);
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.training-difficulty-grid label > span:not(.training-difficulty-card__marker):not(.training-difficulty-card__reward) {
+  max-width: calc(100% - 22px);
+  color: var(--color-text);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.training-difficulty-grid label > small {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.training-difficulty-card__reward {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  color: var(--difficulty-color);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.training-feedback,
+.battle-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 11px 13px;
+  border: 2px solid var(--color-info-border);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.training-feedback.is-error,
+.battle-feedback.is-error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+.training-hub__actions,
+.training-preview__footer,
+.battle-command__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Aperçu irréversible : l'adversaire a été créé côté serveur, mais aucune
+   action n'est jouée avant le bouton d'entrée dans l'arène. */
+.training-preview {
+  padding: 24px;
+}
+
+.training-preview__difficulty {
+  display: inline-flex;
+  min-width: 150px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 15px;
+  border: 2px solid #70b5e4;
+  background: var(--color-surface);
+  color: #70b5e4;
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+}
+
+.training-preview__difficulty[data-difficulty="easy"] { border-color: #55c98b; color: #55c98b; }
+.training-preview__difficulty[data-difficulty="hard"] { border-color: #ff7a70; color: #ff7a70; }
+
+.training-preview__versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.training-preview__versus > section {
+  padding: 17px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.training-preview__versus > section > span {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.training-preview__versus h2 {
+  margin: 6px 0 13px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.training-preview__versus ul {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.training-preview__versus-mark {
+  display: grid;
+  place-items: center;
+  color: var(--color-primary-light);
+  font-family: "Press Start 2P", monospace;
+  font-size: 15px;
+}
+
+.training-preview__footer {
+  padding: 15px 17px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.training-preview__footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.training-preview__footer span {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.training-preview__footer strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-quest-timer);
+  font-size: 13px;
+}
+
+/* L'arène reprend la structure du mockup : scène à gauche et commandes à
+   droite, avec toutes les données issues du dernier état serveur validé. */
+.battle-interface {
+  overflow: hidden;
+}
+
+.battle-interface__header {
+  border: 0;
+  border-bottom: 3px solid var(--color-outline);
+  box-shadow: none;
+}
+
+.battle-interface__turn {
+  display: grid;
+  min-width: 116px;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 2px 9px;
+  padding: 10px 12px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.battle-interface__turn svg { grid-row: 1 / 3; color: var(--color-primary-light); }
+.battle-interface__turn span { color: var(--color-text-muted); font-size: 9px; text-transform: uppercase; }
+.battle-interface__turn strong { font-family: "Press Start 2P", monospace; font-size: 12px; }
+
+.battle-interface__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(330px, 0.78fr);
+  min-height: 590px;
+}
+
+.battle-scene {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 3px solid var(--color-outline);
+  background:
+    linear-gradient(180deg, rgb(8 11 16 / 5%), rgb(8 11 16 / 26%)),
+    url("/battle-arena-background-v2.jpg") center / cover no-repeat;
+}
+
+.battle-scene::after {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0, transparent 8px, rgb(255 255 255 / 2%) 9px);
+  pointer-events: none;
+  content: "";
+}
+
+.battle-combatant {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  width: min(76%, 650px);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.battle-combatant--opponent { top: 34px; left: 36px; align-items: flex-start; }
+.battle-combatant--player { right: 36px; bottom: 26px; }
+
+.battle-combatant__sprite {
+  display: grid;
+  min-width: 205px;
+  min-height: 190px;
+  place-items: center;
+  filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+}
+
+.battle-pokemon-status {
+  width: min(100%, 320px);
+  padding: 13px 15px;
+  border: 3px solid var(--color-outline);
+  background: rgb(23 29 37 / 94%);
+  box-shadow: 4px 4px 0 var(--color-outline);
+}
+
+.battle-pokemon-status__heading,
+.battle-pokemon-status__meta,
+.battle-pokemon-status__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.battle-pokemon-status__heading strong {
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.battle-pokemon-status__heading span,
+.battle-pokemon-status__meta,
+.battle-pokemon-status__footer {
+  color: var(--color-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.battle-pokemon-status__meta { margin-top: 9px; }
+.battle-pokemon-status__meta strong { color: var(--color-text); }
+
+.battle-hp {
+  height: 12px;
+  margin: 5px 0 7px;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-strong-surface);
+}
+
+.battle-hp > span { display: block; height: 100%; background: var(--color-success); transition: width 260ms ease; }
+.battle-hp > span[data-tone="warning"] { background: #e6b84f; }
+.battle-hp > span[data-tone="critical"] { background: var(--color-error-border); }
+.battle-pokemon-status__footer strong { color: #ffd166; }
+
+.battle-command {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 13px;
+  padding: 18px;
+  background: var(--color-bg-alt);
+}
+
+.battle-log {
+  min-height: 78px;
+  padding: 12px 14px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.battle-log strong { color: var(--color-primary-light); font-size: 9px; text-transform: uppercase; }
+.battle-log p { margin: 7px 0 0; color: var(--color-text); font-size: 11px; font-weight: 700; line-height: 1.5; }
+
+.battle-command__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.battle-command__heading > div { display: flex; flex-direction: column; gap: 4px; }
+.battle-command__heading span { color: var(--color-text-muted); font-size: 8px; font-weight: 850; text-transform: uppercase; }
+.battle-command__heading strong { font-size: 11px; line-height: 1.4; }
+
+.battle-moves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.battle-moves button {
+  --move-color: #8996a5;
+  display: flex;
+  min-height: 82px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px;
+  border: 3px solid var(--color-outline);
+  border-left: 6px solid var(--move-color);
+  background: var(--color-surface);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.battle-moves button[data-type="Fire"] { --move-color: #df654c; }
+.battle-moves button[data-type="Water"] { --move-color: #4f8fb4; }
+.battle-moves button[data-type="Grass"] { --move-color: #55a868; }
+.battle-moves button[data-type="Electric"] { --move-color: #e6b84f; }
+.battle-moves button[data-type="Ice"] { --move-color: #62cbd0; }
+.battle-moves button[data-type="Fighting"] { --move-color: #c94036; }
+.battle-moves button[data-type="Poison"] { --move-color: #a45de2; }
+.battle-moves button[data-type="Ground"] { --move-color: #bd8b50; }
+.battle-moves button[data-type="Flying"] { --move-color: #879acb; }
+.battle-moves button[data-type="Psychic"] { --move-color: #df6696; }
+.battle-moves button[data-type="Bug"] { --move-color: #91a633; }
+.battle-moves button[data-type="Rock"] { --move-color: #a38f52; }
+.battle-moves button[data-type="Ghost"] { --move-color: #7566a2; }
+.battle-moves button[data-type="Dragon"] { --move-color: #6860c9; }
+.battle-moves button[data-type="Steel"] { --move-color: #8ca3ad; }
+.battle-moves button[data-type="Dark"] { --move-color: #77665f; }
+
+.battle-moves button:hover:not(:disabled) { border-top-color: var(--move-color); border-right-color: var(--move-color); border-bottom-color: var(--move-color); }
+.battle-moves button:disabled { cursor: not-allowed; opacity: 0.45; }
+.battle-moves button strong { font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.5; }
+.battle-moves button span { color: var(--color-text-muted); font-size: 9px; font-weight: 750; }
+
+.battle-switches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.battle-switches button {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.battle-switches button:disabled { cursor: not-allowed; opacity: 0.45; }
+.battle-switches button > span { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.battle-switches button strong { overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.battle-switches button small { color: var(--color-text-muted); font-size: 8px; }
+.battle-command__actions { margin-top: auto; flex-wrap: wrap; }
+
+/* Résumé final : issue du combat, gains persistés et éventuels niveaux gagnés. */
+.battle-result {
+  display: grid;
+  min-height: 560px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  overflow: hidden;
+}
+
+.battle-result__summary,
+.battle-result__rewards {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(32px, 5vw, 68px);
+}
+
+.battle-result__summary {
+  border-right: 3px solid var(--color-outline);
+  background:
+    radial-gradient(circle at 50% 45%, rgb(85 201 139 / 18%), transparent 46%),
+    var(--color-bg-alt);
+  text-align: center;
+  align-items: center;
+}
+
+.battle-result.is-defeat .battle-result__summary {
+  background: radial-gradient(circle at 50% 45%, rgb(201 64 54 / 17%), transparent 46%), var(--color-bg-alt);
+}
+
+.battle-result__icon {
+  display: grid;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 22px;
+  place-items: center;
+  border: 3px solid var(--color-outline);
+  background: var(--color-success-bg);
+  box-shadow: 5px 5px 0 var(--color-outline);
+  color: var(--color-success);
+}
+
+.battle-result.is-defeat .battle-result__icon { background: var(--color-error-bg); color: var(--color-error-border); }
+.battle-result__summary > p:last-child { margin: 18px 0 0; color: var(--color-text-muted); font-size: 13px; line-height: 1.65; }
+.battle-result__rewards h2 { margin: 0 0 19px; font-family: "Press Start 2P", monospace; font-size: 13px; line-height: 1.5; }
+.battle-result__rewards dl { display: grid; gap: 9px; margin: 0; }
+.battle-result__rewards dl > div { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 14px; border: 2px solid var(--color-border); background: var(--color-bg-alt); }
+.battle-result__rewards dt { color: var(--color-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.battle-result__rewards dd { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--color-quest-timer); font-size: 13px; font-weight: 900; }
+.battle-result__levels { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 14px; padding: 15px; border: 2px solid var(--color-info-border); background: var(--color-info-bg); text-align: center; }
+.battle-result__levels > strong { display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--color-info-text); font-family: "Press Start 2P", monospace; font-size: 9px; line-height: 1.5; }
+.battle-result__levels ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.battle-result__levels li { padding: 10px 12px; border: 1px solid var(--color-info-border); background: var(--color-bg-alt); color: var(--color-info-text); font-size: 11px; font-weight: 800; line-height: 1.5; }
+.battle-result__missing { color: var(--color-text-muted); font-size: 11px; line-height: 1.55; }
+.battle-result__rewards .battle-primary-button { align-self: stretch; margin-top: 18px; }
+
+/* Les points de rupture conservent toutes les commandes accessibles sans mobile. */
+@media (max-width: 1180px) {
+  .training-team-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .battle-interface__body { grid-template-columns: minmax(0, 1.4fr) minmax(315px, 0.8fr); }
+  .battle-combatant { width: 86%; }
+}
+
+@media (max-width: 900px) {
+  .training-hub__hero, .training-preview__header { align-items: flex-start; flex-direction: column; }
+  .training-hub__summary { width: 100%; }
+  .training-difficulty-grid { grid-template-columns: 1fr; }
+  .training-preview__versus { grid-template-columns: 1fr; }
+  .training-preview__versus-mark { min-height: 38px; }
+  .battle-interface__body { grid-template-columns: 1fr; }
+  .battle-scene { min-height: 540px; border-right: 0; border-bottom: 3px solid var(--color-outline); }
+  .battle-result { grid-template-columns: 1fr; }
+  .battle-result__summary { border-right: 0; border-bottom: 3px solid var(--color-outline); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-hp > span,
+  .battle-primary-button,
+  .battle-secondary-button { transition: none; }
+}

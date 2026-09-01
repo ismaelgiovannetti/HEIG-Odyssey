@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import { Check, Coins, GraduationCap, Lock, MapPinned, Sparkles, Star, Swords, Trophy } from "lucide-react";
+import { BattleArena } from "@/components/battle/battle-arena";
+import {
+  BattleRequestError,
+  readBattleStartResponse,
+  type BattleStartPayload,
+} from "@/lib/combat/battle-client";
 import type { CampaignProgressOverview, CampaignStageView, CampaignWorldView } from "@/lib/campaign/campaign-service";
 
 interface CampaignMapProps { overview: CampaignProgressOverview; }
@@ -42,10 +49,12 @@ const shortName = (world: CampaignWorldView) => world.name.split(" - ")[0];
 const theme = (world: CampaignWorldView) => world.name.split(" - ")[1]?.replace(/^Type /, "") ?? world.degree;
 
 export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
+  const router = useRouter();
   const [worldId, setWorldId] = useState(overview.currentWorldId);
   const [stageId, setStageId] = useState<string | null>(overview.nextRecommendedStage?.id ?? null);
   const [launching, setLaunching] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [activeBattle, setActiveBattle] = useState<BattleStartPayload | null>(null);
   const world = overview.worlds.find((item) => item.id === worldId) ?? overview.worlds[0];
   const stage = world.stages.find((item) => item.id === stageId)
     ?? world.stages.find((item) => item.status === "ACCESSIBLE") ?? world.stages[0];
@@ -61,12 +70,42 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
     if (target.isLocked || launching) return;
     setLaunching(target.id); setMessage(null);
     try {
-      const response = await fetch("/api/battle/start", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({stageId:target.id}) });
-      const data = await response.json();
-      setMessage(response.ok && data.success ? `Combat initialisé contre ${data.trainer.name} !` : data.error ?? "Impossible de lancer le combat. Vérifiez votre équipe active.");
-    } catch { setMessage("Une erreur de communication est survenue lors du démarrage du combat."); }
-    finally { setLaunching(null); }
+      // Seul l'identifiant de l'étape est transmis : le serveur contrôle
+      // l'accès, choisit le dresseur et relit l'équipe du compte connecté.
+      const response = await fetch("/api/battle/start", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stageId: target.id }),
+      });
+      setActiveBattle(await readBattleStartResponse(response));
+    } catch (cause) {
+      setMessage(
+        cause instanceof BattleRequestError
+          ? cause.message
+          : "Une erreur de communication est survenue lors du démarrage du combat.",
+      );
+    } finally {
+      setLaunching(null);
+    }
   };
+
+  if (activeBattle) {
+    return (
+      <BattleArena
+        key={activeBattle.battleId}
+        initialBattle={activeBattle}
+        mode="campaign"
+        onReturn={() => {
+          setActiveBattle(null);
+          setMessage(null);
+          // Le serveur a pu créditer les gains et débloquer l'étape suivante.
+          router.refresh();
+        }}
+      />
+    );
+  }
 
   return <section className="campaign-container campaign-redesign" aria-labelledby="campaign-title" style={{"--campaign-accent":WORLD_ACCENTS[world.id]} as CSSProperties}>
     <header className="campaign-hero">

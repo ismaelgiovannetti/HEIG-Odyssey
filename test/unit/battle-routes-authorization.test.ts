@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   class BattleSessionUnavailableError extends Error {}
-  class BattleActionRejectedError extends Error {}
+  class BattleActionRejectedError extends Error {
+    state = {
+      battleId: "battle-test",
+      turn: 2,
+      phase: "switch_required",
+    };
+  }
   class BattleEngine {
     battleId = "battle-test";
 
@@ -140,6 +146,20 @@ describe("autorisation du démarrage d'un combat", () => {
     expect(mocks.registerBattleSession).not.toHaveBeenCalled();
   });
 
+  it("refuse une difficulté fournie pour un combat de campagne", async () => {
+    const response = await startBattle(
+      request("/api/battle/start", {
+        stageId: "bachelor-1-stage-1",
+        difficulty: "hard",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.canUserAccessStage).not.toHaveBeenCalled();
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
+  });
+
   it("refuse le lancement d'une étape de campagne verrouillée avec code 403", async () => {
     // La route doit arrêter le flux avant toute création de session de combat.
     mocks.canUserAccessStage.mockResolvedValue({
@@ -198,6 +218,8 @@ describe("autorisation du démarrage d'un combat", () => {
 describe("POST /api/battle/action", () => {
   const actionBody = {
     battleId: "battle-test",
+    expectedTurn: 1,
+    expectedPhase: "action_selection",
     action: { type: "move", moveIndex: 0 },
   };
 
@@ -222,6 +244,7 @@ describe("POST /api/battle/action", () => {
       "battle-test",
       "owner-user",
       { type: "move", moveIndex: 0 },
+      { turn: 1, phase: "action_selection" },
     );
   });
 });
@@ -229,6 +252,8 @@ describe("POST /api/battle/action", () => {
 describe("erreurs sécurisées des actions de combat", () => {
   const actionBody = {
     battleId: "battle-test",
+    expectedTurn: 1,
+    expectedPhase: "action_selection",
     action: { type: "move", moveIndex: 0 },
   };
 
@@ -247,6 +272,23 @@ describe("erreurs sécurisées des actions de combat", () => {
       error: "Combat introuvable ou expiré.",
     });
   });
+
+  it("renvoie l'état courant lorsqu'une action est devenue obsolète", async () => {
+    mocks.processBattleTurn.mockRejectedValue(
+      new mocks.BattleActionRejectedError(),
+    );
+
+    const response = await applyBattleAction(
+      request("/api/battle/action", actionBody),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).not.toBe("Action invalide");
+    expect(body.state).toEqual(
+      expect.objectContaining({ turn: 2, phase: "switch_required" }),
+    );
+  });
 });
 
 describe("erreurs internes des combats", () => {
@@ -257,6 +299,8 @@ describe("erreurs internes des combats", () => {
     const response = await applyBattleAction(
       request("/api/battle/action", {
         battleId: "battle-test",
+        expectedTurn: 1,
+        expectedPhase: "action_selection",
         action: { type: "move", moveIndex: 0 },
       }),
     );

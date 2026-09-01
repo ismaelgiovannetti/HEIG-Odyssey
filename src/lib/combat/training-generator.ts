@@ -1,8 +1,9 @@
 import { TRAINING_MIN_LEVEL, calculateTrainingOpponentLevel } from "../training/level-algorithm";
 import { generateTrainingOpponentTeam } from "../training/opponent-generator";
+import type { TrainingDifficulty } from "../training/difficulty";
 import type { Trainer, AIProfile } from "../content/schemas";
 
-export type TrainingDifficulty = "easy" | "normal" | "hard";
+export type { TrainingDifficulty } from "../training/difficulty";
 
 /**
  * Niveau moyen de l'équipe du joueur, borné [5, 100] (T-US09-01). Une équipe
@@ -29,7 +30,7 @@ export function difficultyToAIProfile(difficulty: TrainingDifficulty): AIProfile
   }
 }
 
-const DIFFICULTY_NAMES: Record<TrainingDifficulty, string> = {
+const DIFFICULTY_TECHNICAL_NAMES: Record<TrainingDifficulty, string> = {
   easy: "Facile (Aléatoire)",
   normal: "Normal (Heuristique)",
   hard: "Difficile (Expectiminimax)",
@@ -50,12 +51,14 @@ export function generateTrainingOpponent(params: {
   return {
     id: `training-${difficulty}`,
     name: "IA d'Entraînement",
-    title: `Niveau ${DIFFICULTY_NAMES[difficulty]}`,
+    title: `Niveau ${DIFFICULTY_TECHNICAL_NAMES[difficulty]}`,
     aiProfile: difficultyToAIProfile(difficulty),
     sprite: "trainer-champion-front",
     introCatchline: "Début de la simulation d'entraînement.",
-    victoryCatchline: "Simulation terminée. Bravo pour votre victoire !",
-    defeatCatchline: "Simulation terminée. Réessayez pour parfaire votre stratégie.",
+    // Les deux conclusions décrivent le résultat du point de vue de l'IA,
+    // conformément au contrat commun des dresseurs de campagne.
+    victoryCatchline: "Simulation terminée. Réessayez pour parfaire votre stratégie.",
+    defeatCatchline: "Simulation terminée. Bravo pour votre victoire !",
     musicTrack: "battle-theme-1",
     team: generateTrainingOpponentTeam(averageLevel, teamSize),
   };
