@@ -1,10 +1,14 @@
 import { createRedisClient } from "@/lib/events/redis-client";
 import { QuestWorker } from "./quest-worker";
+import { registerQuestEventHandlers } from "./quest-handler";
 
 async function main() {
   console.log("[Worker Process] Initialisation du worker de quêtes...");
 
+  registerQuestEventHandlers();
+
   const redis = createRedisClient();
+
   const worker = new QuestWorker(redis);
 
   const shutdown = async (signal: string) => {

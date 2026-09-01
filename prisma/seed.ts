@@ -2,6 +2,8 @@ import { PrismaClient, QuestType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+import { MVP_QUEST_DEFINITIONS } from '../src/lib/quests/definitions';
+
 async function main() {
   console.log('Seeding HEIG Odyssey initial database...');
 
@@ -32,50 +34,25 @@ async function main() {
 
   console.log(`Gacha banner created/updated: ${defaultBanner.name}`);
 
-  // 2. Définition des quêtes initiales (Quotidiennes & Hebdomadaires)
-  const quests = [
-    {
-      id: 'quest-daily-battles-1',
-      title: 'Premier combat du jour',
-      description: 'Terminer 1 combat en campagne ou en entraînement.',
-      type: QuestType.DAILY,
-      targetType: 'COMPLETE_BATTLES',
-      targetCount: 1,
-      rewardPokedollars: 50,
-      rewardXp: 100,
-    },
-    {
-      id: 'quest-daily-win-training',
-      title: 'Entraînement tactique',
-      description: 'Remporter 1 combat en mode entraînement.',
-      type: QuestType.DAILY,
-      targetType: 'WIN_TRAINING',
-      targetCount: 1,
-      rewardPokedollars: 80,
-      rewardXp: 150,
-    },
-    {
-      id: 'quest-weekly-master-5',
-      title: 'Défis de la semaine',
-      description: 'Remporter 5 combats au total cette semaine.',
-      type: QuestType.WEEKLY,
-      targetType: 'WIN_BATTLES',
-      targetCount: 5,
-      rewardPokedollars: 300,
-      rewardXp: 500,
-    },
-  ];
-
-  for (const quest of quests) {
+  // 2. Définition des quêtes du MVP (T-US13-06)
+  for (const quest of MVP_QUEST_DEFINITIONS) {
     await prisma.questDefinition.upsert({
       where: { id: quest.id },
-      update: {},
+      update: {
+        title: quest.title,
+        description: quest.description,
+        targetType: quest.targetType,
+        targetCount: quest.targetCount,
+        rewardPokedollars: quest.rewardPokedollars,
+        rewardXp: quest.rewardXp,
+      },
       create: quest,
     });
   }
 
-  console.log(`Initial quest definitions seeded (${quests.length} quests).`);
+  console.log(`MVP quest definitions seeded (${MVP_QUEST_DEFINITIONS.length} quests).`);
 }
+
 
 main()
   .catch((e) => {
