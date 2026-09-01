@@ -1,7 +1,7 @@
 import { Dex } from "@pkmn/sim";
 import { loadSpecies } from "../content/loader";
 import { TrainerSchema } from "../content/schemas";
-import type { Species, Move, PokemonType, TrainerPokemonInput } from "../content/schemas";
+import type { Species, Move, PokemonType, TrainerPokemon } from "../content/schemas";
 
 const dex = Dex.forGen(4);
 
@@ -65,7 +65,7 @@ export function generateTrainingOpponentTeam(
   level: number,
   teamSize: number,
   rng: () => number = Math.random,
-): TrainerPokemonInput[] {
+): TrainerPokemon[] {
   // Bornes du format de combat, identiques à celles de TrainerSchema.team.
   if (!Number.isInteger(teamSize) || teamSize < 1 || teamSize > 6) {
     throw new Error("La taille de l'équipe adverse doit être comprise entre 1 et 6.");
