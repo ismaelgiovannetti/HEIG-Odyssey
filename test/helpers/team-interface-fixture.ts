@@ -82,7 +82,7 @@ export function teamSnapshot(): CollectionSnapshot {
       name: "Roucool",
       types: ["Normal", "Flying"],
       boxNumber: 2,
-      boxSlot: 70,
+      boxSlot: 35,
     }),
   ];
   return {

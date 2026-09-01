@@ -8,35 +8,38 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type DragEvent,
   type KeyboardEvent,
 } from "react";
 import {
   AlertCircle,
   ArrowLeft,
-  ArrowLeftRight,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Hand,
   Info,
-  Keyboard,
+  Lightbulb,
   LoaderCircle,
   Monitor,
   UsersRound,
 } from "lucide-react";
 import {
   PC_BOX_CAPACITY,
-  PC_BOX_COUNT,
   PC_COLUMNS,
   PC_ROWS,
   TEAM_CAPACITY,
 } from "@/lib/team/team-contract";
 import {
+  adjacentBox,
   adjacentCell,
   cellKey,
   describeCell,
   draftSignature,
+  firstFreePcCell,
   locatePokemon,
   movePokemon,
   pokemonAt,
@@ -60,16 +63,18 @@ const MOVEMENT_KEYS = new Set([
 ]);
 
 /** PC manuel : aucune recherche ni réorganisation automatique des boîtes. */
-export function TeamManager() {
+export function TeamManager({ playerName }: { playerName: string }) {
   const collection = useTeamCollection();
   const { snapshot, draft, dirty, pending, error } = collection;
   const router = useRouter();
   const [box, setBox] = useState(1);
+  const [tipsOpen, setTipsOpen] = useState(true);
   const [focused, setFocused] = useState<TeamCell>(START_CELL);
   const [detailsId, setDetailsId] = useState<string>();
   const [carried, setCarried] = useState<string>();
   const [announcement, setAnnouncement] = useState("");
   const [moveError, setMoveError] = useState("");
+  const [boxError, setBoxError] = useState("");
   const [over, setOver] = useState<string>();
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const dragSource = useRef<string | undefined>(undefined);
@@ -103,9 +108,11 @@ export function TeamManager() {
         : dirty
           ? "Sauvegarde non confirmée. Rechargez la collection pour vérifier."
           : collection.notice || "Collection à jour.";
+  // Un refus de dépôt remplace le succès précédent au même endroit sous le PC.
+  const feedbackText = boxError || moveError || saveStatus;
 
-  // Un seul arrêt Tab pour les cases de chaque panneau ; les boutons de fiche
-  // sont accessibles séparément. Les flèches parcourent toujours toutes les cases.
+  // Chaque carte d'équipe et son bouton de fiche ont leur propre arrêt Tab.
+  // Le PC garde un seul arrêt Tab : ses cases se parcourent avec les flèches.
   // Le focus est posé après le rendu pour permettre aussi un changement de boîte.
   useEffect(() => {
     if (pendingFocus.current) {
@@ -185,13 +192,17 @@ export function TeamManager() {
   }
 
   function focusCell(cell: TeamCell) {
-    if (cell.area === "pc") setBox(cell.box);
+    if (cell.area === "pc") {
+      if (cell.box !== box) setBoxError("");
+      setBox(cell.box);
+    }
     pendingFocus.current = cell;
     setFocused({ ...cell });
   }
 
   async function place(id: string, target: TeamCell) {
     if (frozen || collection.isBusy() || !snapshot) return;
+    setBoxError("");
     const source = locatePokemon(draft, id);
     if (!source) {
       clearPickup();
@@ -202,7 +213,8 @@ export function TeamManager() {
     collection.clearFeedback();
     setMoveError(result.error ?? "");
     if (result.error) {
-      setAnnouncement(result.error);
+      // Le refus est annoncé par l'alerte sous le PC, sans message hors écran en double.
+      setAnnouncement("");
       return;
     }
     clearPickup();
@@ -235,6 +247,7 @@ export function TeamManager() {
     if (!id) return;
     setCarried(id);
     setMoveError("");
+    setBoxError("");
     setAnnouncement(
       `${byId.get(id)?.name} pris. Choisissez une destination puis appuyez sur Entrée. Échap pour annuler.`,
     );
@@ -248,21 +261,23 @@ export function TeamManager() {
     // Entrée et Espace déclenchent nativement le clic du bouton, sans doublon.
   }
 
-  function changeBox(direction: number) {
-    const next = Math.max(1, Math.min(PC_BOX_COUNT, box + direction));
+  function changeBox(direction: -1 | 1) {
+    const next = adjacentBox(box, direction);
+    setBoxError("");
+    setOver(undefined);
     setBox(next);
     setFocused((current) =>
       current.area === "pc" ? { ...current, box: next } : current,
     );
     setAnnouncement(
-      `Boîte ${next} sur ${PC_BOX_COUNT}.${carried ? " Pokémon toujours en main." : ""}`,
+      `Boîte ${next}.${carried ? " Pokémon toujours en main." : ""}`,
     );
   }
 
-  function hoverBox(direction: number) {
+  function hoverBox(direction: -1 | 1) {
     if (!dragSource.current || frozen || boxTimer.current) return;
     // Une pause sur une flèche ouvre la boîte voisine pendant le glisser-déposer.
-    // Un passage = un changement, pour ne pas faire défiler quinze boîtes d'un coup.
+    // Un passage = un changement, pour ne pas faire défiler toutes les boîtes d'un coup.
     boxTimer.current = setTimeout(() => {
       changeBox(direction);
       boxTimer.current = null;
@@ -282,10 +297,36 @@ export function TeamManager() {
     }
     dragSource.current = id;
     setCarried(id);
+    setMoveError("");
+    setBoxError("");
+    setAnnouncement("");
     // Les données externes déposées dans la page ne sont jamais interprétées.
     // Le déplacement utilise uniquement une référence interne à cette collection.
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", "heig-odyssey-pokemon");
+  }
+
+  function dropInBox(event: DragEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    const source = dragSource.current;
+    // Comme sur une case, aucun identifiant reçu d'un dépôt externe n'est utilisé.
+    if (!source || frozen || collection.isBusy()) {
+      clearPickup();
+      return;
+    }
+    const destination = firstFreePcCell(draft, box);
+    if (!destination) {
+      clearPickup();
+      collection.clearFeedback();
+      setMoveError("");
+      setAnnouncement("");
+      setBoxError("Boîte complète.");
+      return;
+    }
+    // La même validation et la même sauvegarde s'appliquent qu'à un dépôt précis.
+    void place(source, destination);
+    clearPickup();
   }
 
   function renderCell(cell: TeamCell) {
@@ -315,7 +356,7 @@ export function TeamManager() {
         aria-pressed={picked}
         aria-describedby="team-controls-help"
         aria-disabled={frozen}
-        tabIndex={tabStop ? 0 : -1}
+        tabIndex={isTeam || tabStop ? 0 : -1}
         draggable={Boolean(pokemon) && !frozen}
         onFocus={() => {
           setFocused(cell);
@@ -325,6 +366,7 @@ export function TeamManager() {
         onDragStart={(event) => startDrag(event, cell)}
         onDragEnd={clearPickup}
         onDragOver={(event) => {
+          event.stopPropagation();
           if (!dragSource.current || frozen) return;
           event.preventDefault();
           event.dataTransfer.dropEffect = "move";
@@ -335,6 +377,8 @@ export function TeamManager() {
         }
         onDrop={(event) => {
           event.preventDefault();
+          // Une case précise conserve l'échange et ne déclenche pas aussi le dépôt sur le cadre.
+          event.stopPropagation();
           const source = dragSource.current;
           if (source) void place(source, cell);
           clearPickup();
@@ -345,7 +389,12 @@ export function TeamManager() {
         </span>
         {pokemon ? (
           <>
-            <PokemonSprite pokemon={pokemon} size={isTeam ? 64 : 48} />
+            {/* Seuls les sprites actifs sont harmonisés ; le PC garde son rendu actuel. */}
+            <PokemonSprite
+              pokemon={pokemon}
+              size={isTeam ? 64 : 48}
+              normalizeVisibleSize={isTeam}
+            />
             {isTeam ? (
               <span className={styles.teamInfo} aria-hidden="true">
                 <span className={styles.nameLine}>
@@ -418,8 +467,6 @@ export function TeamManager() {
             aria-haspopup="dialog"
             title={`Voir les détails de ${pokemon.name}`}
             disabled={frozen || Boolean(carried)}
-            onFocus={() => setFocused(cell)}
-            onKeyDown={(event) => keyboard(event, cell)}
             onClick={() => {
               if (frozen || carried || collection.isBusy()) return;
               setDetailsId(pokemon.id);
@@ -443,6 +490,7 @@ export function TeamManager() {
       return;
     clearPickup();
     setMoveError("");
+    setBoxError("");
     setAnnouncement("");
     await collection.reload();
   }
@@ -455,6 +503,7 @@ export function TeamManager() {
           event.preventDefault();
           clearPickup();
           setMoveError("");
+          setBoxError("");
           setAnnouncement("Déplacement annulé. Le Pokémon reste à sa place.");
         }
       }}
@@ -494,18 +543,15 @@ export function TeamManager() {
             )}
           </div>
         )}
-        {moveError && (
-          <p className={styles.error} role="alert">
-            {moveError}
-          </p>
-        )}
         <p
           className={styles.srOnly}
           role="status"
           aria-live="polite"
           aria-atomic="true"
         >
-          {[saveStatus, announcement].filter(Boolean).join(" ")}
+          {[moveError ? "" : feedbackText, announcement]
+            .filter(Boolean)
+            .join(" ")}
         </p>
       </div>
 
@@ -522,46 +568,101 @@ export function TeamManager() {
         </div>
       ) : (
         <>
-          <div className={styles.instructions} id="team-controls-help">
-            <Keyboard size={19} aria-hidden="true" />
-            <p>
-              <strong>Glissez-déposez, ou utilisez le clavier.</strong>
-              <br />
-              Entrée / clic : prendre et poser · Flèches : déplacer le focus ·
-              Échap : annuler · Page ↑ / ↓ : changer de boîte.
-              <span className={styles.autoSaveHint}>
-                Chaque déplacement ou échange enregistre automatiquement
-                l’équipe et le rangement du PC.
-              </span>
-            </p>
-            <span className={styles.swapHint}>
-              <ArrowLeftRight size={16} aria-hidden="true" /> Case occupée =
-              échange
-            </span>
-          </div>
-
-          {/* La place du message de prise reste réservée pour ne pas déplacer
-              les cases sous la souris au début d'un glisser-déposer. */}
-          <div className={styles.carryBar}>
-            {carried && (
-              <>
-                <span>
-                  <Hand size={16} aria-hidden="true" />
-                  <strong>{byId.get(carried)?.name}</strong> — choisissez une
-                  destination.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearPickup();
-                    setAnnouncement("Déplacement annulé.");
-                  }}
-                >
-                  Annuler le déplacement
-                </button>
-              </>
-            )}
-          </div>
+          <section
+            className={styles.instructions}
+            aria-labelledby="team-tips-heading"
+          >
+            <header className={styles.tipsHeader}>
+              <h2 className={styles.tipsHeading} id="team-tips-heading">
+                <Lightbulb size={20} aria-hidden="true" />
+                Tips
+              </h2>
+              {/* Seul ce bouton replie l'aide ; le titre n'est plus interactif. */}
+              <button
+                type="button"
+                className={styles.tipsToggle}
+                aria-expanded={tipsOpen}
+                aria-controls="team-controls-help"
+                aria-label={tipsOpen ? "Réduire les Tips" : "Afficher les Tips"}
+                title={tipsOpen ? "Réduire les Tips" : "Afficher les Tips"}
+                onClick={() => setTipsOpen((open) => !open)}
+              >
+                {tipsOpen ? (
+                  <ChevronUp size={18} aria-hidden="true" />
+                ) : (
+                  <ChevronDown size={18} aria-hidden="true" />
+                )}
+              </button>
+            </header>
+            {/* Général, souris, puis clavier : le même ordre à l'écran et à la lecture.
+                L'aide garde son identifiant quand elle est repliée pour les descriptions des cases. */}
+            <div
+              className={styles.tipsContent}
+              id="team-controls-help"
+              hidden={!tipsOpen}
+            >
+              <section
+                className={styles.tipsGroup}
+                aria-labelledby="team-tips-general"
+              >
+                <h3 id="team-tips-general">Général</h3>
+                <ul className={styles.tipsList}>
+                  <li>
+                    <strong>Case occupée :</strong> les deux Pokémon échangent
+                    leur place.
+                  </li>
+                  <li>
+                    <strong>Échap :</strong> annulez le déplacement en cours.
+                  </li>
+                  <li>
+                    <strong>Sauvegarde automatique :</strong>{" "}
+                    l’équipe et le rangement du PC sont enregistrés après chaque
+                    déplacement ou échange.
+                  </li>
+                </ul>
+              </section>
+              <section
+                className={styles.tipsGroup}
+                aria-labelledby="team-tips-mouse"
+              >
+                <h3 id="team-tips-mouse">Souris</h3>
+                <ul className={styles.tipsList}>
+                  <li>
+                    <strong>Clic ou glisser-déposer :</strong> prenez et posez
+                    un Pokémon par clic, ou faites-le glisser vers une case.
+                  </li>
+                  <li>
+                    <strong>Cadre de la boîte :</strong> déposez le Pokémon sur
+                    le cadre pour utiliser la première case libre.
+                  </li>
+                  <li>
+                    <strong>Changer de boîte en glissant :</strong> maintenez le
+                    Pokémon sur une flèche pour ouvrir la boîte voisine.
+                  </li>
+                </ul>
+              </section>
+              <section
+                className={styles.tipsGroup}
+                aria-labelledby="team-tips-keyboard"
+              >
+                <h3 id="team-tips-keyboard">Clavier</h3>
+                <ul className={styles.tipsList}>
+                  <li>
+                    <strong>Entrée / Espace :</strong> prenez un Pokémon, puis
+                    posez-le sur la case choisie.
+                  </li>
+                  <li>
+                    <strong>Flèches directionnelles :</strong> passez d’une case
+                    à l’autre.
+                  </li>
+                  <li>
+                    <strong>Tab :</strong> parcourez les éléments interactifs de
+                    la page.
+                  </li>
+                </ul>
+              </section>
+            </div>
+          </section>
 
           <div className={styles.workspace} aria-busy={pending !== null}>
             <section
@@ -595,20 +696,37 @@ export function TeamManager() {
             <section
               className={`${styles.panel} ${styles.pcPanel}`}
               aria-labelledby="pc-heading"
+              data-drop-target={over === `box-${box}` || undefined}
+              onDragOver={(event) => {
+                if (!dragSource.current || frozen) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                setOver(`box-${box}`);
+              }}
+              onDragLeave={(event) => {
+                if (
+                  event.relatedTarget instanceof Node &&
+                  event.currentTarget.contains(event.relatedTarget)
+                )
+                  return;
+                setOver((current) =>
+                  current === `box-${box}` ? undefined : current,
+                );
+              }}
+              onDrop={dropInBox}
             >
               <header className={styles.panelHeading}>
                 <div>
                   <Monitor size={20} aria-hidden="true" />
-                  <h2 id="pc-heading">PC Pokémon</h2>
+                  <h2 id="pc-heading">PC de {playerName}</h2>
                 </div>
-                <span>{snapshot.count} Pokémon au total</span>
               </header>
               <div className={styles.boxHeading}>
                 <button
                   type="button"
                   className={styles.boxArrow}
                   aria-label="Boîte précédente"
-                  disabled={box === 1 || pending !== null}
+                  disabled={pending !== null}
                   onClick={() => changeBox(-1)}
                   onDragEnter={() => hoverBox(-1)}
                   onDragLeave={stopHoverBox}
@@ -622,15 +740,14 @@ export function TeamManager() {
                   <h3>{snapshot.pc.boxes[box - 1].name}</h3>
                   <span aria-hidden="true">-</span>
                   <span>
-                    {box} / {PC_BOX_COUNT} · {boxCount} / {PC_BOX_CAPACITY}{" "}
-                    places
+                    {boxCount} / {PC_BOX_CAPACITY} places
                   </span>
                 </div>
                 <button
                   type="button"
                   className={styles.boxArrow}
                   aria-label="Boîte suivante"
-                  disabled={box === PC_BOX_COUNT || pending !== null}
+                  disabled={pending !== null}
                   onClick={() => changeBox(1)}
                   onDragEnter={() => hoverBox(1)}
                   onDragLeave={stopHoverBox}
@@ -643,6 +760,12 @@ export function TeamManager() {
               </div>
               <div
                 className={styles.pcGrid}
+                style={
+                  {
+                    "--pc-rows": PC_ROWS,
+                    "--pc-columns": PC_COLUMNS,
+                  } as CSSProperties
+                }
                 role="grid"
                 aria-label={`Boîte ${box}`}
                 aria-rowcount={PC_ROWS}
@@ -672,21 +795,27 @@ export function TeamManager() {
                 ))}
               </div>
               <p className={styles.panelFoot}>
-                Pour changer de boîte en glissant, restez un instant sur une
-                flèche.
+                <span>
+                  {snapshot.count}{" "}
+                  {snapshot.count > 1 ? "Pokémons" : "Pokémon"}{" "}
+                  au total
+                </span>
               </p>
             </section>
           </div>
 
           {/* Le retour de sauvegarde reste sous le PC, même pendant une prise. */}
-          <div className={styles.saveFeedback}>
+          <div
+            className={styles.saveFeedback}
+            data-error={Boolean(boxError || moveError) || undefined}
+          >
             {pending === "save" ? (
               <LoaderCircle
                 className={styles.savingIcon}
                 size={16}
                 aria-hidden="true"
               />
-            ) : error || dirty ? (
+            ) : boxError || moveError || error || dirty ? (
               <AlertCircle
                 className={styles.saveWarning}
                 size={16}
@@ -695,7 +824,11 @@ export function TeamManager() {
             ) : (
               <Check size={16} aria-hidden="true" />
             )}
-            <span>{saveStatus}</span>
+            {moveError ? (
+              <span role="alert">{moveError}</span>
+            ) : (
+              <span>{feedbackText}</span>
+            )}
           </div>
 
           {detailsPokemon && (

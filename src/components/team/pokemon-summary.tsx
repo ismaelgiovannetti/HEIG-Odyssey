@@ -40,9 +40,11 @@ export function PokemonTypes({ types }: { types: PokemonType[] }) {
 export function PokemonSprite({
   pokemon,
   size = 48,
+  normalizeVisibleSize = false,
 }: {
   pokemon: CollectionEntry;
   size?: number;
+  normalizeVisibleSize?: boolean;
 }) {
   return (
     <span className={styles.sprite} aria-hidden="true">
@@ -53,6 +55,7 @@ export function PokemonSprite({
         alt=""
         width={size}
         height={size}
+        normalizeVisibleSize={normalizeVisibleSize}
       />
     </span>
   );
@@ -75,7 +78,10 @@ export function PokemonSummary({
           <PokemonSprite pokemon={pokemon} size={112} />
           <div>
             <p className={styles.eyebrow}>
-              #{String(pokemon.dexNumber ?? "—").padStart(3, "0")} · Niveau{" "}
+              #
+              {pokemon.dexNumber == null
+                ? "-"
+                : String(pokemon.dexNumber).padStart(3, "0")} · Niveau{" "}
               {pokemon.level}
             </p>
             <h2 id={titleId}>
@@ -154,9 +160,9 @@ export function PokemonSummary({
                       }[move.category]
                     }
                   </span>
-                  <span>Puissance : {move.power || "—"}</span>
+                  <span>Puissance : {move.power || "-"}</span>
                   <span>
-                    Précision : {move.accuracy ? `${move.accuracy} %` : "—"}
+                    Précision : {move.accuracy ? `${move.accuracy} %` : "-"}
                   </span>
                 </div>
                 {move.description && (

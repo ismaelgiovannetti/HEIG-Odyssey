@@ -77,6 +77,21 @@ export function locatePokemon(
   );
 }
 
+/** Déposer sur le cadre choisit la première case libre, sans déplacer ses occupants. */
+export function firstFreePcCell(
+  draft: TeamDraft,
+  box: number,
+): Extract<TeamCell, { area: "pc" }> | null {
+  if (!Number.isInteger(box) || box < 1 || box > PC_BOX_COUNT) return null;
+  const occupied = new Set(
+    draft.pc.filter((p) => p.boxNumber === box).map((p) => p.boxSlot),
+  );
+  for (let slot = 1; slot <= PC_BOX_CAPACITY; slot++) {
+    if (!occupied.has(slot)) return { area: "pc", box, slot };
+  }
+  return null;
+}
+
 function validCell(cell: TeamCell): boolean {
   return (
     Number.isInteger(cell.slot) &&
@@ -96,13 +111,13 @@ export function teamRefusal(
   pokemon: CollectionEntry[],
 ): string | null {
   if (draft.team.length === 0)
-    return "Gardez au moins un Pokémon dans votre équipe.";
+    return "Au moins 1 Pokémon est nécessaire dans l’équipe active.";
   if (
     !pokemon.some(
       (entry) => draft.team.includes(entry.id) && entry.currentHp > 0,
     )
   ) {
-    return "Gardez au moins un Pokémon apte au combat dans votre équipe.";
+    return "Au moins 1 Pokémon apte au combat est nécessaire dans l’équipe active.";
   }
   return null;
 }
@@ -159,6 +174,11 @@ export function saveDraft(draft: TeamDraft, revision: number): UpdateTeamInput {
   };
 }
 
+/** Les flèches, le clavier et le survol pendant un glisser-déposer bouclent de la même façon. */
+export function adjacentBox(box: number, direction: -1 | 1): number {
+  return ((box - 1 + direction + PC_BOX_COUNT) % PC_BOX_COUNT) + 1;
+}
+
 /** Déplacement du focus, sans modifier le rangement ni le Pokémon transporté. */
 export function adjacentCell(
   cell: TeamCell,
@@ -168,10 +188,7 @@ export function adjacentCell(
   if (key === "PageUp" || key === "PageDown") {
     return {
       area: "pc",
-      box: Math.max(
-        1,
-        Math.min(PC_BOX_COUNT, box + (key === "PageUp" ? -1 : 1)),
-      ),
+      box: adjacentBox(box, key === "PageUp" ? -1 : 1),
       slot: cell.area === "pc" ? cell.slot : 1,
     };
   }
@@ -179,7 +196,7 @@ export function adjacentCell(
     const column = (cell.slot - 1) % TEAM_COLUMNS;
     const row = Math.floor((cell.slot - 1) / TEAM_COLUMNS);
     // On traverse d'abord les deux cartes d'une rangée avant d'entrer dans le PC.
-    // Les passages se répartissent sur la hauteur des dix lignes du PC.
+    // Les passages se répartissent sur toute la hauteur de la grille du PC.
     if (key === "ArrowRight" && column === TEAM_COLUMNS - 1) {
       const pcRow = Math.round((row * (PC_ROWS - 1)) / (TEAM_ROWS - 1));
       return { area: "pc", box, slot: pcRow * PC_COLUMNS + 1 };

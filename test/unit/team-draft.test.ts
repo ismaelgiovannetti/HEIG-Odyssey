@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  adjacentBox,
   adjacentCell,
   draftFromCollection,
   draftSignature,
+  firstFreePcCell,
   movePokemon,
   pokemonAt,
   saveDraft,
@@ -13,7 +15,7 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
   it("conserve les cases vides et le rangement reçu du serveur", () => {
     const draft = draftFromCollection(teamSnapshot().pokemon);
     expect(draft.team).toEqual(["alpha", "bravo"]);
-    expect(pokemonAt(draft, { area: "pc", box: 2, slot: 70 })).toBe("echo");
+    expect(pokemonAt(draft, { area: "pc", box: 2, slot: 35 })).toBe("echo");
     expect(pokemonAt(draft, { area: "pc", box: 2, slot: 1 })).toBeUndefined();
   });
 
@@ -37,11 +39,11 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
     const { draft } = movePokemon(
       draftFromCollection(data.pokemon),
       { area: "pc", box: 1, slot: 1 },
-      { area: "pc", box: 2, slot: 70 },
+      { area: "pc", box: 2, slot: 35 },
       data.pokemon,
     );
     expect(pokemonAt(draft, { area: "pc", box: 1, slot: 1 })).toBe("echo");
-    expect(pokemonAt(draft, { area: "pc", box: 2, slot: 70 })).toBe("charlie");
+    expect(pokemonAt(draft, { area: "pc", box: 2, slot: 35 })).toBe("charlie");
   });
 
   it("échange l'occupant du PC avec celui de l'équipe", () => {
@@ -70,11 +72,11 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
     const { draft } = movePokemon(
       original,
       { area: "team", slot: 1 },
-      { area: "pc", box: 15, slot: 70 },
+      { area: "pc", box: 20, slot: 35 },
       data.pokemon,
     );
     expect(draft.team).toEqual(["bravo"]);
-    expect(pokemonAt(draft, { area: "pc", box: 15, slot: 70 })).toBe("alpha");
+    expect(pokemonAt(draft, { area: "pc", box: 20, slot: 35 })).toBe("alpha");
   });
 
   it("complète la première place libre quand on vise une place vide de l'équipe", () => {
@@ -100,7 +102,9 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
       pokemon,
     );
     expect(result.draft).toBe(draft);
-    expect(result.error).toContain("au moins un Pokémon");
+    expect(result.error).toBe(
+      "Au moins 1 Pokémon est nécessaire dans l’équipe active.",
+    );
   });
 
   it("refuse de remplacer le dernier partenaire apte au combat par un Pokémon K.O.", () => {
@@ -126,14 +130,14 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
       movePokemon(
         draft,
         { area: "team", slot: 1 },
-        { area: "pc", box: 16, slot: 1 },
+        { area: "pc", box: 21, slot: 1 },
         data.pokemon,
       ).error,
     ).toBeDefined();
     expect(
       movePokemon(
         draft,
-        { area: "pc", box: 1, slot: 70 },
+        { area: "pc", box: 1, slot: 35 },
         { area: "team", slot: 1 },
         data.pokemon,
       ).draft,
@@ -173,7 +177,7 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
       draft = movePokemon(
         draft,
         { area: "pc", box: source.boxNumber, slot: source.boxSlot },
-        { area: "pc", box: (i % 15) + 1, slot: (i % 70) + 1 },
+        { area: "pc", box: (i % 20) + 1, slot: (i % 35) + 1 },
         data.pokemon,
       ).draft;
       const ids = [...draft.team, ...draft.pc.map((p) => p.pokemonId)];
@@ -186,7 +190,63 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
   });
 });
 
+describe("première case libre lors d'un dépôt sur une boîte", () => {
+  it("choisit la première case d'une boîte vide", () => {
+    const draft = draftFromCollection(teamSnapshot().pokemon);
+    expect(firstFreePcCell(draft, 20)).toEqual({ area: "pc", box: 20, slot: 1 });
+  });
+
+  it("remplit le premier trou sans trier les occupants ni confondre les boîtes", () => {
+    const draft = {
+      team: ["alpha"],
+      pc: [
+        { pokemonId: "bravo", boxNumber: 1, boxSlot: 4 },
+        { pokemonId: "charlie", boxNumber: 1, boxSlot: 1 },
+        { pokemonId: "delta", boxNumber: 2, boxSlot: 2 },
+        { pokemonId: "echo", boxNumber: 1, boxSlot: 3 },
+      ],
+    };
+    const original = structuredClone(draft);
+    expect(firstFreePcCell(draft, 1)).toEqual({ area: "pc", box: 1, slot: 2 });
+    expect(draft).toEqual(original);
+  });
+
+  it("accepte la dernière place puis signale une boîte complète", () => {
+    const draft = {
+      team: ["alpha"],
+      pc: Array.from({ length: 34 }, (_, i) => ({
+        pokemonId: `stored-${i}`,
+        boxNumber: 1,
+        boxSlot: i + 1,
+      })),
+    };
+    expect(firstFreePcCell(draft, 1)).toEqual({ area: "pc", box: 1, slot: 35 });
+    draft.pc.push({ pokemonId: "last", boxNumber: 1, boxSlot: 35 });
+    expect(firstFreePcCell(draft, 1)).toBeNull();
+    // Une autre boîte reste disponible : ne jamais y déposer sans l'avoir choisie.
+    expect(firstFreePcCell(draft, 2)).toEqual({ area: "pc", box: 2, slot: 1 });
+  });
+
+  it.each([0, 21, 1.5, Number.NaN])("refuse la boîte invalide %s", (box) => {
+    expect(
+      firstFreePcCell(draftFromCollection(teamSnapshot().pokemon), box),
+    ).toBeNull();
+  });
+});
+
 describe("navigation clavier du rangement", () => {
+  it.each([
+    [1, -1, 20],
+    [20, 1, 1],
+    [1, 1, 2],
+    [20, -1, 19],
+  ] as const)(
+    "depuis la boîte %i, le sens %i rejoint la boîte %i",
+    (box, direction, expected) => {
+      expect(adjacentBox(box, direction)).toBe(expected);
+    },
+  );
+
   // Ordre visuel 1–2 / 3–4 / 5–6 : les flèches ne suivent plus une seule colonne.
   it.each([
     [1, "ArrowRight", 2],
@@ -214,8 +274,8 @@ describe("navigation clavier du rangement", () => {
 
   it.each([
     [2, 1],
-    [4, 36],
-    [6, 64],
+    [4, 15],
+    [6, 29],
   ])(
     "relie la place %i à la case PC %i dans les deux sens",
     (teamSlot, pcSlot) => {
@@ -233,7 +293,7 @@ describe("navigation clavier du rangement", () => {
   );
 
   it("ramène chaque ligne du PC vers une place de droite de l'équipe", () => {
-    for (let row = 0; row < 10; row++) {
+    for (let row = 0; row < 5; row++) {
       const target = adjacentCell(
         { area: "pc", box: 1, slot: row * 7 + 1 },
         "ArrowLeft",
@@ -251,15 +311,30 @@ describe("navigation clavier du rangement", () => {
       adjacentCell({ area: "pc", box: 1, slot: 7 }, "ArrowRight", 1).slot,
     ).toBe(7);
     expect(
-      adjacentCell({ area: "pc", box: 1, slot: 70 }, "ArrowDown", 1).slot,
-    ).toBe(70);
+      adjacentCell({ area: "pc", box: 1, slot: 35 }, "ArrowDown", 1).slot,
+    ).toBe(35);
   });
-  it("change de boîte sans perdre la case et sans dépasser les quinze boîtes", () => {
-    expect(
-      adjacentCell({ area: "pc", box: 1, slot: 12 }, "PageDown", 1),
-    ).toEqual({ area: "pc", box: 2, slot: 12 });
-    expect(
-      adjacentCell({ area: "pc", box: 15, slot: 12 }, "PageDown", 15),
-    ).toEqual({ area: "pc", box: 15, slot: 12 });
+  it.each([
+    [1, "PageDown", 2],
+    [2, "PageUp", 1],
+    [1, "PageUp", 20],
+    [20, "PageDown", 1],
+  ] as const)(
+    "boucle depuis la boîte %i avec %s sans perdre la case",
+    (box, key, expected) => {
+      expect(adjacentCell({ area: "pc", box, slot: 12 }, key, box)).toEqual({
+        area: "pc",
+        box: expected,
+        slot: 12,
+      });
+    },
+  );
+
+  it("rejoint la dernière boîte depuis l'équipe avec Page précédente", () => {
+    expect(adjacentCell({ area: "team", slot: 2 }, "PageUp", 1)).toEqual({
+      area: "pc",
+      box: 20,
+      slot: 1,
+    });
   });
 });

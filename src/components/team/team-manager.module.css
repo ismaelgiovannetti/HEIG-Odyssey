@@ -98,60 +98,94 @@
   background: var(--color-bg-alt);
 }
 .instructions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 15px 18px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-success);
   background: var(--color-bg-alt);
   font-size: 11px;
-  line-height: 1.8;
+  line-height: 1.7;
   color: var(--color-text-muted);
 }
-.instructions > svg {
+.tipsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px 8px 20px;
+}
+.tipsHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--color-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.tipsToggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-success);
+  cursor: pointer;
+}
+.tipsHeading > svg {
   color: var(--color-success);
   flex-shrink: 0;
 }
-.instructions p {
+.manager .tipsToggle:focus-visible {
+  outline: 2px solid var(--color-success);
+  outline-offset: 2px;
+}
+.tipsContent {
+  /* Trois thèmes séparés, empilés dans le même ordre sur un écran plus étroit. */
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 24px;
+  padding: 4px 20px 20px;
+}
+.tipsContent[hidden] {
+  /* La grille ne doit pas annuler le masquage natif de l'attribut hidden. */
+  display: none;
+}
+.tipsGroup {
+  min-width: 0;
+}
+.tipsGroup + .tipsGroup {
+  padding-left: 24px;
+  border-left: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+.tipsGroup h3 {
+  margin: 0 0 12px;
+  color: var(--color-success);
+  font-size: 12px;
+  font-weight: 700;
+}
+.tipsList {
+  display: grid;
+  gap: 8px;
   margin: 0;
-  flex: 1;
+  padding-left: 18px;
+  list-style: disc;
+}
+.tipsList li {
+  padding-left: 2px;
+}
+.tipsList li::marker {
+  color: var(--color-success);
 }
 .instructions strong {
   color: var(--color-text);
   font-weight: 600;
 }
-.autoSaveHint {
-  display: block;
-  margin-top: 8px;
-}
-.swapHint {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10px;
-  white-space: nowrap;
-}
-.carryBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  /* Réserve compacte : prendre un Pokémon ne décale pas les cases. */
-  min-height: 36px;
-  padding: 0 2px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-.carryBar > span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.carryBar svg {
-  color: var(--color-success);
-}
 .saveFeedback .saveWarning {
+  color: var(--color-error-text);
+}
+.saveFeedback[data-error] {
   color: var(--color-error-text);
 }
 .saveFeedback {
@@ -178,16 +212,12 @@
     transform: rotate(360deg);
   }
 }
-.carryBar button {
-  min-height: 36px;
-  text-decoration: underline;
-  font-weight: 600;
-}
-
 /* Environ 60 % pour l'équipe, 40 % pour le PC. Sa largeur minimale conserve
-   les sept colonnes et des cases d'au moins 44 px, sans toucher aux dix lignes. */
+   les sept colonnes et des cases d'au moins 44 px, sans modifier la grille du PC. */
 .workspace {
   display: grid;
+  /* Espacement constant : aucun bandeau n'apparaît pendant une prise. */
+  margin-top: 18px;
   grid-template-columns: minmax(0, 3fr) minmax(372px, 2fr);
   gap: 24px;
   align-items: stretch;
@@ -202,6 +232,7 @@
 }
 .panelHeading {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   min-height: 58px;
@@ -231,11 +262,12 @@
   font-size: 11px;
   white-space: nowrap;
 }
-/* Le cadre rouge distingue l'équipe ; le PC garde un boîtier gris clair et
-   un écran aux couleurs du thème. Ces couleurs ne modifient pas les fiches. */
+/* L'équipe reste rouge ; le PC retrouve un en-tête gris contrasté et des commandes claires. */
 .teamPanel {
-  /* L'équipe garde sa hauteur utile, sans étirer ses cartes à celle du PC. */
-  align-self: start;
+  /* Le PC fixe la hauteur de la rangée. Le contenu de l'équipe ne peut pas l'agrandir. */
+  contain: size;
+  min-height: 0;
+  align-self: stretch;
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-alt));
 }
 .teamPanel .panelHeading {
@@ -249,34 +281,48 @@
   color: var(--color-nav-muted);
 }
 .pcPanel {
+  /* Une modification de l'équipe ne doit pas étirer le PC à sa hauteur. */
+  align-self: start;
   background: #dce2e9;
 }
 .pcPanel .panelHeading {
-  background: linear-gradient(180deg, #edf1f5, #cdd5df);
-  color: #202c3b;
+  background: #475569;
+  color: #f8fafc;
 }
 .pcPanel .panelHeading svg {
-  color: #315d80;
+  color: #c4e2ff;
 }
-.pcPanel .panelHeading > span,
+.pcPanel .panelHeading > div {
+  flex: 1;
+}
+.pcPanel .panelHeading h2 {
+  /* Un nom de compte long ne doit pas repousser les limites du PC. */
+  overflow-wrap: anywhere;
+}
 .pcPanel .panelFoot {
+  justify-content: flex-end;
+  text-align: right;
   color: #475569;
-}
-.pcPanel .panelFoot {
   border-color: #8b96a5;
 }
 .pcPanel .boxArrow:focus-visible {
   outline-color: #315d80;
 }
+.pcPanel[data-drop-target] {
+  outline: 2px solid var(--color-success);
+  outline-offset: 3px;
+}
 .teamSlots {
   display: grid;
   /* Même ordre que les flèches du clavier : 1–2, 3–4, puis 5–6. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(3, minmax(112px, auto));
-  align-content: start;
-  flex: none;
-  gap: 14px;
-  padding: 16px;
+  grid-template-rows: repeat(3, minmax(min-content, 1fr));
+  min-height: 0;
+  flex: 1;
+  gap: 10px;
+  padding: 12px;
+  /* Au zoom ou avec un nom long, les cartes restent accessibles sans étirer le PC. */
+  overflow-y: auto;
 }
 /* La bordure appartient à la carte entière, jamais à une portion du bouton.
    L'icône de fiche est indépendante, sans ajouter de colonne ni de cadre carré. */
@@ -285,11 +331,12 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
+  min-height: 86px;
   border: 2px solid var(--color-border);
   background: var(--color-surface);
 }
 .teamCard:hover,
-.teamCard:focus-within {
+.teamCard:has(> .teamCell:focus-visible) {
   border-color: var(--color-primary-light);
 }
 .teamCard[data-empty] {
@@ -307,8 +354,8 @@
 }
 .detailsButton {
   position: absolute;
-  /* Suit le nom et le niveau descendus de 10 px, sans réduire la cible de clic. */
-  top: 22px;
+  /* L'icône suit la ligne du nom, sans lui imposer la hauteur de sa cible de clic. */
+  top: 2px;
   right: 4px;
   z-index: 3;
   display: grid;
@@ -326,7 +373,9 @@
   color: var(--color-info-text);
 }
 .manager .detailsButton:focus-visible {
-  /* Le style de focus commun ne doit pas déplacer cette icône superposée. */
+  /* Un petit anneau bleu distingue la fiche de la carte, sans réduire la cible de 44 px. */
+  outline: 2px solid var(--color-info-border);
+  outline-offset: -7px;
   position: absolute;
   z-index: 3;
 }
@@ -364,7 +413,7 @@
   cursor: default;
 }
 .teamCell {
-  padding: 12px 16px;
+  padding: 6px 12px;
   gap: 14px;
   text-align: left;
 }
@@ -407,17 +456,17 @@
   flex: 1;
   flex-direction: column;
   align-self: flex-start;
-  gap: 7px;
+  gap: 5px;
 }
 .nameLine {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   /* Le niveau suit le nom ; l'espace à droite reste réservé à l'icône i. */
-  min-height: 44px;
-  /* Décale le texte vers le bas dans sa ligne, sans pousser les types ni les PV.
-     Un nom sur plusieurs lignes peut toujours agrandir la carte sans chevauchement. */
-  padding-top: 20px;
+  min-height: 28px;
+  /* Réduire ensemble la ligne et sa marge haute conserve l'écart avec les types.
+     Les noms longs peuvent toujours agrandir la carte, sans chevauchement. */
+  padding-top: 4px;
   padding-right: 36px;
   align-items: baseline;
   align-content: center;
@@ -525,6 +574,7 @@
 }
 .panelFoot {
   display: flex;
+  flex-shrink: 0;
   min-height: 43px;
   align-items: center;
   margin: 0;
@@ -539,7 +589,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px;
+  /* Bandeau compact : la taille du texte et les cases du PC restent inchangées. */
+  padding: 6px 10px;
   border-bottom: 1px solid #8b96a5;
   background: #e7ecf2;
   color: #202c3b;
@@ -547,7 +598,9 @@
 .boxHeading > div {
   display: flex;
   min-width: 0;
-  align-items: baseline;
+  flex: 1;
+  /* Les deux polices partagent la même ligne et restent centrées entre les flèches. */
+  align-items: center;
   justify-content: center;
   gap: 5px;
   text-align: center;
@@ -560,18 +613,19 @@
   text-overflow: ellipsis;
   font-family: "Press Start 2P", monospace;
   font-size: 9px;
-  line-height: 1.5;
+  line-height: 20px;
 }
 .boxHeading span {
   flex-shrink: 0;
   color: #475569;
   font-size: 10px;
+  line-height: 20px;
 }
 .boxArrow {
   display: grid;
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border: 2px solid #8b96a5;
   background: #f5f7fa;
@@ -581,15 +635,20 @@
   color: #315d80;
 }
 .boxArrow svg {
+  width: 18px;
+  height: 18px;
   pointer-events: none;
 }
 
-/* Sept colonnes et dix lignes restent présentes, même dans une boîte vide.
-   Des lignes explicites conservent la structure de grille pour les lecteurs d'écran. */
+/* Les dimensions viennent du contrat partagé avec le serveur : 7 colonnes et 5 lignes.
+   Les lignes restent présentes, même dans une boîte entièrement vide. */
 .pcGrid {
+  /* 44 px pour le sprite visible + 2 px de bordure en haut et en bas.
+     Les cases vides réservent aussi cette hauteur, avant et après chaque dépôt. */
+  --pc-cell-height: 48px;
   display: grid;
-  grid-template-rows: repeat(10, minmax(44px, 1fr));
-  flex: 1;
+  grid-template-rows: repeat(var(--pc-rows), var(--pc-cell-height));
+  flex: none;
   gap: 5px;
   padding: 14px;
   background:
@@ -603,15 +662,16 @@
 }
 .pcRow {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--pc-columns), minmax(0, 1fr));
   gap: 5px;
 }
 .pcRow > div {
   min-width: 0;
 }
 .pcCell {
-  height: 100%;
-  min-height: 44px;
+  box-sizing: border-box;
+  height: var(--pc-cell-height);
+  min-height: var(--pc-cell-height);
   justify-content: center;
 }
 .pcCell .sprite {
@@ -887,7 +947,7 @@
   .teamCell {
     flex-direction: column;
     justify-content: flex-start;
-    padding: 12px 10px;
+    padding: 8px 10px;
     gap: 6px;
     text-align: center;
   }
@@ -904,7 +964,7 @@
   }
   .detailsButton {
     /* En carte étroite, le sprite de 64 px précède le nom avec un écart de 6 px. */
-    top: calc(22px + 64px + 6px);
+    top: calc(2px + 64px + 6px);
   }
   .nameLine strong {
     font-size: 12px;
@@ -916,14 +976,20 @@
   .pcRow {
     gap: 4px;
   }
-  .swapHint {
-    display: none;
-  }
 }
 
 /* Repli utile au zoom : garder chaque contrôle accessible sans bloquer le zoom
    du navigateur. Le garde mobile existant reste inchangé. */
 @media (max-width: 900px) {
+  .tipsContent {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tipsGroup + .tipsGroup {
+    padding-top: 16px;
+    padding-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+    border-left: 0;
+  }
   .heading {
     flex-wrap: wrap;
     gap: 8px;
@@ -945,6 +1011,14 @@
 @media (max-width: 740px) {
   .workspace {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .teamPanel {
+    /* Quand les panneaux sont empilés, chacun reprend sa hauteur naturelle. */
+    contain: none;
+    align-self: start;
+  }
+  .teamSlots {
+    flex: none;
   }
 }
 

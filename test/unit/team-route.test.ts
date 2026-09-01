@@ -56,7 +56,8 @@ describe("API privée de l'équipe", () => {
     { ...valid, moves: [] },
     { teamPokemonIds: ["p1"] },
     { ...valid, expectedRevision: -1 },
-    { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 16, boxSlot: 1 }] },
+    { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 21, boxSlot: 1 }] },
+    { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 1, boxSlot: 36 }] },
   ])("refuse un corps invalide avant le service (%#)", async (body) => {
     expect((await PUT(request(body))).status).toBe(400);
     expect(mocks.save).not.toHaveBeenCalled();
@@ -80,6 +81,12 @@ describe("API privée de l'équipe", () => {
     expect(mocks.save).toHaveBeenCalledWith("owner", valid);
     expect(await response.json()).toMatchObject({ success: true, revision: 5, team: [{ id: "p1" }] });
     expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("transmet la dernière case de la vingtième boîte au service", async () => {
+    const body = { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 20, boxSlot: 35 }] };
+    expect((await PUT(request(body))).status).toBe(200);
+    expect(mocks.save).toHaveBeenCalledWith("owner", body);
   });
 
   it.each([

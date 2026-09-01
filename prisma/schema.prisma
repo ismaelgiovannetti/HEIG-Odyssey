@@ -123,8 +123,8 @@ model UserPokemon {
   gender       String?  @default("GENDERLESS") // M, F, GENDERLESS
   isShiny      Boolean  @default(false)
   teamPosition Int?     // De 1 à 6 dans l'équipe ; null dans le PC.
-  boxNumber    Int?     // De 1 à 15 dans le PC ; null dans l'équipe.
-  boxSlot      Int?     // De 1 à 70, ligne par ligne (7 colonnes, 10 lignes).
+  boxNumber    Int?     // De 1 à 20 dans le PC ; null dans l'équipe.
+  boxSlot      Int?     // De 1 à 35, ligne par ligne (7 colonnes, 5 lignes).
   caughtAt     DateTime @default(now())
 
   // La migration SQL diffère ces contraintes jusqu'au commit pour permettre les échanges.

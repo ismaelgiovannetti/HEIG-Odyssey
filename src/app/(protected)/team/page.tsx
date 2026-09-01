@@ -18,7 +18,8 @@ export default async function TeamPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
-      <TeamManager />
+      {/* Le PC affiche le nom de la session serveur, comme l'en-tête du jeu. */}
+      <TeamManager playerName={player.name} />
     </ApplicationShell>
   );
 }

@@ -26,10 +26,18 @@ vi.mock("@/components/SpriteProvider", () => ({
   SpriteProvider: ({
     speciesId,
     variant,
+    normalizeVisibleSize = false,
   }: {
     speciesId: string;
     variant: string;
-  }) => <span data-sprite={speciesId} data-variant={variant} />,
+    normalizeVisibleSize?: boolean;
+  }) => (
+    <span
+      data-sprite={speciesId}
+      data-variant={variant}
+      data-normalized={normalizeVisibleSize}
+    />
+  ),
 }));
 
 import { TeamManager } from "@/components/team/team-manager";
@@ -68,7 +76,7 @@ async function waitForSave(count = 1) {
 }
 
 async function openPc() {
-  render(<TeamManager />);
+  render(<TeamManager playerName="tiago2" />);
   await screen.findByRole("grid", { name: "Boîte 1" });
 }
 
@@ -119,15 +127,21 @@ describe("interface de gestion d'équipe", () => {
     }
   });
 
-  it("présente six places, une grille 7 × 10 et aucune recherche", async () => {
+  it("présente six places, une grille 7 × 5 et aucune recherche", async () => {
     await openPc();
     expect(
       within(
         screen.getByRole("group", { name: "Emplacements de l'équipe" }),
       ).getAllByRole("button", { name: /^Équipe, emplacement/ }),
     ).toHaveLength(6);
-    expect(screen.getAllByRole("row")).toHaveLength(10);
-    expect(screen.getAllByRole("gridcell")).toHaveLength(70);
+    expect(screen.getAllByRole("row")).toHaveLength(5);
+    expect(screen.getAllByRole("gridcell")).toHaveLength(35);
+    const pc = screen.getByRole("grid", { name: "Boîte 1" });
+    expect(pc.getAttribute("aria-rowcount")).toBe("5");
+    expect(pc.getAttribute("aria-colcount")).toBe("7");
+    // Le CSS reçoit la même géométrie que les cases et les contrôles clavier.
+    expect(pc.style.getPropertyValue("--pc-rows")).toBe("5");
+    expect(pc.style.getPropertyValue("--pc-columns")).toBe("7");
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Enregistrer l’équipe" }),
@@ -136,14 +150,182 @@ describe("interface de gestion d'équipe", () => {
       screen.queryByRole("button", { name: "Annuler les modifications" }),
     ).toBeNull();
     expect(screen.queryByText("Un dernier geste pour sauvegarder")).toBeNull();
+    // L'aide garde chaque geste visible et reste associée aux cases au clavier.
+    const tips = screen.getByRole("region", { name: "Tips" });
     expect(
-      screen.getByText(
-        /Chaque déplacement ou échange enregistre automatiquement/,
+      within(tips).getByRole("heading", { name: "Tips", level: 2 }),
+    ).toBeDefined();
+    // Les trois rubriques suivent le même ordre visuel et accessible.
+    expect(
+      within(tips).getAllByRole("heading", { level: 3 }).map((heading) =>
+        heading.textContent,
+      ),
+    ).toEqual(["Général", "Souris", "Clavier"]);
+    expect(within(tips).getAllByRole("list")).toHaveLength(3);
+    for (const [name, count] of [
+      ["Général", 3],
+      ["Souris", 3],
+      ["Clavier", 3],
+    ] as const) {
+      const group = within(tips).getByRole("region", { name });
+      expect(within(group).getAllByRole("listitem")).toHaveLength(count);
+    }
+    expect(
+      within(tips).getAllByRole("listitem").map((item) =>
+        item.querySelector("strong")?.textContent,
+      ),
+    ).toEqual([
+      "Case occupée :",
+      "Échap :",
+      "Sauvegarde automatique :",
+      "Clic ou glisser-déposer :",
+      "Cadre de la boîte :",
+      "Changer de boîte en glissant :",
+      "Entrée / Espace :",
+      "Flèches directionnelles :",
+      "Tab :",
+    ]);
+    expect(within(tips).getByText("Cadre de la boîte :")).toBeDefined();
+    expect(
+      within(tips).getByText("Changer de boîte en glissant :"),
+    ).toBeDefined();
+    expect(within(tips).getByText("Case occupée :")).toBeDefined();
+    const help = document.getElementById(
+      teamSlot(1).getAttribute("aria-describedby")!,
+    );
+    expect(help).not.toBeNull();
+    expect(tips.contains(help)).toBe(true);
+    expect(help?.querySelectorAll("ul")).toHaveLength(3);
+    expect(
+      within(tips).getByText(
+        /sont enregistrés après chaque déplacement ou échange/,
       ),
     ).toBeDefined();
     expect(
       pcSlot(2).querySelector('[data-variant="front_shiny"]'),
     ).not.toBeNull();
+    // Le cadre du PC ne doit pas être modifié par l'harmonisation de l'équipe.
+    expect(
+      teamSlot(1).querySelector('[data-normalized="true"]'),
+    ).not.toBeNull();
+    expect(pcSlot(1).querySelector('[data-normalized="true"]')).toBeNull();
+  });
+
+  it("replie les Tips uniquement avec leur bouton, sans perdre l'aide associée aux cases", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    const tips = screen.getByRole("region", { name: "Tips" });
+    const heading = within(tips).getByRole("heading", { name: "Tips" });
+    const toggle = within(tips).getByRole("button", {
+      name: "Réduire les Tips",
+    });
+    const content = document.getElementById(
+      toggle.getAttribute("aria-controls")!,
+    )!;
+    // Cliquer sur le titre ne replie plus l'aide : le bouton est indépendant.
+    expect(toggle.closest("h2")).toBeNull();
+    expect(within(heading).queryByRole("button")).toBeNull();
+    await user.click(heading);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(content.hidden).toBe(false);
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      within(tips).getByRole("button", { name: "Afficher les Tips" }),
+    ).toBe(toggle);
+    expect(content.hidden).toBe(true);
+    expect(within(tips).queryAllByRole("list")).toHaveLength(0);
+    expect(within(tips).queryAllByRole("listitem")).toHaveLength(0);
+    expect(within(tips).getByRole("heading", { name: "Tips" })).toBeDefined();
+    expect(document.activeElement).toBe(toggle);
+    expect(
+      document.getElementById(teamSlot(1).getAttribute("aria-describedby")!),
+    ).toBe(content);
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(content.hidden).toBe(false);
+    expect(within(tips).getAllByRole("list")).toHaveLength(3);
+    expect(within(tips).getAllByRole("listitem")).toHaveLength(9);
+    // Ce réglage visuel ne modifie ni l'équipe ni la collection sur le serveur.
+    expect(api).toHaveBeenCalledTimes(1);
+    expect(navigation.refresh).not.toHaveBeenCalled();
+  });
+
+  it("replie et rouvre les Tips au clavier avec Entrée et Espace", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    const toggle = screen.getByRole("button", { name: "Réduire les Tips" });
+    act(() => toggle.focus());
+    await user.keyboard("{Enter}");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    await user.keyboard(" ");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(toggle);
+    expect(api).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [0, "0 Pokémon au total"],
+    [1, "1 Pokémon au total"],
+    [2, "2 Pokémons au total"],
+  ] as const)(
+    "affiche le total %i au pied du PC avec le bon libellé",
+    async (count, label) => {
+      const data = teamSnapshot();
+      data.pokemon = data.pokemon.slice(0, count);
+      data.count = count;
+      api.mockResolvedValueOnce(response(data));
+      await openPc();
+      const panel = screen.getByRole("region", { name: "PC de tiago2" });
+      expect(
+        within(panel).getByRole("heading", { name: "PC de tiago2" }),
+      ).toBeDefined();
+      const total = within(panel).getByText(label);
+      expect(total.closest("p")).not.toBeNull();
+      expect(total.closest("header")).toBeNull();
+      // L'aide est uniquement dans Tips, jamais mélangée au compteur du PC.
+      expect(within(panel).queryByText(/maintenez le Pokémon/)).toBeNull();
+    },
+  );
+
+  it("sépare l'arrêt Tab de chaque carte de celui de sa fiche", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    act(() => teamSlot(1).focus());
+    for (let slot = 1; slot <= 6; slot++) {
+      expect(document.activeElement).toBe(teamSlot(slot));
+      expect(teamSlot(slot).tabIndex).toBe(0);
+      if (slot <= 2) {
+        await user.tab();
+        expect(document.activeElement).toBe(
+          detailsButton(slot === 1 ? "Bulbizarre" : "Salamèche"),
+        );
+      }
+      if (slot < 6) await user.tab();
+    }
+    // Le retour arrière retrouve lui aussi la fiche puis la carte, sans les fusionner.
+    act(() => teamSlot(2).focus());
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(detailsButton("Bulbizarre"));
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(teamSlot(1));
+    expect(api).toHaveBeenCalledTimes(1);
+  });
+
+  it("déplace dans le PC une carte atteinte par Tab sans ouvrir sa fiche", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    act(() => teamSlot(1).focus());
+    await user.tab();
+    await user.tab();
+    expect(document.activeElement).toBe(teamSlot(2));
+    // Entrée prend Salamèche ; trois flèches rejoignent la première case vide du PC.
+    await user.keyboard("{Enter}{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await waitForSave();
+    expect(pcSlot(3).getAttribute("aria-label")).toContain("Salamèche");
+    expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(api).toHaveBeenCalledTimes(2);
   });
 
   it("enregistre automatiquement un échange au clavier et le retrouve après rechargement", async () => {
@@ -191,6 +373,11 @@ describe("interface de gestion d'équipe", () => {
     const empty = teamSlot(3);
     expect(empty.parentElement?.hasAttribute("data-empty")).toBe(true);
     fireEvent.dragStart(source, { dataTransfer });
+    // Une prise marque la carte sans ajouter de bandeau ni décaler les panneaux.
+    expect(screen.queryByText(/choisissez une destination/i)).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Annuler le déplacement" }),
+    ).toBeNull();
     expect(source.parentElement?.hasAttribute("data-picked")).toBe(true);
     expect(source.hasAttribute("data-picked")).toBe(false);
     fireEvent.dragOver(empty, { dataTransfer });
@@ -225,6 +412,82 @@ describe("interface de gestion d'équipe", () => {
     expect(pcSlot(1).getAttribute("aria-label")).toContain("vide");
   });
 
+  it("affiche seulement les places et boucle entre les boîtes avec les flèches", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    const previous = screen.getByRole("button", { name: "Boîte précédente" });
+    const next = screen.getByRole("button", { name: "Boîte suivante" });
+    expect(previous.hasAttribute("disabled")).toBe(false);
+    expect(next.hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("heading", { name: "Boîte 1" })).toBeDefined();
+    expect(screen.getByText("2 / 35 places")).toBeDefined();
+    expect(screen.queryByText(/1 \/ 20/)).toBeNull();
+
+    await user.click(previous);
+    expect(screen.getByRole("grid", { name: "Boîte 20" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Boîte 20" })).toBeDefined();
+    expect(screen.getByText("0 / 35 places")).toBeDefined();
+    expect(next.hasAttribute("disabled")).toBe(false);
+    await user.click(next);
+    expect(screen.getByRole("grid", { name: "Boîte 1" })).toBeDefined();
+    expect(screen.getByText("2 / 35 places")).toBeDefined();
+    // Feuilleter le PC n'enregistre rien et ne modifie aucun Pokémon.
+    expect(api).toHaveBeenCalledTimes(1);
+  });
+
+  it("conserve la prise et le focus en bouclant au clavier", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    await user.click(pcSlot(1));
+    await user.keyboard("{PageUp}");
+    expect(document.activeElement).toBe(pcSlot(1, 20));
+    await user.keyboard("{PageDown}");
+    expect(document.activeElement).toBe(pcSlot(1));
+    expect(pcSlot(1).getAttribute("aria-pressed")).toBe("true");
+    expect(api).toHaveBeenCalledTimes(1);
+    await user.keyboard("{PageUp}{Enter}");
+    await waitForSave();
+    expect(pcSlot(1, 20).getAttribute("aria-label")).toContain("Carapuce");
+    expect(document.activeElement).toBe(pcSlot(1, 20));
+    expect(api).toHaveBeenCalledTimes(2);
+  });
+
+  it("boucle aussi pendant un glisser-déposer sans perdre le Pokémon", async () => {
+    await openPc();
+    const source = teamSlot(1);
+    const previous = screen.getByRole("button", { name: "Boîte précédente" });
+    const next = screen.getByRole("button", { name: "Boîte suivante" });
+    const dataTransfer = {
+      setData: vi.fn(),
+      effectAllowed: "",
+      dropEffect: "",
+    };
+    // On avance uniquement le délai de survol, sans ralentir le test.
+    vi.useFakeTimers();
+    try {
+      fireEvent.dragStart(source, { dataTransfer });
+      fireEvent.dragEnter(previous, { dataTransfer });
+      act(() => {
+        vi.advanceTimersByTime(650);
+      });
+      expect(screen.getByRole("grid", { name: "Boîte 20" })).toBeDefined();
+      fireEvent.dragLeave(previous, { dataTransfer });
+      fireEvent.dragEnter(next, { dataTransfer });
+      act(() => {
+        vi.advanceTimersByTime(650);
+      });
+      expect(screen.getByRole("grid", { name: "Boîte 1" })).toBeDefined();
+      expect(source.getAttribute("aria-pressed")).toBe("true");
+      expect(api).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+    fireEvent.drop(pcSlot(3), { dataTransfer });
+    await waitForSave();
+    expect(pcSlot(3).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(api).toHaveBeenCalledTimes(2);
+  });
+
   it("utilise le même échange en glisser-déposer et ignore les dépôts externes", async () => {
     await openPc();
     const dataTransfer = {
@@ -236,11 +499,132 @@ describe("interface de gestion d'équipe", () => {
     expect(api).toHaveBeenCalledTimes(1);
     fireEvent.dragStart(teamSlot(1), { dataTransfer });
     fireEvent.dragOver(pcSlot(1), { dataTransfer });
+    expect(
+      screen
+        .getByRole("region", { name: "PC de tiago2" })
+        .hasAttribute("data-drop-target"),
+    ).toBe(false);
     fireEvent.drop(pcSlot(1), { dataTransfer });
     await waitForSave();
     expect(api).toHaveBeenCalledTimes(2);
     expect(teamSlot(1).getAttribute("aria-label")).toContain("Carapuce");
     expect(pcSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+  });
+
+  it.each(["cadre", "titre", "grille"] as const)(
+    "dépose sur le %s dans la première case libre et enregistre une seule fois",
+    async (surface) => {
+      await openPc();
+      const panel = screen.getByRole("region", { name: "PC de tiago2" });
+      const destination =
+        surface === "titre"
+          ? screen.getByRole("heading", { name: "Boîte 1" })
+          : surface === "grille"
+            ? screen.getByRole("grid", { name: "Boîte 1" })
+            : panel;
+      const dataTransfer = {
+        setData: vi.fn(),
+        effectAllowed: "",
+        dropEffect: "",
+      };
+      fireEvent.dragStart(teamSlot(1), { dataTransfer });
+      fireEvent.dragOver(destination, { dataTransfer });
+      expect(panel.hasAttribute("data-drop-target")).toBe(true);
+      fireEvent.drop(destination, { dataTransfer });
+      await waitForSave();
+      expect(pcSlot(3).getAttribute("aria-label")).toContain("Bulbizarre");
+      expect(teamSlot(1).getAttribute("aria-label")).toContain("Salamèche");
+      // Le cadre n'échange pas les occupants déjà présents et ne duplique rien.
+      expect(pcSlot(1).getAttribute("aria-label")).toContain("Carapuce");
+      expect(pcSlot(2).getAttribute("aria-label")).toContain("Lixy");
+      expect(panel.hasAttribute("data-drop-target")).toBe(false);
+      expect(api).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("dépose aussi sur le cadre d'une boîte entièrement vide", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    await user.click(screen.getByRole("button", { name: "Boîte précédente" }));
+    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    fireEvent.dragStart(teamSlot(1), { dataTransfer });
+    fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
+      dataTransfer,
+    });
+    await waitForSave();
+    expect(pcSlot(1, 20).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(screen.getByText("1 / 35 places")).toBeDefined();
+    expect(api).toHaveBeenCalledTimes(2);
+  });
+
+  it("annonce une boîte complète sous le PC sans déplacer ni enregistrer", async () => {
+    const data = teamSnapshot();
+    data.pokemon = data.pokemon.filter((p) => p.teamPosition !== null);
+    data.pokemon.push(
+      ...Array.from({ length: 35 }, (_, i) =>
+        teamPokemon({ id: `stored-${i}`, boxNumber: 1, boxSlot: i + 1 }),
+      ),
+    );
+    data.count = data.pokemon.length;
+    api.mockResolvedValueOnce(response(data));
+    await openPc();
+    const source = teamSlot(1);
+    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    fireEvent.dragStart(source, { dataTransfer });
+    fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
+      dataTransfer,
+    });
+    fireEvent.dragEnd(source);
+    // Le message visuel remplace le statut de sauvegarde ; le lecteur d'écran l'annonce aussi.
+    const message = screen.getByText("Boîte complète.", { selector: "span" });
+    expect(message.parentElement?.hasAttribute("data-error")).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe("Boîte complète.");
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(source.getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByText("35 / 35 places")).toBeDefined();
+    expect(api).toHaveBeenCalledTimes(1);
+    expect(navigation.refresh).not.toHaveBeenCalled();
+    // Changer de boîte, même au clavier, retire le message devenu obsolète.
+    fireEvent.keyDown(pcSlot(1), { key: "PageDown" });
+    expect(screen.getByRole("grid", { name: "Boîte 2" })).toBeDefined();
+    expect(
+      screen.queryByText("Boîte complète.", { selector: "span" }),
+    ).toBeNull();
+  });
+
+  it("ignore un dépôt externe sur le cadre même s'il contient un identifiant connu", async () => {
+    await openPc();
+    const panel = screen.getByRole("region", { name: "PC de tiago2" });
+    const dataTransfer = { getData: vi.fn(() => "alpha"), dropEffect: "" };
+    fireEvent.dragOver(panel, { dataTransfer });
+    fireEvent.drop(panel, { dataTransfer });
+    expect(panel.hasAttribute("data-drop-target")).toBe(false);
+    expect(dataTransfer.getData).not.toHaveBeenCalled();
+    expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(api).toHaveBeenCalledTimes(1);
+  });
+
+  it("garde la règle du dernier partenaire lors d'un dépôt sur le cadre", async () => {
+    const data = teamSnapshot();
+    data.pokemon = [data.pokemon[0]];
+    data.count = 1;
+    api.mockResolvedValueOnce(response(data));
+    await openPc();
+    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    fireEvent.dragStart(teamSlot(1), { dataTransfer });
+    fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
+      dataTransfer,
+    });
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Au moins 1 Pokémon est nécessaire dans l’équipe active.",
+    );
+    expect(
+      screen.getByRole("alert").parentElement?.hasAttribute("data-error"),
+    ).toBe(true);
+    expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(pcSlot(1).getAttribute("aria-label")).toContain("vide");
+    expect(api).toHaveBeenCalledTimes(1);
   });
 
   it("enregistre toutes les boîtes et adopte la réponse du serveur", async () => {
@@ -329,7 +713,7 @@ describe("interface de gestion d'équipe", () => {
     api
       .mockRejectedValueOnce(new TypeError("offline"))
       .mockResolvedValueOnce(response({}, 401));
-    render(<TeamManager />);
+    render(<TeamManager playerName="tiago2" />);
     await user.click(
       await screen.findByRole("button", { name: "Recharger la collection" }),
     );
@@ -385,15 +769,15 @@ describe("interface de gestion d'équipe", () => {
       data.pokemon.push(
         teamPokemon({
           id: `stored-${i}`,
-          boxNumber: Math.floor(i / 70) + 1,
-          boxSlot: (i % 70) + 1,
+          boxNumber: Math.floor(i / 35) + 1,
+          boxSlot: (i % 35) + 1,
         }),
       );
     data.count = data.pokemon.length;
     api.mockResolvedValueOnce(response(data));
     await openPc();
-    expect(screen.getAllByRole("gridcell")).toHaveLength(70);
-    expect(screen.getByText("1 / 15 · 70 / 70 places")).toBeDefined();
+    expect(screen.getAllByRole("gridcell")).toHaveLength(35);
+    expect(screen.getByText("35 / 35 places")).toBeDefined();
   });
 
   it("explique le refus de retirer le dernier Pokémon et conserve sa place", async () => {
@@ -406,10 +790,26 @@ describe("interface de gestion d'équipe", () => {
     await user.click(teamSlot(1));
     await user.click(pcSlot(1));
     expect(screen.getByRole("alert").textContent).toContain(
-      "au moins un Pokémon",
+      "Au moins 1 Pokémon est nécessaire dans l’équipe active.",
     );
     expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
     expect(pcSlot(1).getAttribute("aria-label")).toContain("vide");
+    expect(api).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuse de retirer le dernier partenaire apte même si un autre est K.O.", async () => {
+    const user = userEvent.setup();
+    const data = teamSnapshot();
+    data.pokemon[1].currentHp = 0;
+    api.mockResolvedValueOnce(response(data));
+    await openPc();
+    await user.click(teamSlot(1));
+    await user.click(pcSlot(3));
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Au moins 1 Pokémon apte au combat est nécessaire dans l’équipe active.",
+    );
+    expect(teamSlot(1).getAttribute("aria-label")).toContain("Bulbizarre");
+    expect(pcSlot(3).getAttribute("aria-label")).toContain("vide");
     expect(api).toHaveBeenCalledTimes(1);
   });
 
@@ -447,7 +847,7 @@ describe("interface de gestion d'équipe", () => {
   it("supporte le remontage de développement sans garder une réponse périmée", async () => {
     render(
       <StrictMode>
-        <TeamManager />
+        <TeamManager playerName="tiago2" />
       </StrictMode>,
     );
     await screen.findByRole("grid", { name: "Boîte 1" });
@@ -592,6 +992,7 @@ describe("interface de gestion d'équipe", () => {
     await user.click(trigger);
     const dialog = await screen.findByRole("dialog", { name: "Bulbizarre" });
     expect(dialog.hasAttribute("open")).toBe(true);
+    expect(dialog.querySelector('[data-normalized="true"]')).toBeNull();
     expect(
       within(dialog).getByRole("heading", { name: "Statistiques" }),
     ).toBeDefined();
@@ -654,6 +1055,21 @@ describe("interface de gestion d'équipe", () => {
       await screen.findByRole("dialog", { name: "Carapuce" }),
     ).toBeDefined();
     expect(api).toHaveBeenCalledTimes(2);
+  });
+
+  it("utilise un tiret simple pour les valeurs absentes de la fiche", async () => {
+    const user = userEvent.setup();
+    const initial = teamSnapshot();
+    initial.pokemon[0].dexNumber = undefined;
+    Object.assign(initial.pokemon[0].moves[0], { power: 0, accuracy: 0 });
+    api.mockResolvedValueOnce(response(initial));
+    await openPc();
+    await user.click(detailsButton("Bulbizarre"));
+    const dialog = await screen.findByRole("dialog", { name: "Bulbizarre" });
+    expect(within(dialog).getByText("Puissance : -")).toBeDefined();
+    expect(within(dialog).getByText("Précision : -")).toBeDefined();
+    expect(dialog.textContent).toContain("#-");
+    expect(dialog.textContent).not.toContain("#00-");
   });
 
   it("affiche les informations absentes sans inventer de statistiques ou d'attaques", async () => {

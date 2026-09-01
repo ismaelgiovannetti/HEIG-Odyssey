@@ -55,7 +55,7 @@ describe("persistance réelle de l'équipe et du PC", () => {
     const { userId, pokemon: [a, b, c] } = await createCollection();
     const result = await updateActiveTeam(userId, {
       expectedRevision: 0, teamPokemonIds: [b.id],
-      pcPlacements: [{ pokemonId: a.id, boxNumber: 15, boxSlot: 70 }, { pokemonId: c.id, boxNumber: 1, boxSlot: 1 }],
+      pcPlacements: [{ pokemonId: a.id, boxNumber: 20, boxSlot: 35 }, { pokemonId: c.id, boxNumber: 1, boxSlot: 1 }],
     });
     expect(result.revision).toBe(1);
     expect(result.team.map((p) => p.id)).toEqual([b.id]);
@@ -64,11 +64,11 @@ describe("persistance réelle de l'équipe et du PC", () => {
     // Un échange direct de deux cases du PC doit également préserver les deux créatures.
     await updateActiveTeam(userId, {
       expectedRevision: 1, teamPokemonIds: [b.id],
-      pcPlacements: [{ pokemonId: a.id, boxNumber: 1, boxSlot: 1 }, { pokemonId: c.id, boxNumber: 15, boxSlot: 70 }],
+      pcPlacements: [{ pokemonId: a.id, boxNumber: 1, boxSlot: 1 }, { pokemonId: c.id, boxNumber: 20, boxSlot: 35 }],
     });
     const pcSwapped = await getPlayerCollection(userId);
     expect(pcSwapped.pokemon.find((p) => p.id === a.id)).toMatchObject({ boxNumber: 1, boxSlot: 1 });
-    expect(pcSwapped.pokemon.find((p) => p.id === c.id)).toMatchObject({ boxNumber: 15, boxSlot: 70 });
+    expect(pcSwapped.pokemon.find((p) => p.id === c.id)).toMatchObject({ boxNumber: 20, boxSlot: 35 });
 
     // L'échange de deux membres ne doit pas échouer sur une collision transitoire de cases.
     await updateActiveTeam(userId, { expectedRevision: 2, teamPokemonIds: [b.id, a.id] });
@@ -126,7 +126,8 @@ describe("persistance réelle de l'équipe et du PC", () => {
     const { userId, pokemon: [, b] } = await createCollection();
     const before = await readStoredState(userId);
     await expect(prisma.userPokemon.update({ where: { id: b.id }, data: { teamPosition: 1, boxNumber: null, boxSlot: null } })).rejects.toThrow();
-    await expect(prisma.userPokemon.update({ where: { id: b.id }, data: { boxNumber: 16 } })).rejects.toThrow();
+    await expect(prisma.userPokemon.update({ where: { id: b.id }, data: { boxNumber: 21 } })).rejects.toThrow();
+    await expect(prisma.userPokemon.update({ where: { id: b.id }, data: { boxSlot: 36 } })).rejects.toThrow();
     expect(await readStoredState(userId)).toEqual(before);
   });
 
