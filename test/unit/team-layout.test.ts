@@ -46,6 +46,15 @@ describe("rangement de la collection", () => {
     expect(() => buildTeamLayout(owned, { ...input, pcPlacements: [{ pokemonId: "foreign", boxNumber: 1, boxSlot: 1 }] })).toThrow(TeamPokemonNotOwnedError);
   });
 
+  it("refuse une équipe vide (T-US05-04)", () => {
+    expect(() => buildTeamLayout(owned, { ...input, teamPokemonIds: [] })).toThrow(TeamCompositionInvalidError);
+  });
+
+  it("refuse une équipe de plus de six créatures même toutes possédées (T-US05-04)", () => {
+    const sevenOwned = Array.from({ length: 7 }, (_, i) => teamPokemon({ id: `owned-${i}`, boxNumber: null, boxSlot: null }));
+    expect(() => buildTeamLayout(sevenOwned, { ...input, teamPokemonIds: sevenOwned.map((p) => p.id) })).toThrow(TeamCompositionInvalidError);
+  });
+
   it.each([0, 21, 1.5])("refuse le numéro de boîte %s", (boxNumber) => {
     expect(UpdateTeamBodySchema.safeParse({ ...input, pcPlacements: [{ pokemonId: "p2", boxNumber, boxSlot: 1 }] }).success).toBe(false);
   });
