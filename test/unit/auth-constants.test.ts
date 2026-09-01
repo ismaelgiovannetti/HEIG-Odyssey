@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getPasswordValidationError,
   isEmailIdentifier,
+  isValidPassword,
   isValidUsername,
   normalizeUsername,
   sanitizeCallbackPath,
@@ -45,5 +47,23 @@ describe("account authentication rules", () => {
 
   it("keeps safe query strings on internal callback paths", () => {
     expect(sanitizeCallbackPath("/login?verified=1")).toBe("/login?verified=1");
+  });
+
+  it("accepte un mot de passe conforme à la politique renforcée", () => {
+    expect(isValidPassword("TestPassword!2026")).toBe(true);
+    expect(getPasswordValidationError("TestPassword!2026")).toBeNull();
+  });
+
+  it.each([
+    "Short!1a",
+    "testpassword!2026",
+    "TESTPASSWORD!2026",
+    "TestPassword!Only",
+    "TestPassword2026",
+    "TestPassword'2026",
+    "Test Password!2026",
+  ])("refuse le mot de passe non conforme %s", (password) => {
+    expect(isValidPassword(password)).toBe(false);
+    expect(getPasswordValidationError(password)).not.toBeNull();
   });
 });

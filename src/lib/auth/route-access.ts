@@ -17,6 +17,8 @@ const ROUTES_OUTSIDE_GAME = [
   "/login",
   "/signup",
   "/verify-email",
+  "/forgot-password",
+  "/reset-password",
   "/logout",
   ACCESS_ROUTES.continue,
   ACCESS_ROUTES.onboarding,

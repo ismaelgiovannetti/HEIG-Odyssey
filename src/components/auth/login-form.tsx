@@ -120,6 +120,10 @@ export function LoginForm() {
         autoComplete="current-password"
       />
 
+      <p className="auth-recovery-link">
+        <Link href="/forgot-password">Mot de passe oublié&nbsp;?</Link>
+      </p>
+
       <label className="auth-checkbox">
         <input
           type="checkbox"
