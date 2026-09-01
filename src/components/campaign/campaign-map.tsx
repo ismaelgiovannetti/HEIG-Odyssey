@@ -93,7 +93,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
         <div className="campaign-stage-card__topline"><span className="campaign-type-pill">{theme(world)}</span><span className={`campaign-stage-status is-${stage.status.toLowerCase()}`}>{stage.isCompleted?"Terminée":stage.isLocked?"Verrouillée":"Disponible"}</span></div>
         <div className="campaign-stage-card__identity"><Image src={stage.trainerSprite} alt="" width={62} height={62} className="campaign-stage-card__sprite"/><div><span>Épreuve {stage.stageNumber}</span><h2>{stage.name}</h2></div></div>
         <p className="campaign-stage-card__trainer">Adversaire <strong>{stage.trainerName}</strong></p><p className="campaign-stage-card__description">{stage.description}</p>
-        <div className="campaign-stage-card__meta"><span><Sparkles size={15}/> Niveau {stage.recommendedLevel}</span><span><Coins size={15}/> {stage.rewardMoney}</span><span>+{stage.rewardXp} XP</span></div>
+        <div className="campaign-stage-card__meta"><span aria-label={`Difficulté ${Math.min(5, Math.max(1, Math.ceil(stage.recommendedLevel / 20)))} sur 5`}><Sparkles size={15}/> Niveau {stage.recommendedLevel}</span><span><Coins size={15}/> {stage.rewardMoney}</span><span>+{stage.rewardXp} XP</span></div>
         <button type="button" className="campaign-fight-button" onClick={()=>launch(stage)} disabled={stage.isLocked||launching!==null} aria-label={`${stage.isCompleted?"Rejouer":"Lancer le combat"} : ${stage.name}`}>
           {launching===stage.id?"Préparation...":stage.isLocked?<><Lock size={16}/> Verrouillé</>:<><Swords size={17}/> {stage.isCompleted?"Rejouer":"Combattre"}</>}
         </button>
