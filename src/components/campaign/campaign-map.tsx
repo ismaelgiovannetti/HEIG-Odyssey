@@ -81,7 +81,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
       </button></li>)}</ol>
     </nav>
 
-    <div className="campaign-world-summary"><div><span className="campaign-world-summary__degree">{world.degree}</span><strong>{theme(world)}</strong></div><div className="campaign-world-summary__progress"><span>{world.completedStagesCount}/{world.totalStagesCount} étapes</span><div className="campaign-progress" aria-label={`Progression du monde : ${progress}%`}><span style={{width:`${progress}%`}}/></div></div></div>
+    <div className="campaign-world-summary"><div><span className="campaign-world-summary__degree">{world.degree}</span><strong>{theme(world)}</strong></div><div className="campaign-world-summary__progress"><span>{world.completedStagesCount}/{world.totalStagesCount} étapes</span><div className="campaign-progress" role="progressbar" aria-label="Progression du monde" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{width:`${progress}%`}}/></div></div></div>
     {message&&<p className="campaign-message" role="status">{message}</p>}
 
     <div className="campaign-map" aria-label={`Carte des étapes de ${world.name}`} style={{backgroundImage:`linear-gradient(rgba(8,13,24,.1),rgba(8,13,24,.18)),url(${WORLD_MAPS[world.id]})`}}>
