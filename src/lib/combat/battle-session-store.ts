@@ -1,6 +1,11 @@
 import { BattleEngine } from "./battle-engine";
 import { selectAIAction } from "./ai";
-import type { BattleAction, TurnExecutionResult, AIProfile } from "./types";
+import type {
+  AIProfile,
+  BattleAction,
+  BattleState,
+  TurnExecutionResult,
+} from "./types";
 import {
   grantBattleRewards,
   grantTrainingRewards,
@@ -30,14 +35,31 @@ export class BattleSessionUnavailableError extends Error {
 }
 
 export class BattleActionRejectedError extends Error {
-  constructor() {
-    super("Action du joueur invalide.");
+  constructor(readonly state: BattleState) {
+    super("Action incompatible avec l'état courant du combat.");
     this.name = "BattleActionRejectedError";
   }
 }
 
-// Les combats actifs restent en mémoire dans l'unique instance du serveur.
-const activeSessions = new Map<string, ActiveBattleSession>();
+interface ExpectedBattleState {
+  turn: number;
+  phase: BattleState["phase"];
+}
+
+type BattleSessionGlobal = typeof globalThis & {
+  __heigOdysseyBattleSessions?: Map<string, ActiveBattleSession>;
+};
+
+// Les routes Next.js de création et d'action peuvent charger ce module dans
+// deux bundles différents. Le stockage doit donc vivre au niveau du processus,
+// et non dans la portée locale d'un bundle. Cela évite aussi de perdre un
+// combat lors d'un rechargement à chaud en développement.
+const battleSessionGlobal = globalThis as BattleSessionGlobal;
+const activeSessions =
+  battleSessionGlobal.__heigOdysseyBattleSessions ??
+  new Map<string, ActiveBattleSession>();
+
+battleSessionGlobal.__heigOdysseyBattleSessions = activeSessions;
 
 // Une session inactive expire après trente minutes.
 const SESSION_TTL_MS = 30 * 60 * 1000;
@@ -115,32 +137,81 @@ function getOwnedBattleSession(
   return session;
 }
 
+/** Soumet une décision de l'IA uniquement lorsqu'elle en attend réellement une. */
+function submitPendingAiAction(
+  engine: BattleEngine,
+  aiProfile: AIProfile,
+): void {
+  const rawBattle = engine.getRawBattle();
+
+  if (
+    rawBattle.ended ||
+    rawBattle.p2.requestState === "" ||
+    rawBattle.p2.isChoiceDone()
+  ) {
+    return;
+  }
+
+  const aiAction = selectAIAction(aiProfile, engine, "p2");
+  if (!engine.submitAction("p2", aiAction)) {
+    // Cette situation révèle un désaccord interne entre l'IA et le moteur.
+    // L'état courant permet au navigateur de se resynchroniser sans rejouer
+    // aveuglément une action devenue obsolète.
+    throw new BattleActionRejectedError(engine.getState());
+  }
+}
+
 export async function processBattleTurn(
   battleId: string,
   authenticatedUserId: string,
   playerAction: BattleAction,
+  expectedState?: ExpectedBattleState,
 ): Promise<{
   turnResult: TurnExecutionResult;
   rewards?: BattleRewardResult;
 }> {
   const session = getOwnedBattleSession(battleId, authenticatedUserId);
 
-  const { engine, aiProfile, userId, stageId, playerPokemonIds, battleType, difficulty } = session;
+  const {
+    engine,
+    aiProfile,
+    userId,
+    stageId,
+    playerPokemonIds,
+    battleType,
+    difficulty,
+  } = session;
 
+  const currentState = engine.getState();
+  if (
+    expectedState &&
+    (currentState.turn !== expectedState.turn ||
+      currentState.phase !== expectedState.phase)
+  ) {
+    throw new BattleActionRejectedError(currentState);
+  }
   // Le moteur reçoit l'action du joueur après le contrôle de propriété.
   const p1Valid = engine.submitAction("p1", playerAction);
   if (!p1Valid) {
-    throw new BattleActionRejectedError();
+    throw new BattleActionRejectedError(engine.getState());
   }
 
-  // L'intelligence artificielle choisit ensuite sa réponse.
-  if (!engine.getRawBattle().ended) {
-    const aiAction = selectAIAction(aiProfile, engine, "p2");
-    engine.submitAction("p2", aiAction);
-  }
+  // L'intelligence artificielle choisit ensuite sa réponse si le simulateur
+  // attend encore une décision de sa part.
+  submitPendingAiAction(engine, aiProfile);
 
   // Les deux actions sont enfin résolues dans le même tour.
-  const turnResult = engine.executeTurn();
+  let turnResult = engine.executeTurn();
+
+  // Après un K.O. adverse, le remplacement appartient à l'IA et ne doit pas
+  // être présenté au joueur comme un changement obligatoire de son équipe.
+  if (
+    !engine.getRawBattle().ended &&
+    engine.getRawBattle().p2.requestState === "switch"
+  ) {
+    submitPendingAiAction(engine, aiProfile);
+    turnResult = engine.executeTurn();
+  }
 
   let rewards: BattleRewardResult | undefined;
 

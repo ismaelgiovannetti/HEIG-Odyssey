@@ -4,6 +4,12 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const { refreshMock } = vi.hoisted(() => ({ refreshMock: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: refreshMock }),
+}));
+
 import { CampaignMap } from "@/components/campaign/campaign-map";
 import type { CampaignProgressOverview } from "@/lib/campaign/campaign-service";
 
@@ -120,6 +126,71 @@ const sampleOverview: CampaignProgressOverview = {
   ],
 };
 
+const startedBattle = {
+  success: true,
+  battleId: "battle-12345",
+  trainer: {
+    id: "trainer-b1-stage-2",
+    name: "Étudiant Normal 2",
+    title: "Étudiant Bachelor - Semestre 1",
+    sprite: "/sprites/trainer-player-back.png",
+    introCatchline: "Montre-moi ce que tu as appris !",
+  },
+  state: {
+    battleId: "battle-12345",
+    turn: 0,
+    phase: "action_selection",
+    winner: null,
+    logs: ["Le combat commence."],
+    p1: {
+      sideId: "p1",
+      name: "Joueur",
+      activePokemonIndex: 0,
+      team: [
+        {
+          id: "p1-bulbasaur",
+          speciesId: "bulbasaur",
+          name: "Bulbizarre",
+          level: 8,
+          types: ["Grass", "Poison"],
+          currentHp: 28,
+          maxHp: 28,
+          hpPercent: 100,
+          status: null,
+          moves: [{ id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 35, maxPp: 35 }],
+          isShiny: false,
+          isActive: true,
+          isFainted: false,
+          baseStats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 },
+        },
+      ],
+    },
+    p2: {
+      sideId: "p2",
+      name: "Étudiant Normal 2",
+      activePokemonIndex: 0,
+      team: [
+        {
+          id: "p2-rattata",
+          speciesId: "rattata",
+          name: "Rattata",
+          level: 8,
+          types: ["Normal"],
+          currentHp: 24,
+          maxHp: 24,
+          hpPercent: 100,
+          status: null,
+          moves: [{ id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 35, maxPp: 35 }],
+          isShiny: false,
+          isActive: true,
+          isFainted: false,
+          baseStats: { hp: 30, attack: 56, defense: 35, specialAttack: 25, specialDefense: 35, speed: 72 },
+        },
+      ],
+    },
+  },
+};
+
 describe("CampaignMap Component (US-07)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -181,16 +252,7 @@ describe("CampaignMap Component (US-07)", () => {
     const user = userEvent.setup();
     (globalThis.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({
-        success: true,
-        battleId: "battle-12345",
-        trainer: {
-          name: "Étudiant Normal 2",
-          title: "Étudiant Bachelor - Semestre 1",
-          sprite: "/sprites/trainer-player-back.png",
-          introCatchline: "Montre-moi ce que tu as appris !",
-        },
-      }),
+      json: async () => startedBattle,
     });
 
     render(<CampaignMap overview={sampleOverview} />);
@@ -201,17 +263,24 @@ describe("CampaignMap Component (US-07)", () => {
     await user.click(challengeButton);
 
     await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith("/api/battle/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stageId: "bachelor-1-stage-2" }),
-      });
+      // Le test verrouille les options de sécurité utiles sans devenir fragile
+      // si une option Fetch supplémentaire est ajoutée ultérieurement.
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        "/api/battle/start",
+        expect.objectContaining({
+          method: "POST",
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stageId: "bachelor-1-stage-2" }),
+        }),
+      );
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Combat initialisé contre Étudiant Normal 2/i),
-      ).toBeDefined();
+      expect(screen.getByRole("heading", {
+        name: "Étudiant Normal 2",
+      })).toBeDefined();
     });
   });
 });

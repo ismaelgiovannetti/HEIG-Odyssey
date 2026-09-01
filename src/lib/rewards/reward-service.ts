@@ -6,6 +6,16 @@ import type { CampaignStage } from "../content/schemas";
 import { snapshotBattleParticipants } from "../combat/battle-participants";
 import { createDomainEvent, type BattleCompletedPayload } from "../events/contracts";
 import { triggerOutboxFlush } from "../events/publisher";
+import {
+  calculateTrainingReward,
+  type TrainingDifficulty,
+} from "../training/difficulty";
+
+export {
+  calculateTrainingReward,
+  DIFFICULTY_REWARD_MULTIPLIERS,
+  TRAINING_BASE_REWARD,
+} from "../training/difficulty";
 
 export interface GrantBattleRewardsParams {
   userId: string;
@@ -287,31 +297,10 @@ export async function grantBattleRewards({
 export interface GrantTrainingRewardsParams {
   userId: string;
   battleId: string;
-  difficulty: "easy" | "normal" | "hard";
+  difficulty: TrainingDifficulty;
   winner: "p1" | "p2";
   playerPokemonIds: readonly string[];
   turnsCount?: number;
-}
-
-// Récompense de référence pour la difficulté la plus faible ; chaque autre
-// difficulté est un multiplicateur de cette même base, pas une valeur
-// indépendante — une seule source de vérité pour ajuster l'équilibrage.
-export const TRAINING_BASE_REWARD = { money: 50, xp: 100 };
-
-// Deux multiplicateurs par difficulté (monnaie, XP) : à niveau adverse
-// comparable, les gains augmentent avec la difficulté (critère US-10).
-export const DIFFICULTY_REWARD_MULTIPLIERS: Record<"easy" | "normal" | "hard", { money: number; xp: number }> = {
-  easy: { money: 1, xp: 1 },
-  normal: { money: 1.6, xp: 1.8 },
-  hard: { money: 2.6, xp: 3.2 },
-};
-
-export function calculateTrainingReward(difficulty: "easy" | "normal" | "hard") {
-  const multiplier = DIFFICULTY_REWARD_MULTIPLIERS[difficulty] ?? DIFFICULTY_REWARD_MULTIPLIERS.easy;
-  return {
-    money: Math.round(TRAINING_BASE_REWARD.money * multiplier.money),
-    xp: Math.round(TRAINING_BASE_REWARD.xp * multiplier.xp),
-  };
 }
 
 /**
@@ -383,8 +372,23 @@ export async function grantTrainingRewards({
         }
       }
 
-      const hpIv = (pokemon.ivs as any)?.hp || 15;
-      const newMax = calculateMaxHp(species.baseStats.hp, hpIv, currentLvl);
+      const ivs = pokemon.ivs;
+      const evs = pokemon.evs;
+      const hpIv =
+        ivs &&
+        typeof ivs === "object" &&
+        !Array.isArray(ivs) &&
+        typeof ivs.hp === "number"
+          ? ivs.hp
+          : 15;
+      const hpEv =
+        evs &&
+        typeof evs === "object" &&
+        !Array.isArray(evs) &&
+        typeof evs.hp === "number"
+          ? evs.hp
+          : 0;
+      const newMax = calculateMaxHp(species.baseStats.hp, currentLvl, hpIv, hpEv);
 
       if (leveledUp || xpReward > 0) {
         await tx.userPokemon.update({
