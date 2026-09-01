@@ -13,11 +13,23 @@ async function loginApplicationUser(
   page: Page,
   user: ApplicationTestUser
 ): Promise<void> {
+  // Cette suite vérifie l'accessibilité des écrans protégés, pas le formulaire
+  // de connexion. Passer par l'API évite une soumission native avant que React
+  // ait terminé son hydratation sur un premier démarrage du serveur de test.
   await page.goto("/login");
-  await page.getByLabel("Adresse e-mail ou nom d'utilisateur").fill(user.email);
-  await page.getByRole("textbox", { name: "Mot de passe" }).fill(E2E_PASSWORD);
-  await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: "Se connecter" }).click();
+  const response = await page.request.post("/api/auth/sign-in/email", {
+    data: {
+      email: user.email,
+      password: E2E_PASSWORD,
+      rememberMe: true,
+    },
+    headers: {
+      Origin: new URL(page.url()).origin,
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 

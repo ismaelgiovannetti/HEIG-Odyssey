@@ -11,6 +11,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
   | "home"
@@ -119,6 +120,9 @@ export function ApplicationShell({
           </nav>
 
           <div className="application-player">
+            {/* Le raccourci reste proche des informations du joueur sans faire
+                partie des destinations de la navigation principale. */}
+            <QuestPanel />
             <span
               className="application-player__balance"
               title="Solde de Pokédollars"
