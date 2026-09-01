@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-// Contrat commun au serveur et à la future interface : les cases commencent à 1.
-export const PC_BOX_COUNT = 15;
+// Contrat commun au serveur et à l'interface : 20 boîtes de 35 cases, numérotées dès 1.
+export const PC_BOX_COUNT = 20;
 export const PC_COLUMNS = 7;
-export const PC_ROWS = 10;
+export const PC_ROWS = 5;
 export const PC_BOX_CAPACITY = PC_COLUMNS * PC_ROWS;
 export const PC_CAPACITY = PC_BOX_COUNT * PC_BOX_CAPACITY;
 export const TEAM_CAPACITY = 6;
