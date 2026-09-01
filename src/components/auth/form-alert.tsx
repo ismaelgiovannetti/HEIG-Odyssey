@@ -12,9 +12,15 @@ type FormAlertProps = {
 export function FormAlert({ tone, children }: FormAlertProps) {
   const Icon = tone === "error" ? CircleAlert : CircleCheck;
   const role = tone === "error" ? "alert" : "status";
+  const liveMode = tone === "error" ? "assertive" : "polite";
 
   return (
-    <div className={`auth-alert auth-alert--${tone}`} role={role} aria-live="polite">
+    <div
+      className={`auth-alert auth-alert--${tone}`}
+      role={role}
+      aria-live={liveMode}
+      aria-atomic="true"
+    >
       <Icon aria-hidden="true" size={19} />
       <div>{children}</div>
     </div>

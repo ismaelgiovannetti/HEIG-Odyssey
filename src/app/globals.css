@@ -1106,6 +1106,20 @@ body {
   text-align: center;
 }
 
+.auth-recovery-link {
+  margin: -7px 0 1px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.auth-recovery-link a {
+  color: var(--color-primary-dark);
+  font-weight: 800;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 .auth-alert {
   display: flex;
   align-items: flex-start;
@@ -1132,6 +1146,29 @@ body {
   border-color: var(--color-error-border);
   background: var(--color-error-bg);
   color: var(--color-error-text);
+  animation: auth-error-feedback 240ms ease-out;
+}
+
+/* Chaque nouvelle tentative invalide fait brièvement réapparaître l'alerte.
+   Le mouvement reste court afin d'attirer l'œil sans gêner la lecture. */
+@keyframes auth-error-feedback {
+  0% {
+    opacity: 0.45;
+    transform: translateY(-4px);
+  }
+
+  45% {
+    opacity: 1;
+    transform: translateX(-3px);
+  }
+
+  72% {
+    transform: translateX(3px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
 }
 
 .auth-alert--info {
@@ -1143,6 +1180,7 @@ body {
 :root[data-theme="dark"] .auth-eyebrow,
 :root[data-theme="dark"] .auth-card__footer a,
 :root[data-theme="dark"] .auth-switch a,
+:root[data-theme="dark"] .auth-recovery-link a,
 :root[data-theme="dark"] .auth-next-step > svg {
   color: var(--color-primary-light);
 }
@@ -1642,6 +1680,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .auth-alert--error {
+    animation: none;
+  }
+
   .auth-spinner {
     animation-duration: 1.5s;
   }
@@ -4043,4 +4085,3 @@ body {
   }
   .campaign-stage-node { width: 54px; height: 54px; }
 }
-

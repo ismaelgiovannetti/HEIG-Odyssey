@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Ces tests protègent le contrat entre nos formulaires et Better Auth : choix
 // de la méthode de connexion, normalisation et destinations de retour sûres.
 const authClientMocks = vi.hoisted(() => ({
+  requestPasswordReset: vi.fn(),
+  resetPassword: vi.fn(),
   sendVerificationEmail: vi.fn(),
   signInEmail: vi.fn(),
   signInUsername: vi.fn(),
@@ -14,6 +16,8 @@ const authClientMocks = vi.hoisted(() => ({
 // uniquement les données que notre adaptateur lui transmet.
 vi.mock("better-auth/react", () => ({
   createAuthClient: () => ({
+    requestPasswordReset: authClientMocks.requestPasswordReset,
+    resetPassword: authClientMocks.resetPassword,
     sendVerificationEmail: authClientMocks.sendVerificationEmail,
     signIn: {
       email: authClientMocks.signInEmail,
@@ -32,7 +36,9 @@ vi.mock("better-auth/client/plugins", () => ({
 
 import {
   buildPostSignInCallback,
+  requestPasswordRecovery,
   requestVerificationEmail,
+  resetPasswordWithToken,
   signInWithIdentifier,
   signOutCurrentSession,
   signUpWithEmail,
@@ -121,6 +127,35 @@ describe("adaptateur client d'authentification", () => {
     expect(authClientMocks.sendVerificationEmail).toHaveBeenCalledWith({
       email: "player@example.com",
       callbackURL: "/login?verified=1",
+    });
+  });
+
+  // Le retour de récupération reste fixé côté application : une valeur fournie
+  // par l'utilisateur ne peut pas transformer le lien reçu en redirection externe.
+  it("normalise la demande de récupération et utilise une destination interne", async () => {
+    authClientMocks.requestPasswordReset.mockResolvedValue({ data: {}, error: null });
+
+    await requestPasswordRecovery("  Player@Example.COM  ");
+
+    expect(authClientMocks.requestPasswordReset).toHaveBeenCalledWith({
+      email: "player@example.com",
+      redirectTo: "/reset-password",
+    });
+  });
+
+  // Le jeton et le nouveau secret sont transmis uniquement à la route Better Auth
+  // chargée de vérifier l'expiration et de consommer le lien une seule fois.
+  it("transmet le jeton lors de la réinitialisation du mot de passe", async () => {
+    authClientMocks.resetPassword.mockResolvedValue({ data: {}, error: null });
+
+    await resetPasswordWithToken({
+      token: "reset-token",
+      newPassword: "TestPassword!2026",
+    });
+
+    expect(authClientMocks.resetPassword).toHaveBeenCalledWith({
+      token: "reset-token",
+      newPassword: "TestPassword!2026",
     });
   });
 

@@ -8,7 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // un serveur ni dépendre d'un compte réel, de PostgreSQL ou de Resend.
 const formMocks = vi.hoisted(() => ({
   buildPostSignInCallback: vi.fn(),
+  requestPasswordRecovery: vi.fn(),
   requestVerificationEmail: vi.fn(),
+  resetPasswordWithToken: vi.fn(),
   routerPush: vi.fn(),
   signInWithIdentifier: vi.fn(),
   signOutCurrentSession: vi.fn(),
@@ -24,14 +26,18 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/auth-client", () => ({
   buildPostSignInCallback: formMocks.buildPostSignInCallback,
+  requestPasswordRecovery: formMocks.requestPasswordRecovery,
   requestVerificationEmail: formMocks.requestVerificationEmail,
+  resetPasswordWithToken: formMocks.resetPasswordWithToken,
   signInWithIdentifier: formMocks.signInWithIdentifier,
   signOutCurrentSession: formMocks.signOutCurrentSession,
   signUpWithEmail: formMocks.signUpWithEmail,
 }));
 
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { LoginForm } from "@/components/auth/login-form";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { SignupForm } from "@/components/auth/signup-form";
 import { VerificationForm } from "@/components/auth/verification-form";
 import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth/constants";
@@ -130,9 +136,15 @@ describe("erreurs des formulaires d'authentification", () => {
 
     await user.click(screen.getByRole("button", { name: "Créer mon compte" }));
 
+    const firstAlert = screen.getByRole("alert");
+    expect(firstAlert.getAttribute("aria-live")).toBe("assertive");
+    expect(firstAlert.getAttribute("aria-atomic")).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Créer mon compte" }));
+
     expect(screen.getByRole("alert").textContent).toContain(
       "Corrigez les champs signalés avant de continuer."
     );
+    expect(screen.getByRole("alert")).not.toBe(firstAlert);
     expect(formMocks.signUpWithEmail).not.toHaveBeenCalled();
   });
 
@@ -155,6 +167,117 @@ describe("erreurs des formulaires d'authentification", () => {
       "Impossible de créer le compte avec ces informations."
     );
     expect(alert.textContent).not.toContain("USER_ALREADY_EXISTS");
+  });
+
+  // Un secret insuffisant est refusé par l'interface avant même l'appel serveur.
+  it("applique la politique renforcée lors de la création du compte", async () => {
+    const user = userEvent.setup();
+    render(<SignupForm />);
+
+    await user.type(screen.getByLabelText("Nom d'utilisateur"), "Katniss_1");
+    await user.type(screen.getByLabelText("Adresse e-mail"), "katniss@example.com");
+    await user.type(screen.getByLabelText("Mot de passe"), "motdepassefaible");
+    await user.type(screen.getByLabelText("Confirmer le mot de passe"), "motdepassefaible");
+    await user.click(screen.getByRole("button", { name: "Créer mon compte" }));
+
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Corrigez les champs signalés avant de continuer."
+    );
+    expect(formMocks.signUpWithEmail).not.toHaveBeenCalled();
+  });
+
+  // La réponse affichée reste volontairement identique pour une adresse connue
+  // ou inconnue, ce qui empêche l'énumération des comptes depuis cet écran.
+  it("confirme une demande de récupération avec un message neutre", async () => {
+    const user = userEvent.setup();
+    formMocks.requestPasswordRecovery.mockResolvedValue({ data: {}, error: null });
+    render(<ForgotPasswordForm />);
+
+    await user.type(
+      screen.getByLabelText("Adresse e-mail du compte"),
+      "absent@example.com"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Envoyer le lien de récupération" })
+    );
+
+    const status = await screen.findByRole("status");
+    expect(status.textContent).toContain("Si un compte correspond à cette adresse");
+    expect(status.textContent).not.toContain("absent");
+  });
+
+  it("n'expose pas l'erreur technique d'une demande de récupération", async () => {
+    const user = userEvent.setup();
+    formMocks.requestPasswordRecovery.mockRejectedValue(new Error("RESEND_API_KEY"));
+    render(<ForgotPasswordForm />);
+
+    await user.type(
+      screen.getByLabelText("Adresse e-mail du compte"),
+      "player@example.com"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Envoyer le lien de récupération" })
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("Impossible de traiter la demande maintenant");
+    expect(alert.textContent).not.toContain("RESEND_API_KEY");
+  });
+
+  it("refuse un écran de réinitialisation dépourvu de jeton", () => {
+    render(<ResetPasswordForm />);
+
+    expect(screen.getByRole("alert").textContent).toContain(
+      "invalide, expiré ou déjà utilisé"
+    );
+    expect(formMocks.resetPasswordWithToken).not.toHaveBeenCalled();
+  });
+
+  it("renouvelle le retour visuel après deux mots de passe faibles", async () => {
+    const user = userEvent.setup();
+    formMocks.useSearchParams.mockReturnValue(new URLSearchParams("token=one-time-token"));
+    render(<ResetPasswordForm />);
+
+    await user.type(screen.getByLabelText("Nouveau mot de passe"), "motdepassefaible");
+    await user.type(
+      screen.getByLabelText("Confirmer le nouveau mot de passe"),
+      "motdepassefaible"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Enregistrer le nouveau mot de passe" })
+    );
+
+    const firstAlert = screen.getByRole("alert");
+    await user.click(
+      screen.getByRole("button", { name: "Enregistrer le nouveau mot de passe" })
+    );
+
+    expect(screen.getByRole("alert")).not.toBe(firstAlert);
+    expect(formMocks.resetPasswordWithToken).not.toHaveBeenCalled();
+  });
+
+  it("réinitialise le mot de passe avec le jeton reçu", async () => {
+    const user = userEvent.setup();
+    formMocks.useSearchParams.mockReturnValue(new URLSearchParams("token=one-time-token"));
+    formMocks.resetPasswordWithToken.mockResolvedValue({ data: {}, error: null });
+    render(<ResetPasswordForm />);
+
+    await user.type(screen.getByLabelText("Nouveau mot de passe"), "FreshPassword!2026");
+    await user.type(
+      screen.getByLabelText("Confirmer le nouveau mot de passe"),
+      "FreshPassword!2026"
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Enregistrer le nouveau mot de passe" })
+    );
+
+    expect(formMocks.resetPasswordWithToken).toHaveBeenCalledWith({
+      token: "one-time-token",
+      newPassword: "FreshPassword!2026",
+    });
+    expect((await screen.findByRole("status")).textContent).toContain(
+      "Votre mot de passe a été modifié"
+    );
   });
 
   // Certains navigateurs ou réglages de confidentialité désactivent ce stockage.
