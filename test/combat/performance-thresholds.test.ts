@@ -7,7 +7,7 @@ import type { TrainerPokemonInput, PokemonType } from "@/lib/content/schemas";
 /**
  * Seuils fixés par T-NFR03-01 à partir de la mesure d'une tranche verticale
  * représentative (équipe complète 6 Pokémon, IA random/heuristic/expectiminimax).
- * Protocole et valeurs mesurées : docs/04-sprints/HEIG_Odyssey_T-NFR03-01_Seuils_Performance.md
+ * Protocole et valeurs mesurées : docs/02-conception/HEIG_Odyssey_T-NFR03-01_Seuils_Performance.md
  */
 const AI_DECISION_BUDGET_MS = 20;
 const BATTLE_TURN_BUDGET_MS = 50;
