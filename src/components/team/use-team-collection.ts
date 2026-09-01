@@ -26,7 +26,12 @@ export function useTeamCollection() {
   const sequence = useRef(0);
 
   const exchange = useCallback(
-    async (method: "GET" | "PUT", body?: string, previousDraft?: TeamDraft) => {
+    async (
+      method: "GET" | "PUT",
+      body?: string,
+      previousDraft?: TeamDraft,
+      onSuccess?: () => void,
+    ) => {
       // Ce verrou synchrone empêche aussi un double clic avant le rendu suivant.
       if (request.current) return false;
       const id = ++sequence.current;
@@ -57,6 +62,11 @@ export function useTeamCollection() {
             ? "Équipe et rangement du PC enregistrés."
             : "Collection à jour.",
         );
+        // Appelé dans le même tick que les mises à jour d'état ci-dessus :
+        // un aller-retour await supplémentaire côté appelant laisserait une
+        // fenêtre où l'ordre de traitement React n'est pas garanti (l'appelant
+        // pourrait agir avant que l'effet dépendant de dirty/pending ait tourné).
+        onSuccess?.();
         return true;
       } catch (cause) {
         if (id !== sequence.current) return false;
@@ -112,7 +122,7 @@ export function useTeamCollection() {
     draftSignature(draft) !==
       draftSignature(draftFromCollection(snapshot.pokemon));
 
-  function saveChange(nextDraft: TeamDraft) {
+  function saveChange(nextDraft: TeamDraft, onSuccess?: () => void) {
     if (!snapshot || request.current || error?.needsReload)
       return Promise.resolve(false);
     const previousDraft = draftFromCollection(snapshot.pokemon);
@@ -126,6 +136,7 @@ export function useTeamCollection() {
       "PUT",
       JSON.stringify(saveDraft(nextDraft, snapshot.revision)),
       previousDraft,
+      onSuccess,
     );
   }
 
