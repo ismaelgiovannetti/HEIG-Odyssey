@@ -1,5 +1,5 @@
 /* Styles isolés : le PC reprend les couleurs du site sans modifier l'onboarding
-   ni les écrans d'authentification. Le mode clair réutilise les mêmes variables. */
+   ni les écrans d'authentification. */
 .manager {
   min-width: 0;
 }
