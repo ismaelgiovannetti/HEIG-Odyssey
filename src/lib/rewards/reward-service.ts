@@ -1,9 +1,11 @@
 import { prisma } from "../prisma";
 import { loadCampaign, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
-import { BattleResult } from "@prisma/client";
+import { BattleResult, OutboxStatus, type Prisma } from "@prisma/client";
 import type { CampaignStage } from "../content/schemas";
 import { snapshotBattleParticipants } from "../combat/battle-participants";
+import { createDomainEvent, type BattleCompletedPayload } from "../events/contracts";
+import { triggerOutboxFlush } from "../events/publisher";
 
 export interface GrantBattleRewardsParams {
   userId: string;
@@ -91,7 +93,7 @@ export async function grantBattleRewards({
   const moneyReward = winner === "p1" ? stageConfig?.rewardMoney || 50 : 0;
   const xpReward = winner === "p1" ? stageConfig?.rewardXp || 100 : 0;
 
-  return await prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     // Monnaie, expérience, progression et résultat font partie de la même transaction.
     const updatedProfile = await tx.userProfile.upsert({
       where: { userId },
@@ -229,6 +231,42 @@ export async function grantBattleRewards({
       },
     });
 
+    // Enregistrement transactionnel de l'événement Outbox (T-US17-02)
+    const battleEventPayload: BattleCompletedPayload = {
+      userId,
+      battleId,
+      battleType: "CAMPAIGN",
+      stageId,
+      worldId,
+      opponentId: stageConfig?.trainerId || stageId,
+      result: winner === "p1" ? "VICTORY" : "DEFEAT",
+      winner,
+      turnsCount: 1,
+      xpGained: xpReward,
+      moneyGained: moneyReward,
+      playerPokemonIds: [...participantIds],
+      playerTeamSpecies: participants.map((p) => p.speciesId),
+    };
+
+    const domainEvent = createDomainEvent({
+      eventType: "battle.completed",
+      aggregateType: "BATTLE",
+      aggregateId: battleId,
+      payload: battleEventPayload,
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        eventId: domainEvent.eventId,
+        eventType: domainEvent.eventType,
+        aggregateType: domainEvent.aggregateType,
+        aggregateId: domainEvent.aggregateId,
+        payload: domainEvent as unknown as Prisma.InputJsonValue,
+        status: OutboxStatus.PENDING,
+      },
+    });
+
+
     return {
       isAlreadyClaimed: false,
       moneyEarned: moneyReward,
@@ -239,4 +277,10 @@ export async function grantBattleRewards({
       teamLeveledUp,
     };
   });
+
+  // Déclenchement de la publication vers Redis Streams (T-US17-03)
+  triggerOutboxFlush();
+
+  return txResult;
 }
+

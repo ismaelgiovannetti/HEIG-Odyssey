@@ -19,9 +19,15 @@ vi.mock("@/lib/prisma", () => ({
     campaignProgress: {
       upsert: vi.fn(),
     },
+    outboxEvent: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));
+
 
 describe("Reward & Idempotency Service (US-11 & US-07)", () => {
   beforeEach(() => {
@@ -62,6 +68,9 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
       battleRecord: {
         create: vi.fn().mockResolvedValue({}),
       },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
     };
 
     (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
@@ -83,7 +92,19 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
     expect(mockTx.userPokemon.findMany).toHaveBeenCalledWith({
       where: { userId: "user-1", id: { in: ["pkmn-1"] } }, orderBy: { id: "asc" },
     });
+    // Vérification de la création de l'OutboxEvent transactionnel
+    expect(mockTx.outboxEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          eventType: "battle.completed",
+          aggregateType: "BATTLE",
+          aggregateId: "battle-uuid-12345",
+          status: "PENDING",
+        }),
+      })
+    );
   });
+
 
   it("should guarantee idempotency when same battleId is replayed", async () => {
     // Le combat enregistré appartient au même compte : le rejeu ne paie rien de plus.
