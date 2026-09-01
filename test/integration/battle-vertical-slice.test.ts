@@ -26,9 +26,15 @@ vi.mock("@/lib/prisma", () => ({
     campaignProgress: {
       upsert: vi.fn(),
     },
+    outboxEvent: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn().mockResolvedValue({}),
+      update: vi.fn().mockResolvedValue({}),
+    },
     $transaction: vi.fn(),
   },
 }));
+
 
 describe("Battle Vertical Slice Integration (T-US06-06)", () => {
   beforeEach(() => {
@@ -110,8 +116,12 @@ describe("Battle Vertical Slice Integration (T-US06-06)", () => {
       battleRecord: {
         create: vi.fn().mockResolvedValue({}),
       },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
     };
     (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
+
 
     // Un autre compte ne peut ni lire ni faire avancer ce combat.
     await expect(
