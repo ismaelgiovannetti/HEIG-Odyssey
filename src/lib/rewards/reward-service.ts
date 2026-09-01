@@ -293,11 +293,26 @@ export interface GrantTrainingRewardsParams {
   turnsCount?: number;
 }
 
-const TRAINING_REWARDS: Record<string, { money: number; xp: number }> = {
-  easy: { money: 50, xp: 100 },
-  normal: { money: 80, xp: 180 },
-  hard: { money: 130, xp: 320 },
+// Récompense de référence pour la difficulté la plus faible ; chaque autre
+// difficulté est un multiplicateur de cette même base, pas une valeur
+// indépendante — une seule source de vérité pour ajuster l'équilibrage.
+export const TRAINING_BASE_REWARD = { money: 50, xp: 100 };
+
+// Deux multiplicateurs par difficulté (monnaie, XP) : à niveau adverse
+// comparable, les gains augmentent avec la difficulté (critère US-10).
+export const DIFFICULTY_REWARD_MULTIPLIERS: Record<"easy" | "normal" | "hard", { money: number; xp: number }> = {
+  easy: { money: 1, xp: 1 },
+  normal: { money: 1.6, xp: 1.8 },
+  hard: { money: 2.6, xp: 3.2 },
 };
+
+export function calculateTrainingReward(difficulty: "easy" | "normal" | "hard") {
+  const multiplier = DIFFICULTY_REWARD_MULTIPLIERS[difficulty] ?? DIFFICULTY_REWARD_MULTIPLIERS.easy;
+  return {
+    money: Math.round(TRAINING_BASE_REWARD.money * multiplier.money),
+    xp: Math.round(TRAINING_BASE_REWARD.xp * multiplier.xp),
+  };
+}
 
 /**
  * Attribue les récompenses pour un combat d'entraînement et émet training.completed (T-US09-03).
@@ -330,9 +345,9 @@ export async function grantTrainingRewards({
     };
   }
 
-  const baseReward = TRAINING_REWARDS[difficulty] || TRAINING_REWARDS.easy;
-  const moneyReward = winner === "p1" ? baseReward.money : 0;
-  const xpReward = winner === "p1" ? baseReward.xp : 0;
+  const reward = calculateTrainingReward(difficulty);
+  const moneyReward = winner === "p1" ? reward.money : 0;
+  const xpReward = winner === "p1" ? reward.xp : 0;
 
   const txResult = await prisma.$transaction(async (tx) => {
     const participants = await tx.userPokemon.findMany({
