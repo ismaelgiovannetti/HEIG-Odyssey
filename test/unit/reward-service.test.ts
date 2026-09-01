@@ -19,9 +19,15 @@ vi.mock("@/lib/prisma", () => ({
     campaignProgress: {
       upsert: vi.fn(),
     },
+    outboxEvent: {
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
     $transaction: vi.fn(),
   },
 }));
+
 
 describe("Reward & Idempotency Service (US-11 & US-07)", () => {
   beforeEach(() => {
@@ -62,6 +68,9 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
       battleRecord: {
         create: vi.fn().mockResolvedValue({}),
       },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
     };
 
     (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
@@ -71,6 +80,7 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
       battleId: "battle-uuid-12345",
       stageId: "bachelor-1-stage-1",
       winner: "p1",
+      playerPokemonIds: ["pkmn-1"],
     });
 
     expect(result.isAlreadyClaimed).toBe(false);
@@ -78,12 +88,29 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
     expect(result.xpEarned).toBeGreaterThan(0);
     expect(result.stageCompleted).toBe(true);
     expect(result.unlockedNextStageId).toBe("bachelor-1-stage-2");
+    // Aucun filtre sur l'équipe actuelle : le participant peut avoir rejoint le PC.
+    expect(mockTx.userPokemon.findMany).toHaveBeenCalledWith({
+      where: { userId: "user-1", id: { in: ["pkmn-1"] } }, orderBy: { id: "asc" },
+    });
+    // Vérification de la création de l'OutboxEvent transactionnel
+    expect(mockTx.outboxEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          eventType: "battle.completed",
+          aggregateType: "BATTLE",
+          aggregateId: "battle-uuid-12345",
+          status: "PENDING",
+        }),
+      })
+    );
   });
 
+
   it("should guarantee idempotency when same battleId is replayed", async () => {
-    // Battle already recorded in DB
+    // Le combat enregistré appartient au même compte : le rejeu ne paie rien de plus.
     (prisma.battleRecord.findUnique as any).mockResolvedValue({
       id: "rec-1",
+      userId: "user-1",
       idempotencyKey: "battle-uuid-12345",
       moneyGained: 50,
       xpGained: 100,
@@ -99,12 +126,22 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
       battleId: "battle-uuid-12345",
       stageId: "bachelor-1-stage-1",
       winner: "p1",
+      playerPokemonIds: ["pkmn-1"],
     });
 
-    // Should return existing without running new transaction
+    // La réponse reprend le résultat existant sans ouvrir une nouvelle transaction.
     expect(result.isAlreadyClaimed).toBe(true);
     expect(result.moneyEarned).toBe(50);
     expect(result.newBalance).toBe(200);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("refuse le rejeu d'un combat appartenant à autrui", async () => {
+    (prisma.battleRecord.findUnique as any).mockResolvedValue({ userId: "other-user" });
+    await expect(grantBattleRewards({
+      userId: "user-1", battleId: "foreign-battle", stageId: "bachelor-1-stage-1",
+      winner: "p1", playerPokemonIds: ["pkmn-1"],
+    })).rejects.toThrow("BATTLE_REWARD_OWNER_MISMATCH");
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });

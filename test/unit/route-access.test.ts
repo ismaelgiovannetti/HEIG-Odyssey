@@ -43,6 +43,8 @@ describe("matrice d'accès aux routes", () => {
     "/login",
     "/signup",
     "/verify-email",
+    "/forgot-password",
+    "/reset-password",
     "/logout",
     "/auth/continue",
     "/onboarding",

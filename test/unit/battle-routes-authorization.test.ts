@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
     BattleActionRejectedError,
     BattleEngine,
     BattleSessionUnavailableError,
+    canUserAccessStage: vi.fn(),
     findMany: vi.fn(),
     getSession: vi.fn(),
     getTrainer: vi.fn(),
@@ -28,6 +29,10 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: mocks.getSession } },
+}));
+
+vi.mock("@/lib/campaign/campaign-service", () => ({
+  canUserAccessStage: mocks.canUserAccessStage,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -82,6 +87,10 @@ beforeEach(() => {
     team: [],
     aiProfile: "random",
   });
+  mocks.canUserAccessStage.mockResolvedValue({
+    allowed: true,
+    trainerId: "trainer-1",
+  });
   mocks.loadCampaign.mockReturnValue([]);
   mocks.processBattleTurn.mockResolvedValue({
     turnResult: {
@@ -131,6 +140,44 @@ describe("autorisation du démarrage d'un combat", () => {
     expect(mocks.registerBattleSession).not.toHaveBeenCalled();
   });
 
+  it("refuse le lancement d'une étape de campagne verrouillée avec code 403", async () => {
+    // La route doit arrêter le flux avant toute création de session de combat.
+    mocks.canUserAccessStage.mockResolvedValue({
+      allowed: false,
+      reason: "Cette étape est verrouillée.",
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-2" }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
+    expect(await response.json()).toEqual({
+      success: false,
+      error: "Cette étape est verrouillée.",
+    });
+  });
+
+  it("autorise le lancement d'une étape de campagne débloquée avec code 200", async () => {
+    // Le dresseur provient du contrôle serveur et non du corps de la requête.
+    mocks.canUserAccessStage.mockResolvedValue({
+      allowed: true,
+      trainerId: "trainer-1",
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.canUserAccessStage).toHaveBeenCalledWith(
+      "owner-user",
+      "bachelor-1-stage-1",
+    );
+    expect(mocks.registerBattleSession).toHaveBeenCalled();
+  });
+
   it("charge et enregistre le combat avec l'identité Better Auth", async () => {
     const response = await startBattle(
       request("/api/battle/start", { trainerId: "trainer-1" }),
@@ -143,6 +190,8 @@ describe("autorisation du démarrage d'un combat", () => {
       }),
     );
     expect(mocks.registerBattleSession.mock.calls[0]?.[1]).toBe("owner-user");
+    // Les participants sont les créatures lues en base, pas des identifiants clients.
+    expect(mocks.registerBattleSession.mock.calls[0]?.[2]).toEqual(["pokemon-1"]);
   });
 });
 

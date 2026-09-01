@@ -1,15 +1,25 @@
 import { BattleEngine } from "./battle-engine";
 import { selectAIAction } from "./ai";
 import type { BattleAction, TurnExecutionResult, AIProfile } from "./types";
-import { grantBattleRewards, type BattleRewardResult } from "../rewards/reward-service";
+import {
+  grantBattleRewards,
+  grantTrainingRewards,
+  type BattleRewardResult,
+} from "../rewards/reward-service";
+import { snapshotBattleParticipants } from "./battle-participants";
+import type { TrainingDifficulty } from "./training-generator";
 
 interface ActiveBattleSession {
   engine: BattleEngine;
   userId: string;
+  readonly playerPokemonIds: readonly string[];
+  battleType: "CAMPAIGN" | "TRAINING";
   stageId?: string;
+  difficulty?: TrainingDifficulty;
   aiProfile: AIProfile;
   lastAccessed: number;
 }
+
 
 // Cette erreur générique ne révèle pas si le combat appartient à un autre joueur.
 export class BattleSessionUnavailableError extends Error {
@@ -60,14 +70,23 @@ function getLiveBattleSession(battleId: string): ActiveBattleSession | undefined
 export function registerBattleSession(
   engine: BattleEngine,
   userId: string,
+  playerPokemonIds: readonly string[],
   stageId?: string,
-  aiProfile: AIProfile = "random"
+  aiProfile: AIProfile = "random",
+  options?: {
+    battleType?: "CAMPAIGN" | "TRAINING";
+    difficulty?: TrainingDifficulty;
+  }
 ): void {
   cleanupOldSessions();
+  const battleType = options?.battleType ?? (stageId ? "CAMPAIGN" : "TRAINING");
   activeSessions.set(engine.battleId, {
     engine,
     userId,
+    playerPokemonIds: snapshotBattleParticipants(playerPokemonIds),
+    battleType,
     stageId,
+    difficulty: options?.difficulty,
     aiProfile,
     lastAccessed: Date.now(),
   });
@@ -106,7 +125,7 @@ export async function processBattleTurn(
 }> {
   const session = getOwnedBattleSession(battleId, authenticatedUserId);
 
-  const { engine, aiProfile, userId, stageId } = session;
+  const { engine, aiProfile, userId, stageId, playerPokemonIds, battleType, difficulty } = session;
 
   // Le moteur reçoit l'action du joueur après le contrôle de propriété.
   const p1Valid = engine.submitAction("p1", playerAction);
@@ -125,16 +144,26 @@ export async function processBattleTurn(
 
   let rewards: BattleRewardResult | undefined;
 
-  // Une fin de combat libère toujours la session. Les récompenses ne sont
-  // calculées que pour une étape de campagne et restent idempotentes.
+  // La session est libérée après le traitement des gains, jamais avant leur écriture.
   if (turnResult.state.phase === "finished") {
-    if (stageId) {
-      const winner = turnResult.state.winner || "p2";
+    const winner = turnResult.state.winner || "p2";
+
+    if (battleType === "TRAINING" || (!stageId && difficulty)) {
+      rewards = await grantTrainingRewards({
+        userId,
+        battleId,
+        difficulty: difficulty || "easy",
+        winner,
+        playerPokemonIds,
+        turnsCount: turnResult.turn,
+      });
+    } else if (stageId) {
       rewards = await grantBattleRewards({
         userId,
         battleId,
         stageId,
         winner,
+        playerPokemonIds,
       });
     }
 
@@ -146,3 +175,4 @@ export async function processBattleTurn(
     rewards,
   };
 }
+

@@ -93,6 +93,8 @@ model UserProfile {
   pokedollars            Int       @default(0)
   hasCompletedOnboarding Boolean   @default(false)
   onboardingCompletedAt  DateTime?
+  // Version du rangement : un ancien onglet ne peut pas écraser une sauvegarde récente.
+  collectionRevision     Int       @default(0)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
@@ -120,10 +122,14 @@ model UserPokemon {
   nature       String?
   gender       String?  @default("GENDERLESS") // M, F, GENDERLESS
   isShiny      Boolean  @default(false)
-  teamPosition Int?     // 1 to 6 if in active team, null if in collection/PC
+  teamPosition Int?     // De 1 à 6 dans l'équipe ; null dans le PC.
+  boxNumber    Int?     // De 1 à 20 dans le PC ; null dans l'équipe.
+  boxSlot      Int?     // De 1 à 35, ligne par ligne (7 colonnes, 5 lignes).
   caughtAt     DateTime @default(now())
 
-  @@index([userId, teamPosition])
+  // La migration SQL diffère ces contraintes jusqu'au commit pour permettre les échanges.
+  @@unique([userId, teamPosition])
+  @@unique([userId, boxNumber, boxSlot])
   @@map("user_pokemon")
 }
 
@@ -271,3 +277,31 @@ model UserQuestProgress {
   @@index([userId, isCompleted])
   @@map("user_quest_progress")
 }
+
+// ----------------------------------------------------
+// 8. Event Outbox (Transactional Event Log - US-17)
+// ----------------------------------------------------
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
+
+model OutboxEvent {
+  id            String       @id @default(cuid())
+  eventId       String       @unique
+  eventType     String
+  aggregateType String       // "BATTLE" | "TRAINING"
+  aggregateId   String       // ex: battleId
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  retryCount    Int          @default(0)
+  lastError     String?
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("outbox_event")
+}
+
