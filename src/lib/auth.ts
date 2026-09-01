@@ -7,12 +7,17 @@ import {
   AUTH_SESSION_EXPIRES_IN_SECONDS,
   AUTH_SESSION_UPDATE_AGE_SECONDS,
   EMAIL_VERIFICATION_EXPIRES_IN_SECONDS,
+  getPasswordValidationError,
   isValidUsername,
   normalizeUsername,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_RESET_EXPIRES_IN_SECONDS,
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "@/lib/auth/constants";
 import { getApplicationOrigin, getBetterAuthSecret } from "@/lib/auth/environment";
+import { deliverPasswordResetEmail } from "@/lib/email/password-reset-email";
 import { deliverVerificationEmail } from "@/lib/email/verification-email";
 import { prisma } from "@/lib/prisma";
 
@@ -37,8 +42,24 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
     requireEmailVerification: true,
-    minPasswordLength: 8,
-    maxPasswordLength: 128,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
+    resetPasswordTokenExpiresIn: PASSWORD_RESET_EXPIRES_IN_SECONDS,
+    // Un changement de mot de passe invalide toutes les sessions éventuellement volées.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      // L'envoi n'est pas attendu afin que le temps de réponse ne permette pas
+      // de distinguer une adresse existante d'une adresse inconnue.
+      void deliverPasswordResetEmail({
+        recipient: user.email,
+        username: user.name,
+        resetUrl: url,
+      }).catch((error: unknown) => {
+        // Le journal ne contient ni adresse, ni URL, ni jeton de récupération.
+        const errorCode = error instanceof Error ? error.message : "UNKNOWN_EMAIL_DELIVERY_ERROR";
+        console.error("Échec de l'envoi de l'e-mail de récupération.", { errorCode });
+      });
+    },
   },
   // Chaque inscription déclenche un lien valable une heure, sans connexion automatique.
   emailVerification: {
@@ -74,6 +95,9 @@ export const auth = betterAuth({
       "/sign-in/username": { window: 10, max: 3 },
       "/sign-up/email": { window: 60, max: 5 },
       "/send-verification-email": { window: 60, max: 3 },
+      "/request-password-reset": { window: 60, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
+      "/change-password": { window: 60, max: 5 },
     },
   },
   advanced: {
@@ -87,18 +111,44 @@ export const auth = betterAuth({
   // Ce hook contrôle et normalise les données avant leur écriture en base.
   hooks: {
     before: createAuthMiddleware(async (context) => {
-      if (context.path !== "/sign-up/email") {
+      const isSignUpRequest = context.path === "/sign-up/email";
+      const isPasswordMutationRequest =
+        context.path === "/reset-password" || context.path === "/change-password";
+
+      if (!isSignUpRequest && !isPasswordMutationRequest) {
         return;
       }
 
-      // La validation reste côté serveur, même si le formulaire contrôle déjà la valeur.
+      // La validation reste côté serveur, même si les formulaires contrôlent déjà les valeurs.
       if (!context.body || typeof context.body !== "object" || Array.isArray(context.body)) {
         throw new APIError("BAD_REQUEST", {
-          message: "Les données d'inscription sont invalides.",
+          message: "Les données d'authentification sont invalides.",
         });
       }
 
       const requestBody = context.body as Record<string, unknown>;
+      const submittedPassword = isSignUpRequest
+        ? requestBody.password
+        : requestBody.newPassword;
+
+      if (typeof submittedPassword !== "string") {
+        throw new APIError("BAD_REQUEST", {
+          message: "Le mot de passe est invalide.",
+        });
+      }
+
+      const passwordValidationError = getPasswordValidationError(submittedPassword);
+      if (passwordValidationError) {
+        throw new APIError("BAD_REQUEST", {
+          message: passwordValidationError,
+        });
+      }
+
+      // Les règles de nom d'utilisateur ne concernent que la création du compte.
+      if (!isSignUpRequest) {
+        return;
+      }
+
       const submittedUsername = requestBody.username;
 
       if (typeof submittedUsername !== "string" || !isValidUsername(submittedUsername)) {

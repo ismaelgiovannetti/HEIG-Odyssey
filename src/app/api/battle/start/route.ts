@@ -11,17 +11,35 @@ import {
   userPokemonToTrainerPokemon,
 } from "@/lib/team/team-validator";
 
+import {
+  computeAverageTeamLevel,
+  generateTrainingOpponent,
+  type TrainingDifficulty,
+} from "@/lib/combat/training-generator";
+import type { Trainer } from "@/lib/content/schemas";
+
 const BattleTargetIdSchema = z.string().trim().min(1).max(100);
 
 const StartBattleBodySchema = z
   .object({
     stageId: BattleTargetIdSchema.optional(),
     trainerId: BattleTargetIdSchema.optional(),
+    mode: z.enum(["campaign", "training"]).optional(),
+    difficulty: z.enum(["easy", "normal", "hard"]).optional(),
   })
   .strict()
-  .superRefine(({ stageId, trainerId }, context) => {
-    // Une étape détermine son dresseur. Accepter les deux permettrait de
-    // combattre un adversaire faible pour obtenir les gains d'une autre étape.
+  .superRefine(({ stageId, trainerId, mode }, context) => {
+    if (mode === "training") {
+      if (stageId || trainerId) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Le mode entraînement ne requiert ni stageId ni trainerId.",
+        });
+      }
+      return;
+    }
+
+    // Mode campagne par défaut
     if (Boolean(stageId) === Boolean(trainerId)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -55,7 +73,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { stageId, trainerId } = parsed.data;
+    const { stageId, trainerId, mode, difficulty } = parsed.data;
     const userId = session.user.id;
 
     // L'équipe chargée appartient obligatoirement au compte authentifié.
@@ -75,30 +93,44 @@ export async function POST(req: Request) {
       );
     }
 
-    // Une étape de campagne impose le dresseur défini dans le contenu et exige l'autorisation d'accès.
-    let targetTrainerId = trainerId;
-    if (stageId) {
-      const accessCheck = await canUserAccessStage(userId, stageId);
-      if (!accessCheck.allowed) {
+    let opponentTrainer: Trainer | undefined;
+    const isTraining = mode === "training";
+    const selectedDifficulty: TrainingDifficulty = difficulty || "easy";
+
+    if (isTraining) {
+      const avgLevel = computeAverageTeamLevel(activeTeam);
+      opponentTrainer = generateTrainingOpponent({
+        averageLevel: avgLevel,
+        difficulty: selectedDifficulty,
+        teamSize: activeTeam.length,
+      });
+    } else {
+      // Une étape de campagne impose le dresseur défini dans le contenu et exige l'autorisation d'accès.
+      let targetTrainerId = trainerId;
+      if (stageId) {
+        const accessCheck = await canUserAccessStage(userId, stageId);
+        if (!accessCheck.allowed) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
+            },
+            { status: 403 }
+          );
+        }
+        targetTrainerId = accessCheck.trainerId;
+      }
+
+      if (!targetTrainerId) {
         return NextResponse.json(
-          {
-            success: false,
-            error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
-          },
-          { status: 403 }
+          { success: false, error: "Dresseur ou étape introuvable" },
+          { status: 404 }
         );
       }
-      targetTrainerId = accessCheck.trainerId;
+
+      opponentTrainer = getTrainer(targetTrainerId);
     }
 
-    if (!targetTrainerId) {
-      return NextResponse.json(
-        { success: false, error: "Dresseur ou étape introuvable" },
-        { status: 404 }
-      );
-    }
-
-    const opponentTrainer = getTrainer(targetTrainerId);
     if (!opponentTrainer) {
       return NextResponse.json(
         { success: false, error: "Dresseur ou étape introuvable" },
@@ -123,11 +155,18 @@ export async function POST(req: Request) {
     });
 
     // La session de combat mémorise son propriétaire pour chaque action future.
-    // Les identifiants proviennent de la même lecture que l'équipe donnée au moteur.
-    // Déplacer ensuite un participant vers le PC ne transfère pas son XP à son remplaçant.
     registerBattleSession(
-      engine, userId, activeTeam.map((pokemon) => pokemon.id), stageId, opponentTrainer.aiProfile,
+      engine,
+      userId,
+      activeTeam.map((pokemon) => pokemon.id),
+      stageId,
+      opponentTrainer.aiProfile,
+      {
+        battleType: isTraining ? "TRAINING" : "CAMPAIGN",
+        difficulty: isTraining ? selectedDifficulty : undefined,
+      }
     );
+
 
     const initialState = engine.getState();
 

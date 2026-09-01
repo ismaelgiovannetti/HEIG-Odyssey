@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 
 import { signUpWithEmail } from "@/lib/auth-client";
 import {
+  getPasswordValidationError,
   isValidUsername,
+  PASSWORD_REQUIREMENTS_MESSAGE,
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "@/lib/auth/constants";
@@ -32,6 +34,7 @@ export function SignupForm() {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [feedbackRevision, setFeedbackRevision] = useState(0);
   const [isPending, setIsPending] = useState(false);
 
   // Cette validation donne un retour immédiat. Better Auth et la base restent
@@ -48,8 +51,9 @@ export function SignupForm() {
       errors.email = "Saisissez une adresse e-mail valide.";
     }
 
-    if (password.length < 8 || password.length > 128) {
-      errors.password = "Le mot de passe doit contenir entre 8 et 128 caractères.";
+    const passwordValidationError = getPasswordValidationError(password);
+    if (passwordValidationError) {
+      errors.password = passwordValidationError;
     }
 
     if (!passwordConfirmation) {
@@ -63,6 +67,9 @@ export function SignupForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Une nouvelle clé remonte l'alerte même lorsque deux tentatives produisent
+    // exactement le même texte. L'animation et le lecteur d'écran sont relancés.
+    setFeedbackRevision((currentRevision) => currentRevision + 1);
     setFormError(null);
 
     const errors = validateForm();
@@ -113,7 +120,11 @@ export function SignupForm() {
 
   return (
     <form className="auth-form auth-form--signup" onSubmit={handleSubmit} noValidate>
-      {formError ? <FormAlert tone="error">{formError}</FormAlert> : null}
+      {formError ? (
+        <FormAlert key={feedbackRevision} tone="error">
+          {formError}
+        </FormAlert>
+      ) : null}
 
       <div className="auth-field">
         <label htmlFor="username">Nom d&apos;utilisateur</label>
@@ -172,7 +183,7 @@ export function SignupForm() {
         onChange={setPassword}
         autoComplete="new-password"
         error={fieldErrors.password}
-        hint="Entre 8 et 128 caractères."
+        hint={PASSWORD_REQUIREMENTS_MESSAGE}
       />
 
       <PasswordField

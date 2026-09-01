@@ -32,6 +32,11 @@ type SignInInput = {
   callbackPath?: string;
 };
 
+type ResetPasswordInput = {
+  token: string;
+  newPassword: string;
+};
+
 const DEFAULT_POST_SIGN_IN_DESTINATION = "/dashboard";
 
 // La connexion passe toujours par une route serveur qui contrôle l'onboarding
@@ -97,6 +102,22 @@ export function requestVerificationEmail(email: string) {
   return authClient.sendVerificationEmail({
     email: email.trim().toLowerCase(),
     callbackURL: "/login?verified=1",
+  });
+}
+
+// La destination est fixe : aucune URL fournie par l'utilisateur n'est reprise.
+export function requestPasswordRecovery(email: string) {
+  return authClient.requestPasswordReset({
+    email: email.trim().toLowerCase(),
+    redirectTo: "/reset-password",
+  });
+}
+
+// Better Auth consomme le jeton atomiquement avant d'enregistrer le nouveau hash.
+export function resetPasswordWithToken({ token, newPassword }: ResetPasswordInput) {
+  return authClient.resetPassword({
+    token,
+    newPassword,
   });
 }
 

@@ -284,3 +284,195 @@ export async function grantBattleRewards({
   return txResult;
 }
 
+export interface GrantTrainingRewardsParams {
+  userId: string;
+  battleId: string;
+  difficulty: "easy" | "normal" | "hard";
+  winner: "p1" | "p2";
+  playerPokemonIds: readonly string[];
+  turnsCount?: number;
+}
+
+const TRAINING_REWARDS: Record<string, { money: number; xp: number }> = {
+  easy: { money: 50, xp: 100 },
+  normal: { money: 80, xp: 180 },
+  hard: { money: 130, xp: 320 },
+};
+
+/**
+ * Attribue les récompenses pour un combat d'entraînement et émet training.completed (T-US09-03).
+ */
+export async function grantTrainingRewards({
+  userId,
+  battleId,
+  difficulty,
+  winner,
+  playerPokemonIds,
+  turnsCount = 1,
+}: GrantTrainingRewardsParams): Promise<BattleRewardResult> {
+  const participantIds = snapshotBattleParticipants(playerPokemonIds);
+
+  const existingBattle = await prisma.battleRecord.findUnique({
+    where: { idempotencyKey: battleId },
+  });
+
+  if (existingBattle) {
+    if (existingBattle.userId !== userId) throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
+    const profile = await prisma.userProfile.findUnique({ where: { userId } });
+    return {
+      isAlreadyClaimed: true,
+      moneyEarned: existingBattle.moneyGained,
+      xpEarned: existingBattle.xpGained,
+      newBalance: profile?.pokedollars || 0,
+      stageCompleted: false,
+      unlockedNextStageId: null,
+      teamLeveledUp: [],
+    };
+  }
+
+  const baseReward = TRAINING_REWARDS[difficulty] || TRAINING_REWARDS.easy;
+  const moneyReward = winner === "p1" ? baseReward.money : 0;
+  const xpReward = winner === "p1" ? baseReward.xp : 0;
+
+  const txResult = await prisma.$transaction(async (tx) => {
+    const participants = await tx.userPokemon.findMany({
+      where: {
+        userId,
+        id: { in: [...participantIds] },
+      },
+      orderBy: { id: "asc" },
+    });
+
+    if (participants.length !== participantIds.length) {
+      throw new Error("BATTLE_REWARD_FOREIGN_PARTICIPANT");
+    }
+
+    const teamLeveledUp: BattleRewardResult["teamLeveledUp"] = [];
+
+    for (const pokemon of participants) {
+      const species = getSpecies(pokemon.speciesId);
+      if (!species) continue;
+
+      let currentLvl = pokemon.level;
+      let currentExp = pokemon.experience + xpReward;
+      let leveledUp = false;
+
+      while (currentLvl < 100) {
+        const nextLevelThreshold = calculateXpForNextLevel(currentLvl);
+        if (currentExp >= nextLevelThreshold) {
+          currentExp -= nextLevelThreshold;
+          currentLvl += 1;
+          leveledUp = true;
+        } else {
+          break;
+        }
+      }
+
+      const hpIv = (pokemon.ivs as any)?.hp || 15;
+      const newMax = calculateMaxHp(species.baseStats.hp, hpIv, currentLvl);
+
+      if (leveledUp || xpReward > 0) {
+        await tx.userPokemon.update({
+          where: { id: pokemon.id },
+          data: {
+            level: currentLvl,
+            experience: currentExp,
+            maxHp: newMax,
+            currentHp: newMax,
+          },
+        });
+      }
+
+      if (leveledUp) {
+        teamLeveledUp.push({
+          pokemonId: pokemon.id,
+          speciesId: pokemon.speciesId,
+          name: pokemon.nickname || species.name,
+          oldLevel: pokemon.level,
+          newLevel: currentLvl,
+          newCurrentHp: newMax,
+          newMaxHp: newMax,
+        });
+      }
+    }
+
+    const updatedProfile = await tx.userProfile.upsert({
+      where: { userId },
+      create: {
+        userId,
+        pokedollars: moneyReward,
+        hasCompletedOnboarding: true,
+      },
+      update: {
+        pokedollars: { increment: moneyReward },
+      },
+    });
+
+    await tx.battleRecord.create({
+      data: {
+        userId,
+        battleType: "TRAINING",
+        opponentId: `training-${difficulty}`,
+        opponentTeamSnapshot: {},
+        playerTeamSnapshot: { pokemonIds: [...participantIds] },
+        idempotencyKey: battleId,
+        result: winner === "p1" ? BattleResult.VICTORY : BattleResult.DEFEAT,
+        turnsCount,
+        rewardsClaimed: true,
+        moneyGained: moneyReward,
+        xpGained: xpReward,
+        completedAt: new Date(),
+      },
+    });
+
+
+    const trainingEventPayload = {
+      userId,
+      battleId,
+      battleType: "TRAINING" as const,
+      difficulty,
+      opponentId: `training-${difficulty}`,
+      result: (winner === "p1" ? "VICTORY" : "DEFEAT") as "VICTORY" | "DEFEAT",
+      winner,
+      turnsCount,
+      xpGained: xpReward,
+      moneyGained: moneyReward,
+      playerPokemonIds: [...participantIds],
+      playerTeamSpecies: participants.map((p) => p.speciesId),
+    };
+
+    const domainEvent = createDomainEvent({
+      eventType: "training.completed",
+      aggregateType: "TRAINING",
+      aggregateId: battleId,
+      payload: trainingEventPayload,
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        eventId: domainEvent.eventId,
+        eventType: domainEvent.eventType,
+        aggregateType: domainEvent.aggregateType,
+        aggregateId: domainEvent.aggregateId,
+        payload: domainEvent as unknown as Prisma.InputJsonValue,
+        status: OutboxStatus.PENDING,
+      },
+    });
+
+    return {
+      isAlreadyClaimed: false,
+      moneyEarned: moneyReward,
+      xpEarned: xpReward,
+      newBalance: updatedProfile.pokedollars,
+      stageCompleted: false,
+      unlockedNextStageId: null,
+      teamLeveledUp,
+    };
+  });
+
+  triggerOutboxFlush();
+
+  return txResult;
+}
+
+
