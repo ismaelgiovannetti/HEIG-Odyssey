@@ -595,72 +595,78 @@ export function TeamManager({ playerName }: { playerName: string }) {
               </button>
             </header>
             {/* Général, souris, puis clavier : le même ordre à l'écran et à la lecture.
-                L'aide garde son identifiant quand elle est repliée pour les descriptions des cases. */}
+                Le conteneur reste monté afin que le CSS puisse animer sa hauteur. */}
             <div
-              className={styles.tipsContent}
+              className={styles.tipsReveal}
               id="team-controls-help"
-              hidden={!tipsOpen}
+              data-open={tipsOpen}
+              aria-hidden={!tipsOpen}
             >
-              <section
-                className={styles.tipsGroup}
-                aria-labelledby="team-tips-general"
-              >
-                <h3 id="team-tips-general">Général</h3>
-                <ul className={styles.tipsList}>
-                  <li>
-                    <strong>Case occupée :</strong> les deux Pokémon échangent
-                    leur place.
-                  </li>
-                  <li>
-                    <strong>Échap :</strong> annulez le déplacement en cours.
-                  </li>
-                  <li>
-                    <strong>Sauvegarde automatique :</strong>{" "}
-                    l’équipe et le rangement du PC sont enregistrés après chaque
-                    déplacement ou échange.
-                  </li>
-                </ul>
-              </section>
-              <section
-                className={styles.tipsGroup}
-                aria-labelledby="team-tips-mouse"
-              >
-                <h3 id="team-tips-mouse">Souris</h3>
-                <ul className={styles.tipsList}>
-                  <li>
-                    <strong>Clic ou glisser-déposer :</strong> prenez et posez
-                    un Pokémon par clic, ou faites-le glisser vers une case.
-                  </li>
-                  <li>
-                    <strong>Cadre de la boîte :</strong> déposez le Pokémon sur
-                    le cadre pour utiliser la première case libre.
-                  </li>
-                  <li>
-                    <strong>Changer de boîte en glissant :</strong> maintenez le
-                    Pokémon sur une flèche pour ouvrir la boîte voisine.
-                  </li>
-                </ul>
-              </section>
-              <section
-                className={styles.tipsGroup}
-                aria-labelledby="team-tips-keyboard"
-              >
-                <h3 id="team-tips-keyboard">Clavier</h3>
-                <ul className={styles.tipsList}>
-                  <li>
-                    <strong>Entrée / Espace :</strong> prenez un Pokémon, puis
-                    posez-le sur la case choisie.
-                  </li>
-                  <li>
-                    <strong>Flèches directionnelles :</strong> passez d’une case
-                    à l’autre.
-                  </li>
-                  <li>
-                    <strong>Tab :</strong> parcourez les éléments interactifs de
-                    la page.
-                  </li>
-                </ul>
-              </section>
+              <div className={styles.tipsClip}>
+                <div className={styles.tipsContent}>
+                  <section
+                    className={styles.tipsGroup}
+                    aria-labelledby="team-tips-general"
+                  >
+                    <h3 id="team-tips-general">Général</h3>
+                    <ul className={styles.tipsList}>
+                      <li>
+                        <strong>Case occupée :</strong> les deux Pokémon
+                        échangent leur place.
+                      </li>
+                      <li>
+                        <strong>Échap :</strong> annulez le déplacement en cours.
+                      </li>
+                      <li>
+                        <strong>Sauvegarde automatique :</strong>{" "}
+                        l’équipe et le rangement du PC sont enregistrés après
+                        chaque déplacement ou échange.
+                      </li>
+                    </ul>
+                  </section>
+                  <section
+                    className={styles.tipsGroup}
+                    aria-labelledby="team-tips-mouse"
+                  >
+                    <h3 id="team-tips-mouse">Souris</h3>
+                    <ul className={styles.tipsList}>
+                      <li>
+                        <strong>Clic ou glisser-déposer :</strong> prenez et
+                        posez un Pokémon par clic, ou faites-le glisser vers une
+                        case.
+                      </li>
+                      <li>
+                        <strong>Cadre de la boîte :</strong> déposez le Pokémon
+                        sur le cadre pour utiliser la première case libre.
+                      </li>
+                      <li>
+                        <strong>Changer de boîte en glissant :</strong> maintenez
+                        le Pokémon sur une flèche pour ouvrir la boîte voisine.
+                      </li>
+                    </ul>
+                  </section>
+                  <section
+                    className={styles.tipsGroup}
+                    aria-labelledby="team-tips-keyboard"
+                  >
+                    <h3 id="team-tips-keyboard">Clavier</h3>
+                    <ul className={styles.tipsList}>
+                      <li>
+                        <strong>Entrée / Espace :</strong> prenez un Pokémon,
+                        puis posez-le sur la case choisie.
+                      </li>
+                      <li>
+                        <strong>Flèches directionnelles :</strong> passez d’une
+                        case à l’autre.
+                      </li>
+                      <li>
+                        <strong>Tab :</strong> parcourez les éléments interactifs
+                        de la page.
+                      </li>
+                    </ul>
+                  </section>
+                </div>
+              </div>
             </div>
           </section>
 

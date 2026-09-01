@@ -227,13 +227,15 @@ describe("interface de gestion d'équipe", () => {
     expect(within(heading).queryByRole("button")).toBeNull();
     await user.click(heading);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(content.hidden).toBe(false);
+    expect(content.getAttribute("data-open")).toBe("true");
+    expect(content.getAttribute("aria-hidden")).toBe("false");
     await user.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(
       within(tips).getByRole("button", { name: "Afficher les Tips" }),
     ).toBe(toggle);
-    expect(content.hidden).toBe(true);
+    expect(content.getAttribute("data-open")).toBe("false");
+    expect(content.getAttribute("aria-hidden")).toBe("true");
     expect(within(tips).queryAllByRole("list")).toHaveLength(0);
     expect(within(tips).queryAllByRole("listitem")).toHaveLength(0);
     expect(within(tips).getByRole("heading", { name: "Tips" })).toBeDefined();
@@ -243,7 +245,8 @@ describe("interface de gestion d'équipe", () => {
     ).toBe(content);
     await user.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(content.hidden).toBe(false);
+    expect(content.getAttribute("data-open")).toBe("true");
+    expect(content.getAttribute("aria-hidden")).toBe("false");
     expect(within(tips).getAllByRole("list")).toHaveLength(3);
     expect(within(tips).getAllByRole("listitem")).toHaveLength(9);
     // Ce réglage visuel ne modifie ni l'équipe ni la collection sur le serveur.

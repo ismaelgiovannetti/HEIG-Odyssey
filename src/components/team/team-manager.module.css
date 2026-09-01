@@ -141,16 +141,37 @@
   outline: 2px solid var(--color-success);
   outline-offset: 2px;
 }
+.tipsReveal {
+  /* Une ligne de grille permet d'animer une hauteur de contenu variable,
+     contrairement à une transition depuis height: auto. */
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 260ms ease,
+    opacity 180ms ease,
+    visibility 0s linear;
+}
+.tipsReveal[data-open="false"] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 260ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 260ms;
+}
+.tipsClip {
+  min-height: 0;
+  overflow: hidden;
+}
 .tipsContent {
   /* Trois thèmes séparés, empilés dans le même ordre sur un écran plus étroit. */
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.9fr);
   gap: 24px;
   padding: 4px 20px 20px;
-}
-.tipsContent[hidden] {
-  /* La grille ne doit pas annuler le masquage natif de l'attribut hidden. */
-  display: none;
 }
 .tipsGroup {
   min-width: 0;
@@ -1060,6 +1081,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* La variante fermée est plus spécifique : elle doit être nommée ici aussi
+     pour supprimer réellement la transition dans les deux directions. */
+  .tipsReveal,
+  .tipsReveal[data-open="false"] {
+    transition: none;
+  }
   .savingIcon {
     animation: none;
   }
