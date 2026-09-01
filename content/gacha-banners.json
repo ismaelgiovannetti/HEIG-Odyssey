@@ -2,9 +2,9 @@
   "version": "1.0.0",
   "banners": [
     {
-      "id": "banner-standard-sinnoh",
+      "id": "banner-standard",
       "name": "Portail de Recrutement Standard",
-      "description": "Recrutez des créatures de la région de Sinnoh et Kanto avec votre monnaie gagnée en jeu.",
+      "description": "Recrutez des créatures variées de toutes générations pour renforcer votre collection.",
       "costPokedollars": 100,
       "rates": {
         "common": 0.70,
@@ -16,13 +16,65 @@
         "starly",
         "shinx",
         "bidoof",
+        "buizel",
+        "cherubi",
+        "cranidos",
+        "shieldon",
+        "ralts",
         "riolu",
         "gible",
-        "ralts",
-        "larvitar",
         "lucario",
+        "garchomp"
+      ],
+      "isActive": true
+    },
+    {
+      "id": "banner-sinnoh-starters",
+      "name": "Étoiles de Sinnoh",
+      "description": "Portail spécialisé offrant une chance accrue d'obtenir les créatures emblématiques de Sinnoh.",
+      "costPokedollars": 150,
+      "rates": {
+        "common": 0.60,
+        "rare": 0.30,
+        "epic": 0.10,
+        "shinyRate": 0.02
+      },
+      "poolSpecies": [
+        "turtwig",
+        "chimchar",
+        "piplup",
+        "starly",
+        "shinx",
+        "buizel",
+        "riolu",
+        "lucario",
+        "gible",
+        "garchomp"
+      ],
+      "isActive": true
+    },
+    {
+      "id": "banner-epic-legends",
+      "name": "Sanctuaire des Rares",
+      "description": "Portail prestige réservé aux dresseurs aguerris avec un taux exceptionnel de créatures épiques et chromatiques.",
+      "costPokedollars": 250,
+      "rates": {
+        "common": 0.40,
+        "rare": 0.45,
+        "epic": 0.15,
+        "shinyRate": 0.03
+      },
+      "poolSpecies": [
+        "ralts",
+        "kirlia",
+        "gardevoir",
+        "riolu",
+        "lucario",
+        "gible",
+        "gabite",
         "garchomp",
-        "togekiss"
+        "togepi",
+        "togetic"
       ],
       "isActive": true
     }
