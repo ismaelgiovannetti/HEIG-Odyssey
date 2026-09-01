@@ -41,6 +41,13 @@
   --color-info-border: #315D80;
   --color-info-bg: #EDF6FC;
   --color-info-text: #244762;
+  --color-quest-xp: #176F75;
+  --color-quest-header-bg: #8E2B27;
+  --color-quest-header-text: #F7FAFC;
+  --color-quest-daily-icon: #FFD166;
+  --color-quest-weekly-icon: #7DD3FC;
+  --color-quest-timer: #86EFAC;
+  --color-quest-timer-urgent: #B42318;
 }
 
 :root[data-theme="dark"] {
@@ -80,6 +87,13 @@
   --color-info-border: #70B5E4;
   --color-info-bg: #172E3D;
   --color-info-text: #D4EDFF;
+  --color-quest-xp: #62CBD0;
+  --color-quest-header-bg: #8E2B27;
+  --color-quest-header-text: #F7FAFC;
+  --color-quest-daily-icon: #FFD166;
+  --color-quest-weekly-icon: #7DD3FC;
+  --color-quest-timer: #63E6A2;
+  --color-quest-timer-urgent: #B42318;
 }
 
 body {
@@ -2928,6 +2942,47 @@ body {
   background: var(--color-primary);
 }
 
+/* Le compteur compact reprend le principe d'un indicateur de missions : le
+   détail reste caché tant que le joueur ne demande pas à le consulter. */
+.quest-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quest-menu__trigger {
+  position: relative;
+  display: inline-flex;
+  min-width: 48px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 5px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quest-menu__trigger strong {
+  color: var(--color-text);
+  font-weight: 700;
+  transition: color 130ms ease;
+}
+
+.quest-menu__trigger svg {
+  color: var(--color-primary-light);
+  fill: rgb(201 64 54 / 12%);
+}
+
+.quest-menu__trigger:hover strong,
+.quest-menu__trigger.is-open strong {
+  color: var(--color-primary-light);
+}
+
 /* Tous les contrôles du shell partagent un focus contrasté et indépendant de
    leur couleur de mode afin de rester repérables au clavier. */
 .application-navigation a:focus-visible,
@@ -2938,6 +2993,287 @@ body {
 .mode-placeholder__back:focus-visible {
   outline: 3px solid var(--color-primary-light);
   outline-offset: 3px;
+}
+
+.quest-menu__trigger:focus-visible,
+.quest-panel__error button:focus-visible,
+.quest-card__claim:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+/* Le panneau reste rattaché au compteur placé près du solde et présente
+   uniquement les deux rotations du MVP : quotidienne et hebdomadaire. */
+.quest-panel {
+  position: absolute;
+  top: calc(100% + 17px);
+  right: -175px;
+  z-index: 50;
+  width: min(690px, calc(100vw - 56px));
+  overflow: visible;
+  border: 2px solid #7A3D38;
+  outline: 3px solid #080B10;
+  outline-offset: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+.quest-panel__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  padding: 13px;
+  /* Les halos rouges soulignent le centre de chaque côté ; les reflets acier
+     éclairent les coins sans réintroduire d'ombre portée autour du panneau. */
+  background:
+    radial-gradient(circle at 50% 0%, rgb(201 64 54 / 34%), transparent 43%),
+    radial-gradient(circle at 50% 100%, rgb(201 64 54 / 30%), transparent 43%),
+    radial-gradient(circle at 0% 50%, rgb(201 64 54 / 28%), transparent 39%),
+    radial-gradient(circle at 100% 50%, rgb(201 64 54 / 28%), transparent 39%),
+    radial-gradient(circle at 0% 0%, rgb(207 218 230 / 24%), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgb(207 218 230 / 24%), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgb(207 218 230 / 22%), transparent 34%),
+    radial-gradient(circle at 100% 100%, rgb(207 218 230 / 22%), transparent 34%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      var(--color-scanline) 8px
+    ),
+    var(--color-bg);
+}
+
+.quest-group {
+  min-width: 0;
+  border: 2px solid #000;
+  background: var(--color-bg-alt);
+}
+
+.quest-group__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 10px;
+  border: 0;
+  border-bottom: 2px solid #000;
+  background: var(--color-quest-header-bg);
+  color: var(--color-quest-header-text);
+}
+
+.quest-group__icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid currentColor;
+  background: rgb(16 24 36 / 32%);
+  color: var(--color-quest-daily-icon);
+  box-shadow: none;
+}
+
+.quest-group:nth-child(2) .quest-group__icon {
+  color: var(--color-quest-weekly-icon);
+}
+
+.quest-group__header h3 {
+  margin: 0 0 4px;
+  color: var(--color-quest-header-text);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.quest-group__summary {
+  color: var(--color-quest-header-text);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 9px;
+}
+
+.quest-group__remaining {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 5px 0 0;
+  color: var(--color-quest-timer);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.quest-group__remaining.is-urgent {
+  padding: 2px 5px;
+  background: #FFF4F2;
+  color: var(--color-quest-timer-urgent);
+}
+
+.quest-group__list {
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+}
+
+.quest-group__empty {
+  margin: 0;
+  padding: 25px 12px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.quest-card {
+  padding: 9px 10px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.quest-card.is-completed {
+  border-color: #4b9b69;
+  background:
+    linear-gradient(110deg, rgb(75 155 105 / 13%), transparent 62%),
+    var(--color-surface);
+}
+
+.quest-card.is-claimed {
+  border-color: #4b9b69;
+  opacity: 0.82;
+}
+
+.quest-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quest-card__heading h4 {
+  margin: 0 0 4px;
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.quest-card__heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.quest-card__progress-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.quest-card__progress-line strong {
+  color: var(--color-text);
+  font-size: 9px;
+}
+
+.quest-card__progress {
+  height: 7px;
+  overflow: hidden;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg);
+}
+
+.quest-card__progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 180ms ease;
+}
+
+.quest-card.is-completed .quest-card__progress span,
+.quest-card.is-claimed .quest-card__progress span {
+  background: #4b9b69;
+}
+
+.quest-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+}
+
+.quest-card__rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.quest-card__rewards span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.quest-card__rewards span:first-child { color: #d59a35; }
+.quest-card__rewards span:last-child { color: var(--color-quest-xp); }
+
+.quest-card__claim,
+.quest-panel__error button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.quest-card__claim { padding: 4px 7px; }
+.quest-card__claim:disabled { cursor: wait; opacity: 0.65; }
+.quest-card.is-completed .quest-card__claim { background: #3f8c5d; }
+
+.quest-panel__loading {
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.quest-panel__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 18px 0;
+  padding: 12px 14px;
+  border: 2px solid var(--color-primary);
+  background: rgb(201 64 54 / 10%);
+  color: var(--color-text);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.quest-panel__error button {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+}
+
+.quest-panel .is-spinning {
+  animation: quest-spin 850ms linear infinite;
+}
+
+@keyframes quest-spin {
+  to { transform: rotate(360deg); }
 }
 
 .application-player {
@@ -2953,14 +3289,15 @@ body {
   align-items: center;
   gap: 5px;
   padding: 7px 10px;
-  border: 2px solid var(--color-border);
-  background: var(--color-surface);
+  border: 0;
+  background: transparent;
   color: #c58a33;
   font-size: 12px;
 }
 
 .application-player__balance strong {
   color: var(--color-text);
+  font-weight: 700;
 }
 
 .application-player__name {
@@ -3362,6 +3699,8 @@ body {
 
   .application-brand { width: 165px; }
   .application-navigation a { padding-inline: 7px; font-size: 10px; }
+  .quest-menu__trigger { min-width: 44px; padding-inline: 4px; }
+  .quest-panel { right: -105px; }
   .application-player__name { display: none; }
   .dashboard-modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-mode-card { min-height: 205px; }
@@ -3384,6 +3723,9 @@ body {
   }
 
   .application-navigation ul { justify-content: space-between; }
+  .quest-panel {
+    width: min(680px, calc(100vw - 40px));
+  }
   .application-player { grid-column: 2; grid-row: 1; justify-self: end; }
   .mode-placeholder { grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr); }
   .mode-placeholder__content { padding: 38px; }
@@ -3396,6 +3738,9 @@ body {
   .campaign-btn {
     transition: none;
   }
+
+  .quest-card__progress span { transition: none; }
+  .quest-panel .is-spinning { animation: none; }
 }
 
 /* ==========================================================================
