@@ -73,6 +73,19 @@ function cleanupOldSessions() {
   }
 }
 
+/** Vérifie les sessions vivantes sans prolonger leur durée de validité. */
+export function isPokemonInActiveBattle(
+  userId: string,
+  pokemonId: string,
+): boolean {
+  cleanupOldSessions();
+  return [...activeSessions.values()].some(
+    (session) =>
+      session.userId === userId &&
+      session.playerPokemonIds.includes(pokemonId),
+  );
+}
+
 function getLiveBattleSession(battleId: string): ActiveBattleSession | undefined {
   const session = activeSessions.get(battleId);
 

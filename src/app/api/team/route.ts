@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getApplicationOrigin } from "@/lib/auth/environment";
-import { UpdateTeamBodySchema } from "@/lib/team/team-contract";
 import {
-  getPlayerCollection, updateActiveTeam, TeamCompositionInvalidError,
-  TeamPokemonNotOwnedError, TeamRevisionConflictError, TeamOnboardingRequiredError,
+  ReleasePokemonBodySchema,
+  UpdateTeamBodySchema,
+} from "@/lib/team/team-contract";
+import {
+  getPlayerCollection, releasePokemon, updateActiveTeam, TeamCompositionInvalidError,
+  TeamPokemonInBattleError, TeamPokemonNotOwnedError, TeamRevisionConflictError,
+  TeamOnboardingRequiredError,
   PcCapacityExceededError,
 } from "@/lib/team/team-service";
 
@@ -13,8 +17,9 @@ function json(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 }
 
-function handleError(error: unknown, operation: "lecture" | "sauvegarde") {
+function handleError(error: unknown, operation: "lecture" | "sauvegarde" | "relâchement") {
   if (error instanceof TeamPokemonNotOwnedError) return json({ success: false, error: error.message }, 404);
+  if (error instanceof TeamPokemonInBattleError) return json({ success: false, error: error.message }, 409);
   if (error instanceof TeamCompositionInvalidError) {
     return json({ success: false, error: error.message, details: error.reasons }, 400);
   }
@@ -90,5 +95,34 @@ export async function PUT(req: Request) {
     return json({ success: true, ...await updateActiveTeam(session.user.id, parsed.data) });
   } catch (error) {
     return handleError(error, "sauvegarde");
+  }
+}
+
+/** DELETE ne reçoit que l'identifiant possédé et la version affichée au joueur. */
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth.api.getSession({ headers: req.headers });
+    if (!session?.user.id) return json({ success: false, error: "Authentification requise." }, 401);
+    if (!session.user.emailVerified) return json({ success: false, error: "Vérifiez votre adresse e-mail." }, 403);
+
+    if (req.headers.get("origin") !== getApplicationOrigin()) {
+      return json({ success: false, error: "Origine de la requête refusée." }, 403);
+    }
+    if (req.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
+      return json({ success: false, error: "Un corps JSON est requis." }, 415);
+    }
+
+    let raw: unknown;
+    try {
+      raw = await readBody(req);
+    } catch (error) {
+      return json({ success: false, error: "Corps de requête invalide ou trop volumineux." }, error instanceof RangeError ? 413 : 400);
+    }
+    const parsed = ReleasePokemonBodySchema.safeParse(raw);
+    if (!parsed.success) return json({ success: false, error: "Requête invalide." }, 400);
+
+    return json({ success: true, ...await releasePokemon(session.user.id, parsed.data) });
+  } catch (error) {
+    return handleError(error, "relâchement");
   }
 }

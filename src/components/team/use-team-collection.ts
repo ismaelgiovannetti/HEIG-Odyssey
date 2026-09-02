@@ -17,7 +17,9 @@ import {
 export function useTeamCollection() {
   const [snapshot, setSnapshot] = useState<CollectionSnapshot | null>(null);
   const [draft, setDraft] = useState<TeamDraft>({ team: [], pc: [] });
-  const [pending, setPending] = useState<"load" | "save" | null>("load");
+  const [pending, setPending] = useState<
+    "load" | "save" | "release" | null
+  >("load");
   const [error, setError] = useState<TeamRequestError | null>(null);
   const [notice, setNotice] = useState("");
   const request = useRef<{ id: number; controller: AbortController } | null>(
@@ -27,17 +29,20 @@ export function useTeamCollection() {
 
   const exchange = useCallback(
     async (
-      method: "GET" | "PUT",
+      method: "GET" | "PUT" | "DELETE",
       body?: string,
       previousDraft?: TeamDraft,
       onSuccess?: () => void,
+      successNotice?: string,
     ) => {
       // Ce verrou synchrone empêche aussi un double clic avant le rendu suivant.
       if (request.current) return false;
       const id = ++sequence.current;
       const controller = new AbortController();
       request.current = { id, controller };
-      setPending(method === "GET" ? "load" : "save");
+      setPending(
+        method === "GET" ? "load" : method === "DELETE" ? "release" : "save",
+      );
       setError(null);
       setNotice("");
       const timeout = window.setTimeout(() => controller.abort(), 20_000);
@@ -58,9 +63,10 @@ export function useTeamCollection() {
         setSnapshot(data);
         setDraft(draftFromCollection(data.pokemon));
         setNotice(
-          method === "PUT"
-            ? "Équipe et rangement du PC enregistrés."
-            : "Collection à jour.",
+          successNotice ??
+            (method === "PUT"
+              ? "Équipe et rangement du PC enregistrés."
+              : "Collection à jour."),
         );
         // Appelé dans le même tick que les mises à jour d'état ci-dessus :
         // un aller-retour await supplémentaire côté appelant laisserait une
@@ -76,7 +82,9 @@ export function useTeamCollection() {
             : new TeamRequestError(
                 method === "PUT"
                   ? "La connexion a été interrompue. La sauvegarde a peut-être abouti : rechargez la collection pour vérifier."
-                  : "Impossible de charger la collection. Vérifiez votre connexion puis réessayez.",
+                  : method === "DELETE"
+                    ? "La connexion a été interrompue. Le relâchement a peut-être abouti : rechargez la collection pour vérifier."
+                    : "Impossible de charger la collection. Vérifiez votre connexion puis réessayez.",
                 true,
               );
         setError(failure);
@@ -140,6 +148,26 @@ export function useTeamCollection() {
     );
   }
 
+  function releasePokemon(
+    pokemonId: string,
+    pokemonName: string,
+    onSuccess?: () => void,
+  ) {
+    if (!snapshot || request.current || error?.needsReload) {
+      return Promise.resolve(false);
+    }
+    return exchange(
+      "DELETE",
+      JSON.stringify({
+        expectedRevision: snapshot.revision,
+        pokemonId,
+      }),
+      undefined,
+      onSuccess,
+      `${pokemonName} a été relâché dans la nature.`,
+    );
+  }
+
   return {
     snapshot,
     draft,
@@ -154,5 +182,6 @@ export function useTeamCollection() {
     },
     reload: () => exchange("GET"),
     saveChange,
+    releasePokemon,
   };
 }

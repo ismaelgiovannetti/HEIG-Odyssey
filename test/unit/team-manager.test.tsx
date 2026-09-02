@@ -109,6 +109,33 @@ describe("interface de gestion d'équipe", () => {
           team: input.teamPokemonIds,
           pc: input.pcPlacements,
         });
+      } else if (options?.method === "DELETE") {
+        const input = JSON.parse(String(options.body)) as {
+          expectedRevision: number;
+          pokemonId: string;
+        };
+        if (input.expectedRevision !== server.revision) {
+          return response({ code: "COLLECTION_CHANGED" }, 409);
+        }
+        const released = server.pokemon.find(
+          (pokemon) => pokemon.id === input.pokemonId,
+        );
+        server = {
+          ...server,
+          revision: server.revision + 1,
+          count: server.count - 1,
+          pokemon: server.pokemon
+            .filter((pokemon) => pokemon.id !== input.pokemonId)
+            .map((pokemon) => ({
+              ...pokemon,
+              teamPosition:
+                released?.teamPosition &&
+                pokemon.teamPosition &&
+                pokemon.teamPosition > released.teamPosition
+                  ? pokemon.teamPosition - 1
+                  : pokemon.teamPosition,
+            })),
+        };
       }
       return response(server);
     });
@@ -128,6 +155,7 @@ describe("interface de gestion d'équipe", () => {
   });
 
   it("présente six places, une grille 7 × 5 et aucune recherche", async () => {
+    const user = userEvent.setup();
     await openPc();
     expect(
       within(
@@ -150,22 +178,25 @@ describe("interface de gestion d'équipe", () => {
       screen.queryByRole("button", { name: "Annuler les modifications" }),
     ).toBeNull();
     expect(screen.queryByText("Un dernier geste pour sauvegarder")).toBeNull();
-    // L'aide garde chaque geste visible et reste associée aux cases au clavier.
-    const tips = screen.getByRole("region", { name: "Tips" });
-    expect(
-      within(tips).getByRole("heading", { name: "Tips", level: 2 }),
-    ).toBeDefined();
+    // L'ampoule garde l'aide hors du flux jusqu'à son ouverture explicite.
+    const tipsTrigger = screen.getByRole("button", {
+      name: "Afficher les Tips",
+    });
+    expect(tipsTrigger.closest("header")).not.toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Tips" })).toBeNull();
+    await user.click(tipsTrigger);
+    const tips = await screen.findByRole("dialog", { name: "Tips" });
     // Les trois rubriques suivent le même ordre visuel et accessible.
     expect(
       within(tips).getAllByRole("heading", { level: 3 }).map((heading) =>
-        heading.textContent,
+        heading.textContent?.trim(),
       ),
-    ).toEqual(["Général", "Souris", "Clavier"]);
+    ).toEqual(["Souris", "Clavier", "Général"]);
     expect(within(tips).getAllByRole("list")).toHaveLength(3);
     for (const [name, count] of [
-      ["Général", 3],
       ["Souris", 3],
-      ["Clavier", 3],
+      ["Clavier", 4],
+      ["Général", 4],
     ] as const) {
       const group = within(tips).getByRole("region", { name });
       expect(within(group).getAllByRole("listitem")).toHaveLength(count);
@@ -175,95 +206,71 @@ describe("interface de gestion d'équipe", () => {
         item.querySelector("strong")?.textContent,
       ),
     ).toEqual([
-      "Case occupée :",
-      "Échap :",
-      "Sauvegarde automatique :",
       "Clic ou glisser-déposer :",
       "Cadre de la boîte :",
       "Changer de boîte en glissant :",
       "Entrée / Espace :",
       "Flèches directionnelles :",
       "Tab :",
+      "Échap :",
+      "Case occupée :",
+      "Échap :",
+      "Sauvegarde automatique :",
+      "Relâcher un Pokémon :",
     ]);
     expect(within(tips).getByText("Cadre de la boîte :")).toBeDefined();
     expect(
       within(tips).getByText("Changer de boîte en glissant :"),
     ).toBeDefined();
     expect(within(tips).getByText("Case occupée :")).toBeDefined();
-    const help = document.getElementById(
-      teamSlot(1).getAttribute("aria-describedby")!,
-    );
-    expect(help).not.toBeNull();
-    expect(tips.contains(help)).toBe(true);
-    expect(help?.querySelectorAll("ul")).toHaveLength(3);
     expect(
       within(tips).getByText(
-        /sont enregistrés après chaque déplacement ou échange/,
+        /sont enregistrés après chaque déplacement/,
       ),
     ).toBeDefined();
     expect(
       pcSlot(2).querySelector('[data-variant="front_shiny"]'),
     ).not.toBeNull();
-    // Le cadre du PC ne doit pas être modifié par l'harmonisation de l'équipe.
+    // Les deux zones normalisent désormais les silhouettes à leur propre taille.
     expect(
       teamSlot(1).querySelector('[data-normalized="true"]'),
     ).not.toBeNull();
-    expect(pcSlot(1).querySelector('[data-normalized="true"]')).toBeNull();
+    expect(
+      pcSlot(1).querySelector('[data-normalized="true"]'),
+    ).not.toBeNull();
   });
 
-  it("replie les Tips uniquement avec leur bouton, sans perdre l'aide associée aux cases", async () => {
+  it("ouvre les Tips dans une fenêtre et restaure le focus à la fermeture", async () => {
     const user = userEvent.setup();
     await openPc();
-    const tips = screen.getByRole("region", { name: "Tips" });
-    const heading = within(tips).getByRole("heading", { name: "Tips" });
-    const toggle = within(tips).getByRole("button", {
-      name: "Réduire les Tips",
+    const trigger = screen.getByRole("button", {
+      name: "Afficher les Tips",
     });
-    const content = document.getElementById(
-      toggle.getAttribute("aria-controls")!,
-    )!;
-    // Cliquer sur le titre ne replie plus l'aide : le bouton est indépendant.
-    expect(toggle.closest("h2")).toBeNull();
-    expect(within(heading).queryByRole("button")).toBeNull();
-    await user.click(heading);
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(content.getAttribute("data-open")).toBe("true");
-    expect(content.getAttribute("aria-hidden")).toBe("false");
-    await user.click(toggle);
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(
-      within(tips).getByRole("button", { name: "Afficher les Tips" }),
-    ).toBe(toggle);
-    expect(content.getAttribute("data-open")).toBe("false");
-    expect(content.getAttribute("aria-hidden")).toBe("true");
-    expect(within(tips).queryAllByRole("list")).toHaveLength(0);
-    expect(within(tips).queryAllByRole("listitem")).toHaveLength(0);
-    expect(within(tips).getByRole("heading", { name: "Tips" })).toBeDefined();
-    expect(document.activeElement).toBe(toggle);
-    expect(
-      document.getElementById(teamSlot(1).getAttribute("aria-describedby")!),
-    ).toBe(content);
-    await user.click(toggle);
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(content.getAttribute("data-open")).toBe("true");
-    expect(content.getAttribute("aria-hidden")).toBe("false");
+    await user.click(trigger);
+    const tips = await screen.findByRole("dialog", { name: "Tips" });
+    expect(tips.hasAttribute("open")).toBe(true);
     expect(within(tips).getAllByRole("list")).toHaveLength(3);
-    expect(within(tips).getAllByRole("listitem")).toHaveLength(9);
+    expect(within(tips).getAllByRole("listitem")).toHaveLength(11);
+    await user.click(
+      within(tips).getByRole("button", { name: "Fermer les Tips" }),
+    );
+    expect(screen.queryByRole("dialog", { name: "Tips" })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
     // Ce réglage visuel ne modifie ni l'équipe ni la collection sur le serveur.
     expect(api).toHaveBeenCalledTimes(1);
     expect(navigation.refresh).not.toHaveBeenCalled();
   });
 
-  it("replie et rouvre les Tips au clavier avec Entrée et Espace", async () => {
+  it("ouvre les Tips au clavier et les ferme avec Échap", async () => {
     const user = userEvent.setup();
     await openPc();
-    const toggle = screen.getByRole("button", { name: "Réduire les Tips" });
-    act(() => toggle.focus());
+    const trigger = screen.getByRole("button", { name: "Afficher les Tips" });
+    act(() => trigger.focus());
     await user.keyboard("{Enter}");
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    await user.keyboard(" ");
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(document.activeElement).toBe(toggle);
+    const tips = await screen.findByRole("dialog", { name: "Tips" });
+    fireEvent(tips, new Event("cancel", { cancelable: true }));
+    expect(screen.queryByRole("dialog", { name: "Tips" })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
     expect(api).toHaveBeenCalledTimes(1);
   });
 
@@ -290,6 +297,44 @@ describe("interface de gestion d'équipe", () => {
       expect(within(panel).queryByText(/maintenez le Pokémon/)).toBeNull();
     },
   );
+
+  it("demande confirmation puis relâche un Pokémon du PC", async () => {
+    const user = userEvent.setup();
+    await openPc();
+    await user.click(pcSlot(1));
+    const release = screen.getByRole("button", {
+      name: /Relâcher Carapuce dans la nature/,
+    });
+    await user.click(release);
+    const dialog = await screen.findByRole("dialog", {
+      name: "Relâcher dans la nature",
+    });
+    expect(dialog.textContent).toContain("relâcher Carapuce");
+    await user.click(within(dialog).getByRole("button", { name: "Annuler" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(api).toHaveBeenCalledTimes(1);
+
+    await user.click(pcSlot(1));
+    await user.click(
+      screen.getByRole("button", {
+        name: /Relâcher Carapuce dans la nature/,
+      }),
+    );
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "Confirmer",
+      }),
+    );
+    await waitFor(() => expect(navigation.refresh).toHaveBeenCalledTimes(1));
+    expect(
+      screen.queryByRole("button", { name: /Boîte 1, case 1 : Carapuce/ }),
+    ).toBeNull();
+    expect(api.mock.calls[1][1]?.method).toBe("DELETE");
+    expect(JSON.parse(String(api.mock.calls[1][1]?.body))).toMatchObject({
+      expectedRevision: 7,
+      pokemonId: "charlie",
+    });
+  });
 
   it("sépare l'arrêt Tab de chaque carte de celui de sa fiche", async () => {
     const user = userEvent.setup();
@@ -830,12 +875,14 @@ describe("interface de gestion d'équipe", () => {
     await user.click(pcSlot(1));
     vi.mocked(window.confirm).mockReturnValue(false);
     const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-    screen
-      .getByRole("link", { name: "Retour à l'accueil" })
-      .dispatchEvent(event);
+    const navigationLink = document.createElement("a");
+    navigationLink.href = "/dashboard";
+    navigationLink.textContent = "Navigation de test";
+    document.body.append(navigationLink);
+    navigationLink.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
     expect(window.confirm).toHaveBeenCalledWith(
-      expect.stringContaining("Une sauvegarde est en cours"),
+      expect.stringContaining("Une modification de la collection est en cours"),
     );
     const beforeSave = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(beforeSave);

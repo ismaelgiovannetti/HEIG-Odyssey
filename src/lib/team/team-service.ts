@@ -1,13 +1,18 @@
 import { Prisma, type UserPokemon } from "@prisma/client";
 import { prisma } from "../prisma";
+import { isPokemonInActiveBattle } from "../combat/battle-session-store";
 import { toCollectionEntry, type CollectionEntry } from "./collection-entry";
 import { buildTeamLayout } from "./team-layout";
 import {
-  PC_BOX_COUNT, PC_COLUMNS, PC_ROWS, UpdateTeamBodySchema, type UpdateTeamInput,
+  PC_BOX_COUNT, PC_COLUMNS, PC_ROWS, ReleasePokemonBodySchema,
+  UpdateTeamBodySchema, type ReleasePokemonInput, type UpdateTeamInput,
 } from "./team-contract";
 import {
-  TeamCompositionInvalidError, TeamOnboardingRequiredError, TeamRevisionConflictError,
+  TeamCompositionInvalidError, TeamOnboardingRequiredError, TeamPokemonInBattleError,
+  TeamPokemonNotOwnedError,
+  TeamRevisionConflictError,
 } from "./team-errors";
+import { validateTeamComposition } from "./team-validator";
 
 export * from "./team-errors";
 export type { CollectionEntry } from "./collection-entry";
@@ -101,6 +106,88 @@ export async function updateActiveTeam(userId: string, input: UpdateTeamInput): 
       where: { userId }, data: { collectionRevision: { increment: 1 } },
     });
     const updated = await tx.userPokemon.findMany({ where: { userId }, orderBy: collectionOrder });
+    return snapshot(updatedProfile.collectionRevision, updated);
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
+}
+
+/** Supprime définitivement une créature possédée et compacte l'équipe si besoin. */
+export async function releasePokemon(
+  userId: string,
+  input: ReleasePokemonInput,
+): Promise<PlayerCollection> {
+  const parsed = ReleasePokemonBodySchema.safeParse(input);
+  if (!parsed.success) {
+    throw new TeamCompositionInvalidError(
+      parsed.error.issues.map((issue) => issue.message),
+    );
+  }
+
+  // Une suppression pendant un combat rendrait ses participants introuvables
+  // au moment d'attribuer l'expérience et les gains persistants.
+  if (isPokemonInActiveBattle(userId, parsed.data.pokemonId)) {
+    throw new TeamPokemonInBattleError();
+  }
+
+  return prisma.$transaction(async (tx) => {
+    // Le même verrou sérialise déplacements, échanges et relâchements.
+    await tx.$queryRaw(
+      Prisma.sql`SELECT "id" FROM "user_profile" WHERE "userId" = ${userId} FOR UPDATE`,
+    );
+    const profile = await tx.userProfile.findUnique({ where: { userId } });
+    if (!profile?.hasCompletedOnboarding) {
+      throw new TeamOnboardingRequiredError();
+    }
+    if (profile.collectionRevision !== parsed.data.expectedRevision) {
+      throw new TeamRevisionConflictError();
+    }
+
+    const owned = await tx.userPokemon.findMany({
+      where: { userId },
+      orderBy: collectionOrder,
+    });
+    const target = owned.find((pokemon) => pokemon.id === parsed.data.pokemonId);
+    // Même réponse pour un identifiant inconnu et pour la créature d'un autre compte.
+    if (!target) throw new TeamPokemonNotOwnedError();
+
+    if (target.teamPosition !== null) {
+      const remainingTeam = owned
+        .filter(
+          (pokemon) =>
+            pokemon.id !== target.id && pokemon.teamPosition !== null,
+        )
+        .sort((a, b) => a.teamPosition! - b.teamPosition!)
+        // La transaction compacte les positions après la suppression. La
+        // validation doit donc examiner cette future équipe, pas le trou
+        // temporaire laissé par la créature relâchée.
+        .map((pokemon, index) => ({ ...pokemon, teamPosition: index + 1 }));
+      const validation = validateTeamComposition(remainingTeam);
+      if (!validation.isValid) {
+        throw new TeamCompositionInvalidError(validation.errors);
+      }
+    }
+
+    const deleted = await tx.userPokemon.deleteMany({
+      where: { id: target.id, userId },
+    });
+    if (deleted.count !== 1) throw new TeamRevisionConflictError();
+
+    if (target.teamPosition !== null) {
+      // La suppression libère d'abord sa place ; les suivantes remontent ensuite
+      // dans une seule écriture, sans trou dans l'équipe active.
+      await tx.userPokemon.updateMany({
+        where: { userId, teamPosition: { gt: target.teamPosition } },
+        data: { teamPosition: { decrement: 1 } },
+      });
+    }
+
+    const updatedProfile = await tx.userProfile.update({
+      where: { userId },
+      data: { collectionRevision: { increment: 1 } },
+    });
+    const updated = await tx.userPokemon.findMany({
+      where: { userId },
+      orderBy: collectionOrder,
+    });
     return snapshot(updatedProfile.collectionRevision, updated);
   }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 }

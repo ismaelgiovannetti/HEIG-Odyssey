@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BrainCircuit,
   Dices,
+  House,
   MapPinned,
   Swords,
   Trophy,
@@ -166,8 +167,13 @@ export default async function DashboardPage() {
     >
       <div className="dashboard-home">
         <header className="dashboard-heading">
-          <h1>Bienvenue, {player.name} !</h1>
-          <p>Choisissez votre prochaine destination.</p>
+          <p className="dashboard-heading__eyebrow">
+            <House aria-hidden="true" size={15} /> Accueil du dresseur
+          </p>
+          <div className="dashboard-heading__line">
+            <h1>Bienvenue, {player.name} !</h1>
+            <p>Choisissez votre prochaine destination.</p>
+          </div>
         </header>
 
         <section

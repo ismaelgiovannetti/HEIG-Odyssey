@@ -28,5 +28,15 @@ export const UpdateTeamBodySchema = z.object({
   { message: "Une créature ne peut pas occuper plusieurs places dans l'équipe.", path: ["teamPokemonIds"] },
 );
 
+// Une suppression exige la version consultée afin qu'un ancien onglet ne
+// puisse jamais relâcher une créature déplacée ou obtenue entre-temps.
+export const ReleasePokemonBodySchema = z
+  .object({
+    expectedRevision: z.number().int().min(0).max(2_147_483_646),
+    pokemonId: PokemonIdSchema,
+  })
+  .strict();
+
 export type UpdateTeamInput = z.infer<typeof UpdateTeamBodySchema>;
+export type ReleasePokemonInput = z.infer<typeof ReleasePokemonBodySchema>;
 export type PcPlacement = z.infer<typeof PcPlacementSchema>;
