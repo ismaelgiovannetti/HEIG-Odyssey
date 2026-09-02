@@ -4,7 +4,10 @@ import { ApplicationShell } from "@/components/application/application-shell";
 import { GachaShop } from "@/components/gacha/gacha-shop";
 import type { GachaPreviewSpecies } from "@/components/gacha/gacha-preview-dialog";
 import { loadSpecies } from "@/lib/content/loader";
-import { getActiveBanners } from "@/lib/gacha/gacha-service";
+import {
+  determineSpeciesRarity,
+  getActiveBanners,
+} from "@/lib/gacha/gacha-service";
 import { getApplicationPlayer } from "@/lib/player/application-player";
 
 export const metadata: Metadata = {
@@ -21,7 +24,12 @@ export default async function GachaPage() {
   ).flatMap((speciesId) => {
     const pokemon = species.get(speciesId);
     return pokemon
-      ? [{ id: pokemon.id, name: pokemon.name, dexNumber: pokemon.dexNumber }]
+      ? [{
+          id: pokemon.id,
+          name: pokemon.name,
+          dexNumber: pokemon.dexNumber,
+          rarity: determineSpeciesRarity(pokemon),
+        }]
       : [];
   });
 

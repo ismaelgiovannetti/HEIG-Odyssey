@@ -5346,9 +5346,44 @@ body {
   .application-footer__copyright { white-space: normal; }
 }
 
+/* L'app-shell est fortement réduit sous 850 px de hauteur. Le dashboard
+   compense uniquement sa typographie afin de rester lisible sans modifier
+   les proportions des cartes ni les tailles maximales du plein écran. */
+@media (max-height: 850px) {
+  .dashboard-heading__eyebrow { font-size: 14px; }
+  .dashboard-heading h1 { font-size: clamp(35px, 3.6vw, 46px); }
+  .dashboard-heading__line > p { font-size: clamp(17px, 1.5vw, 20px); }
+
+  .dashboard-campaign-card__location > span { font-size: 15px; }
+  .dashboard-campaign-card__location strong { font-size: 18px; }
+  .dashboard-campaign-card__eyebrow { font-size: 15px; }
+  .dashboard-campaign-card__heading strong { font-size: clamp(20px, 1.8vw, 26px); }
+  .dashboard-campaign-card__progress-copy { font-size: 18px; }
+  .dashboard-campaign-card__progress-copy strong { font-size: 15px; }
+  .dashboard-campaign-card__details small { font-size: 15px; }
+  .dashboard-campaign-card__details strong { font-size: 20px; }
+  .dashboard-campaign-card__detail-line > span { font-size: 17px; }
+  .dashboard-campaign-card__action { font-size: clamp(17px, 1.4vw, 20px); }
+
+  .dashboard-team-mode__heading-copy > strong,
+  .dashboard-mode-card__content > strong {
+    font-size: clamp(18px, 1.65vw, 24px);
+  }
+  .dashboard-team-mode__stats { font-size: clamp(14px, 1.15vw, 16px); }
+  .dashboard-team-mode__action,
+  .dashboard-mode-card__content .dashboard-mode-card__action {
+    font-size: clamp(17px, 1.35vw, 20px);
+  }
+  .dashboard-team-mode__caption > strong { font-size: clamp(12px, 0.95vw, 14px); }
+  .dashboard-team-mode__caption > span { font-size: 13px; }
+  .dashboard-mode-card__content > span:not(.dashboard-mode-card__action) {
+    font-size: clamp(17px, 1.4vw, 21px);
+  }
+}
+
 @media (max-height: 780px) {
   .dashboard-home { gap: 20px; }
-  .dashboard-heading h1 { font-size: 32px; }
+  .dashboard-heading h1 { font-size: 44px; }
   .dashboard-campaign-card__content { padding-block: 16px; }
   .dashboard-secondary-mode { padding-block: 15px; }
   .dashboard-team-mode { padding-block: 11px; }

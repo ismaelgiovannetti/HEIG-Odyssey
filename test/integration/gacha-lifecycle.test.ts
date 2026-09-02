@@ -63,8 +63,8 @@ describe("cycle de vie réel d'un tirage gacha", () => {
     ]);
 
     expect(result.success).toBe(true);
-    expect(result.newBalance).toBe(400);
-    expect(profile).toMatchObject({ pokedollars: 400, collectionRevision: 1 });
+    expect(result.newBalance).toBe(200);
+    expect(profile).toMatchObject({ pokedollars: 200, collectionRevision: 1 });
     expect(pokemon).toHaveLength(1);
     expect(pokemon[0]).toMatchObject({
       id: result.pokemon.id,
@@ -78,7 +78,7 @@ describe("cycle de vie réel d'un tirage gacha", () => {
     });
     expect(Array.isArray(pokemon[0].moves)).toBe(true);
     expect(pokemon[0].moves).not.toHaveLength(0);
-    expect(pull).toMatchObject({ userId, bannerId: "banner-standard", costPaid: 100 });
+    expect(pull).toMatchObject({ userId, bannerId: "banner-standard", costPaid: 300 });
 
     const replay = await executeGachaPull({
       userId,
@@ -87,6 +87,6 @@ describe("cycle de vie réel d'un tirage gacha", () => {
     });
     expect(replay.isCachedPull).toBe(true);
     expect(await prisma.userPokemon.count({ where: { userId } })).toBe(1);
-    expect((await prisma.userProfile.findUnique({ where: { userId } }))?.pokedollars).toBe(400);
+    expect((await prisma.userProfile.findUnique({ where: { userId } }))?.pokedollars).toBe(200);
   });
 });

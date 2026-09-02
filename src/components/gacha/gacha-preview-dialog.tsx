@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { SpriteProvider } from "@/components/SpriteProvider";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
+import type { PokemonRarity } from "@/lib/gacha/gacha-service";
 import styles from "./gacha-shop.module.css";
 
 export interface GachaPreviewSpecies {
   id: string;
   name: string;
   dexNumber: number;
+  rarity: PokemonRarity;
 }
 
 interface GachaPreviewDialogProps {
@@ -19,6 +21,27 @@ interface GachaPreviewDialogProps {
 }
 
 const PREVIEW_PAGE_SIZE = 24;
+const RARITY_ORDER: Readonly<Record<PokemonRarity, number>> = {
+  COMMON: 0,
+  RARE: 1,
+  EPIC: 2,
+};
+const RARITY_LABELS: Readonly<Record<PokemonRarity, string>> = {
+  COMMON: "Commun",
+  RARE: "Rare",
+  EPIC: "Épique",
+};
+
+function formatIndividualChance(chance: number): string {
+  const percentage = chance * 100;
+  const decimals = percentage >= 10 ? 1 : percentage >= 1 ? 2 : 3;
+  const formatted = percentage
+    .toFixed(decimals)
+    .replace(".", ",")
+    .replace(/(,\d*?)0+$/, "$1")
+    .replace(/,$/, "");
+  return `${formatted} %`;
+}
 
 /** Aperçu paginé : les grands pools restent consultables sans scroll interne. */
 export function GachaPreviewDialog({
@@ -31,8 +54,37 @@ export function GachaPreviewDialog({
   const titleId = useId();
   const descriptionId = useId();
   const [page, setPage] = useState(0);
-  const pageCount = Math.max(1, Math.ceil(species.length / PREVIEW_PAGE_SIZE));
-  const visibleSpecies = species.slice(
+  const speciesWithChance = useMemo(() => {
+    const countByRarity = species.reduce<Record<PokemonRarity, number>>(
+      (counts, pokemon) => ({
+        ...counts,
+        [pokemon.rarity]: counts[pokemon.rarity] + 1,
+      }),
+      { COMMON: 0, RARE: 0, EPIC: 0 },
+    );
+    const rateByRarity: Readonly<Record<PokemonRarity, number>> = {
+      COMMON: banner.rates.common,
+      RARE: banner.rates.rare,
+      EPIC: banner.rates.epic,
+    };
+
+    // Le serveur choisit d'abord une rareté puis une espèce uniformément dans
+    // son sous-pool : taux de rareté / nombre d'espèces de cette rareté.
+    return species
+      .map((pokemon) => ({
+        ...pokemon,
+        chance: countByRarity[pokemon.rarity] > 0
+          ? rateByRarity[pokemon.rarity] / countByRarity[pokemon.rarity]
+          : 0,
+      }))
+      .sort((left, right) =>
+        RARITY_ORDER[left.rarity] - RARITY_ORDER[right.rarity] ||
+        right.chance - left.chance ||
+        left.dexNumber - right.dexNumber,
+      );
+  }, [banner.rates.common, banner.rates.epic, banner.rates.rare, species]);
+  const pageCount = Math.max(1, Math.ceil(speciesWithChance.length / PREVIEW_PAGE_SIZE));
+  const visibleSpecies = speciesWithChance.slice(
     page * PREVIEW_PAGE_SIZE,
     (page + 1) * PREVIEW_PAGE_SIZE,
   );
@@ -94,12 +146,15 @@ export function GachaPreviewDialog({
               <span>N° {String(pokemon.dexNumber).padStart(3, "0")}</span>
               <SpriteProvider
                 speciesId={pokemon.id}
-                alt={pokemon.name}
+                alt=""
                 width={64}
                 height={64}
                 normalizeVisibleSize
               />
               <strong>{pokemon.name}</strong>
+              <span className={styles.previewChance} data-rarity={pokemon.rarity.toLowerCase()}>
+                {RARITY_LABELS[pokemon.rarity]} · {formatIndividualChance(pokemon.chance)}
+              </span>
             </article>
           ))}
         </div>

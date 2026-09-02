@@ -14,6 +14,7 @@ class FakeAudio {
   readonly listeners = new Map<string, Array<() => void>>();
   readonly play = vi.fn(async () => undefined);
   readonly pause = vi.fn();
+  readonly load = vi.fn();
   preload = "";
   volume = 1;
   currentTime = 0;
@@ -61,18 +62,37 @@ describe("sons du tirage gacha", () => {
     vi.unstubAllGlobals();
   });
 
-  it("joue deux fois le cri du Pokémon recruté", async () => {
+  it("précharge puis joue une seule fois le cri du Pokémon recruté", async () => {
     const player = new GachaSoundPlayer();
+
+    await player.preparePokemonCry("pikachu");
+
+    const audio = FakeAudio.instances[0];
+    expect(audio.load).toHaveBeenCalledTimes(1);
+    expect(audio.play).not.toHaveBeenCalled();
 
     await player.playPokemonCry("pikachu");
 
-    const audio = FakeAudio.instances[0];
     expect(audio.play).toHaveBeenCalledTimes(1);
     audio.emit("ended");
-    expect(audio.play).toHaveBeenCalledTimes(2);
-    expect(audio.currentTime).toBe(0);
-    audio.emit("ended");
-    expect(audio.play).toHaveBeenCalledTimes(2);
+    expect(audio.play).toHaveBeenCalledTimes(1);
+
+    player.destroy();
+  });
+
+  it("recharge le cri lors d'une nouvelle invocation de la même espèce", async () => {
+    const player = new GachaSoundPlayer();
+
+    await player.preparePokemonCry("pikachu");
+    await player.playPokemonCry("pikachu");
+    FakeAudio.instances[0].emit("ended");
+
+    await player.preparePokemonCry("pikachu");
+    await player.playPokemonCry("pikachu");
+
+    expect(FakeAudio.instances).toHaveLength(2);
+    expect(FakeAudio.instances[0].play).toHaveBeenCalledTimes(1);
+    expect(FakeAudio.instances[1].play).toHaveBeenCalledTimes(1);
 
     player.destroy();
   });

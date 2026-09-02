@@ -140,7 +140,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
           findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
-          update: vi.fn().mockResolvedValue({ pokedollars: 400 }),
+          update: vi.fn().mockResolvedValue({ pokedollars: 200 }),
         },
         userPokemon: {
           findMany: vi.fn().mockResolvedValue([]),
@@ -168,14 +168,14 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       expect(result.success).toBe(true);
       expect(result.pullId).toBe("pull-rec-123");
       expect(result.pokemon.id).toBe("new-pkmn-123");
-      expect(result.costPaid).toBe(100);
-      expect(result.newBalance).toBe(400);
+      expect(result.costPaid).toBe(300);
+      expect(result.newBalance).toBe(200);
       expect(result.isDuplicate).toBe(false);
 
       expect(mockTx.userProfile.update).toHaveBeenCalledWith({
         where: { userId: "user-1" },
         data: {
-          pokedollars: { decrement: 100 },
+          pokedollars: { decrement: 300 },
           collectionRevision: { increment: 1 },
         },
       });
@@ -198,7 +198,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
           findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
-          update: vi.fn().mockResolvedValue({ pokedollars: 400 }),
+          update: vi.fn().mockResolvedValue({ pokedollars: 200 }),
         },
         userPokemon: {
           findMany: vi.fn().mockResolvedValue([{ boxNumber: 1, boxSlot: 1 }]),
