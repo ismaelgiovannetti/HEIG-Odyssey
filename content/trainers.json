@@ -13404,7 +13404,7 @@
       "name": "Professeur Hêche",
       "title": "Doyen de l'École Doctorale",
       "aiProfile": "expectiminimax",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-heche-front.png",
       "introCatchline": "Vous entrez dans le Monde Distorsion. Giratina et mes titans antiques vont juger votre thèse finale !",
       "victoryCatchline": "Une soutenance héroïque et magistrale ! Votre thèse est acceptée avec la plus haute mention !",
       "defeatCatchline": "La distorsion temporelle a anéanti votre équipe. Préparez une nouvelle soutenance !",
