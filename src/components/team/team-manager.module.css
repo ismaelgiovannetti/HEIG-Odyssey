@@ -1667,24 +1667,9 @@
 }
 
 .evolutionCelebration {
-  position: relative;
   display: grid;
   place-items: center;
   padding: 10px;
-}
-
-.celebrationSparkle {
-  position: absolute;
-  top: 0;
-  right: 10px;
-  color: #f59e0b;
-  animation: spinSparkle 2s linear infinite;
-}
-
-@keyframes spinSparkle {
-  from { transform: rotate(0deg) scale(0.9); }
-  50% { transform: rotate(180deg) scale(1.15); }
-  to { transform: rotate(360deg) scale(0.9); }
 }
 
 .loadingSpinner {

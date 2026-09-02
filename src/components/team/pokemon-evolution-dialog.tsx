@@ -113,7 +113,6 @@ export function PokemonEvolutionDialog({
         {hasEvolved ? (
           <div className={styles.evolutionSuccess}>
             <div className={styles.evolutionCelebration}>
-              <Sparkles size={32} className={styles.celebrationSparkle} />
               <SpriteProvider
                 speciesId={evolution.targetSpeciesId}
                 variant={pokemon.isShiny ? "front_shiny" : "front"}
