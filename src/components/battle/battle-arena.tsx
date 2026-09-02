@@ -351,7 +351,7 @@ export function BattleArena({
 
             if (isPlayerTarget) {
               setPlayerAnim("is-taking-damage");
-              setTimeout(() => setPlayerAnim(""), 460);
+              setTimeout(() => setPlayerAnim(""), 380);
               if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
                 setPlayerHp({
                   currentHp: event.currentHp,
@@ -361,7 +361,7 @@ export function BattleArena({
               }
             } else {
               setOpponentAnim("is-taking-damage");
-              setTimeout(() => setOpponentAnim(""), 460);
+              setTimeout(() => setOpponentAnim(""), 380);
               if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
                 setOpponentHp({
                   currentHp: event.currentHp,
