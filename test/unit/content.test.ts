@@ -60,6 +60,20 @@ describe("Content Validation and Loader (US-15)", () => {
     }
   });
 
+  it("donne des catchlines uniques à chaque dresseur ordinaire", () => {
+    const regularTrainers = [...loadTrainers().values()].filter((trainer) =>
+      trainer.id.startsWith("trainer-"),
+    );
+
+    expect(regularTrainers).toHaveLength(56);
+    expect(new Set(regularTrainers.map((trainer) => trainer.victoryCatchline)).size).toBe(
+      regularTrainers.length,
+    );
+    expect(new Set(regularTrainers.map((trainer) => trainer.defeatCatchline)).size).toBe(
+      regularTrainers.length,
+    );
+  });
+
   it("should load and validate campaign worlds and stages referential integrity", () => {
     const worlds = loadCampaign();
     expect(worlds.length).toBeGreaterThan(0);
