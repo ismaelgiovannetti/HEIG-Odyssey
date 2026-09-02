@@ -79,6 +79,7 @@ function startedBattle(): BattleStartPayload {
       introCatchline: "Début de la simulation.",
       victoryCatchline: "Vous pouvez encore progresser.",
       defeatCatchline: "Votre stratégie a triomphé.",
+      musicTrack: "battle-theme-1",
     },
     state: {
       battleId: "battle-training-42",
@@ -122,9 +123,14 @@ describe("interface d'entraînement et de combat", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     globalThis.fetch = vi.fn();
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue();
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
   });
 
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("charge l'équipe puis transmet uniquement la difficulté choisie au serveur", async () => {
     const user = userEvent.setup();
@@ -167,6 +173,11 @@ describe("interface d'entraînement et de combat", () => {
     expect(
       screen.getByText(/Que doit faire Bulbizarre/i),
     ).toBeDefined();
+    expect(screen.getByRole("region", { name: /Réplique de IA d'Entraînement/i })).toBeDefined();
+    const audio = document.querySelector("audio");
+    expect(audio?.src).toContain("battle-theme-1.mp3");
+    expect(audio?.loop).toBe(true);
+    expect(screen.getByRole("button", { name: /Couper le son du jeu/i })).toBeDefined();
   });
 
   it("affiche une erreur compréhensible et permet de relancer le chargement", async () => {
@@ -257,6 +268,10 @@ describe("interface d'entraînement et de combat", () => {
     expect(screen.getByText("+320 XP")).toBeDefined();
     expect(screen.getByText("780 ₽")).toBeDefined();
     expect(screen.getByText(/Bulbizarre : niv. 12 → 13/i)).toBeDefined();
+    expect(screen.getByText(/Votre stratégie a triomphé/i)).toBeDefined();
+    const audio = document.querySelector("audio");
+    expect(audio?.src).toContain("victory-theme.mp3");
+    expect(audio?.loop).toBe(false);
     expect(
       screen.queryByText(/Valeurs confirmées par le serveur/i),
     ).toBeNull();

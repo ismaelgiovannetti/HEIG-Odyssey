@@ -40,4 +40,15 @@ describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
     expect(audio?.getAttribute("src") || (audio as any)?.src).toContain("hooh-battle-hgss.mp3");
     expect(audio?.loop).toBe(true);
   });
+
+  it("arrête la piste lorsque le joueur quitte le combat", () => {
+    const pause = vi.spyOn(window.HTMLMediaElement.prototype, "pause");
+    const { unmount } = render(
+      <SoundtrackPlayer trackId="hooh-battle-hgss" phase="turn" />
+    );
+
+    unmount();
+
+    expect(pause).toHaveBeenCalled();
+  });
 });
