@@ -331,11 +331,35 @@ export function BattleArena({
               setOpponentAnim("is-attacking-opponent");
               setTimeout(() => setOpponentAnim(""), 420);
             }
-            await sleep(1200);
+            // Transition vive après l'attaque pour enchaîner directement sur l'impact
+            await sleep(750);
           } else if (event.type === "damage") {
             const isPlayerTarget =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
+
+            // Appliquer les dégâts à la jauge de PV immédiatement dès l'impact
+            if (isPlayerTarget) {
+              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
+                setPlayerHp({
+                  currentHp: event.currentHp,
+                  maxHp: event.maxHp,
+                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
+                });
+              }
+              setPlayerAnim("is-taking-damage");
+              setTimeout(() => setPlayerAnim(""), 380);
+            } else {
+              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
+                setOpponentHp({
+                  currentHp: event.currentHp,
+                  maxHp: event.maxHp,
+                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
+                });
+              }
+              setOpponentAnim("is-taking-damage");
+              setTimeout(() => setOpponentAnim(""), 380);
+            }
 
             // Déterminer le SFX précis lié à cet impact (super efficace, peu efficace, coup critique, ou normal)
             const nextEvent = next.events[i + 1];
@@ -349,59 +373,43 @@ export function BattleArena({
               playBattleSfx("hit");
             }
 
-            if (isPlayerTarget) {
-              setPlayerAnim("is-taking-damage");
-              setTimeout(() => setPlayerAnim(""), 380);
-              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
-                setPlayerHp({
-                  currentHp: event.currentHp,
-                  maxHp: event.maxHp,
-                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
-                });
-              }
-            } else {
-              setOpponentAnim("is-taking-damage");
-              setTimeout(() => setOpponentAnim(""), 380);
-              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
-                setOpponentHp({
-                  currentHp: event.currentHp,
-                  maxHp: event.maxHp,
-                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
-                });
-              }
-            }
-            await sleep(1300);
+            // Laisser le temps à la barre de PV de descendre (y compris jusqu'à 0)
+            await sleep(1350);
           } else if (event.type === "effectiveness") {
-            // Le message reste affiché suffisamment longtemps
-            await sleep(1150);
+            // Affichage du message d'efficacité après que les dégâts soient visibles
+            await sleep(1350);
           } else if (event.type === "critical_hit") {
-            await sleep(1150);
+            await sleep(1250);
           } else if (event.type === "status_inflicted") {
             if (event.status === "par") playBattleSfx("status_par");
             else if (event.status === "slp") playBattleSfx("status_slp");
             else if (event.status === "brn") playBattleSfx("status_brn");
             else if (event.status === "psn" || event.status === "tox") playBattleSfx("status_psn");
-            await sleep(1300);
+            await sleep(1350);
           } else if (event.type === "faint") {
             const isPlayerFaint =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
 
-            playBattleSfx("faint");
+            // S'assurer que les PV sont bien à 0 lors de l'annonce du K.O.
             if (isPlayerFaint) {
+              setPlayerHp((prev) => (prev ? { ...prev, currentHp: 0, hpPercent: 0 } : { currentHp: 0, maxHp: player.maxHp, hpPercent: 0 }));
               setPlayerAnim("is-fainting");
             } else {
+              setOpponentHp((prev) => (prev ? { ...prev, currentHp: 0, hpPercent: 0 } : { currentHp: 0, maxHp: opponent.maxHp, hpPercent: 0 }));
               setOpponentAnim("is-fainting");
             }
-            await sleep(1400);
+
+            playBattleSfx("faint");
+            await sleep(1500);
           } else if (event.type === "switch") {
             playBattleSfx("switch");
-            await sleep(1200);
+            await sleep(1250);
           } else if (event.type === "miss") {
             playBattleSfx("miss");
-            await sleep(1100);
+            await sleep(1200);
           } else {
-            await sleep(950);
+            await sleep(1000);
           }
         }
       }
