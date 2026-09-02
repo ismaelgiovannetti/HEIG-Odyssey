@@ -1,17 +1,29 @@
 import type { Metadata } from "next";
-import { Dices } from "lucide-react";
 
 import { ApplicationShell } from "@/components/application/application-shell";
-import { ModePlaceholder } from "@/components/application/mode-placeholder";
+import { GachaShop } from "@/components/gacha/gacha-shop";
+import type { GachaPreviewSpecies } from "@/components/gacha/gacha-preview-dialog";
+import { loadSpecies } from "@/lib/content/loader";
+import { getActiveBanners } from "@/lib/gacha/gacha-service";
 import { getApplicationPlayer } from "@/lib/player/application-player";
 
 export const metadata: Metadata = {
-  title: "Boutique gacha - HEIG Odyssey",
+  title: "Invocations Pokémon - HEIG Odyssey",
 };
 
-/** Espace réservé aux portails financés uniquement par la monnaie du jeu. */
+/** Boutique privée : le serveur fournit uniquement les portails actifs. */
 export default async function GachaPage() {
   const player = await getApplicationPlayer();
+  const banners = getActiveBanners();
+  const species = loadSpecies();
+  const previewSpecies: GachaPreviewSpecies[] = Array.from(
+    new Set(banners.flatMap((banner) => banner.poolSpecies)),
+  ).flatMap((speciesId) => {
+    const pokemon = species.get(speciesId);
+    return pokemon
+      ? [{ id: pokemon.id, name: pokemon.name, dexNumber: pokemon.dexNumber }]
+      : [];
+  });
 
   return (
     <ApplicationShell
@@ -19,13 +31,10 @@ export default async function GachaPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
-      <ModePlaceholder
-        eyebrow="Recrutement sans achat réel"
-        title="Boutique gacha"
-        description="Choisissez un portail et recrutez de nouveaux Pokémon avec les Pokédollars gagnés en jouant."
-        nextStep="Les portails et leurs probabilités seront bientôt disponibles."
-        icon={Dices}
-        accent="gacha"
+      <GachaShop
+        banners={banners}
+        initialBalance={player.pokedollars}
+        previewSpecies={previewSpecies}
       />
     </ApplicationShell>
   );
