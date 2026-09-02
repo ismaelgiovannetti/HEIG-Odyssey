@@ -14,14 +14,12 @@ import {
 } from "react";
 import {
   AlertCircle,
-  ArrowLeft,
   Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   Hand,
   Info,
+  Leaf,
   Lightbulb,
   LoaderCircle,
   Monitor,
@@ -43,10 +41,13 @@ import {
   locatePokemon,
   movePokemon,
   pokemonAt,
+  teamRefusal,
   type TeamCell,
 } from "@/lib/team/team-draft";
 import { PokemonSprite, PokemonTypes } from "./pokemon-summary";
 import { PokemonDetailsDialog } from "./pokemon-details-dialog";
+import { PokemonReleaseDialog } from "./pokemon-release-dialog";
+import { TeamTipsDialog } from "./team-tips-dialog";
 import { useTeamCollection } from "./use-team-collection";
 import styles from "./team-manager.module.css";
 
@@ -68,9 +69,11 @@ export function TeamManager({ playerName }: { playerName: string }) {
   const { snapshot, draft, dirty, pending, error } = collection;
   const router = useRouter();
   const [box, setBox] = useState(1);
-  const [tipsOpen, setTipsOpen] = useState(true);
+  // L'aide reste disponible sans masquer l'équipe dès l'arrivée sur la page.
+  const [tipsOpen, setTipsOpen] = useState(false);
   const [focused, setFocused] = useState<TeamCell>(START_CELL);
   const [detailsId, setDetailsId] = useState<string>();
+  const [releaseId, setReleaseId] = useState<string>();
   const [carried, setCarried] = useState<string>();
   const [announcement, setAnnouncement] = useState("");
   const [moveError, setMoveError] = useState("");
@@ -86,8 +89,8 @@ export function TeamManager({ playerName }: { playerName: string }) {
   // référence empêche alors un ancien écouteur de bloquer la navigation avec
   // un état de sauvegarde devenu obsolète.
   leaveGuard.current = {
-    active: dirty || pending === "save",
-    saving: pending === "save",
+    active: dirty || pending === "save" || pending === "release",
+    saving: pending === "save" || pending === "release",
   };
   const byId = useMemo(
     () => new Map(snapshot?.pokemon.map((p) => [p.id, p]) ?? []),
@@ -107,9 +110,13 @@ export function TeamManager({ playerName }: { playerName: string }) {
     detailsId && draft.team.includes(detailsId)
       ? byId.get(detailsId)
       : undefined;
+  const releaseCandidate = releaseId ? byId.get(releaseId) : undefined;
+  const releaseButton = useRef<HTMLButtonElement>(null);
   const closeDetails = useCallback(() => setDetailsId(undefined), []);
   const saveStatus =
-    pending === "save"
+    pending === "release"
+      ? "Relâchement en cours…"
+      : pending === "save"
       ? "Enregistrement automatique…"
       : pending === "load"
         ? "Chargement de la collection…"
@@ -140,7 +147,7 @@ export function TeamManager({ playerName }: { playerName: string }) {
   // Une fois la réponse reçue, quitter la page ne demande plus de confirmation.
   // Aucune donnée privée n'est conservée dans le stockage local.
   useEffect(() => {
-    if (!dirty && pending !== "save") return;
+    if (!dirty && pending !== "save" && pending !== "release") return;
     const beforeUnload = (event: BeforeUnloadEvent) => {
       if (!leaveGuard.current.active) return;
       event.preventDefault();
@@ -177,7 +184,7 @@ export function TeamManager({ playerName }: { playerName: string }) {
       if (
         !window.confirm(
           leaveGuard.current.saving
-            ? "Une sauvegarde est en cours. Quitter cette page malgré tout ?"
+            ? "Une modification de la collection est en cours. Quitter cette page malgré tout ?"
             : "Quitter cette page et abandonner les modifications non enregistrées ?",
         )
       ) {
@@ -341,6 +348,65 @@ export function TeamManager({ playerName }: { playerName: string }) {
     clearPickup();
   }
 
+  function prepareRelease(id: string) {
+    if (frozen || collection.isBusy() || !snapshot) return;
+    const pokemon = byId.get(id);
+    if (!pokemon) {
+      clearPickup();
+      return;
+    }
+
+    // Le contrôle côté client donne un retour immédiat. Le serveur répète cette
+    // validation dans la transaction afin qu'une requête directe ne puisse pas
+    // vider l'équipe ou n'y laisser que des partenaires K.O.
+    if (draft.team.includes(id)) {
+      const refusal = teamRefusal(
+        { ...draft, team: draft.team.filter((pokemonId) => pokemonId !== id) },
+        snapshot.pokemon,
+      );
+      if (refusal) {
+        collection.clearFeedback();
+        clearPickup();
+        setBoxError("");
+        setMoveError(refusal);
+        setAnnouncement("");
+        return;
+      }
+    }
+
+    collection.clearFeedback();
+    setMoveError("");
+    setBoxError("");
+    clearPickup();
+    setReleaseId(id);
+  }
+
+  function dropForRelease(event: DragEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    const source = dragSource.current;
+    if (!source || frozen || collection.isBusy()) {
+      clearPickup();
+      return;
+    }
+    prepareRelease(source);
+  }
+
+  async function confirmRelease() {
+    if (!releaseCandidate || pending === "release") return;
+    const releasedName = releaseCandidate.name;
+    const released = await collection.releasePokemon(
+      releaseCandidate.id,
+      releasedName,
+      () => router.refresh(),
+    );
+    setReleaseId(undefined);
+    if (released) {
+      setAnnouncement(`${releasedName} a été relâché dans la nature.`);
+    }
+    releaseButton.current?.focus();
+  }
+
   function renderCell(cell: TeamCell) {
     const id =
       cell.area === "team"
@@ -366,7 +432,6 @@ export function TeamManager({ playerName }: { playerName: string }) {
         data-empty={(!isTeam && !pokemon) || undefined}
         aria-label={`${describeCell(cell)} : ${pokemon ? `${pokemon.name}, niveau ${pokemon.level}${pokemon.isShiny ? ", chromatique" : ""}${pokemon.currentHp === 0 ? ", K.O." : ""}` : "vide"}`}
         aria-pressed={picked}
-        aria-describedby="team-controls-help"
         aria-disabled={frozen}
         tabIndex={isTeam || tabStop ? 0 : -1}
         draggable={Boolean(pokemon) && !frozen}
@@ -401,11 +466,12 @@ export function TeamManager({ playerName }: { playerName: string }) {
         </span>
         {pokemon ? (
           <>
-            {/* Seuls les sprites actifs sont harmonisés ; le PC garde son rendu actuel. */}
+            {/* Une taille visuelle homogène garde les Pokémon lisibles dans
+                l'équipe comme dans les cases carrées du PC. */}
             <PokemonSprite
               pokemon={pokemon}
-              size={isTeam ? 64 : 48}
-              normalizeVisibleSize={isTeam}
+              size={isTeam ? 80 : 45}
+              normalizeVisibleSize
             />
             {isTeam ? (
               <span className={styles.teamInfo} aria-hidden="true">
@@ -521,19 +587,27 @@ export function TeamManager({ playerName }: { playerName: string }) {
       }}
     >
       <header className={styles.heading}>
-        <div>
-          <p className={styles.eyebrow}>
-            <UsersRound size={15} aria-hidden="true" /> Collection du dresseur
-          </p>
+        <p className={styles.eyebrow}>
+          <UsersRound size={15} aria-hidden="true" /> Collection du dresseur
+        </p>
+        <div className={styles.headingLine}>
           <h1>Gestion d&apos;équipe</h1>
-          <p>
-            Vos partenaires, à leur place. Préparez votre prochaine aventure.
-          </p>
+          <div className={styles.headingActions}>
+            <p className={styles.headingSubtitle}>
+              Préparez votre prochaine aventure.
+            </p>
+            <button
+              type="button"
+              className={styles.tipsTrigger}
+              aria-label="Afficher les Tips"
+              title="Tips"
+              onClick={() => setTipsOpen(true)}
+            >
+              <Lightbulb size={21} aria-hidden="true" />
+              <span>Tips</span>
+            </button>
+          </div>
         </div>
-        <Link href="/dashboard" className={styles.back}>
-          <ArrowLeft size={16} aria-hidden="true" />
-          Retour à l&apos;accueil
-        </Link>
       </header>
 
       <div className={styles.feedback}>
@@ -567,121 +641,22 @@ export function TeamManager({ playerName }: { playerName: string }) {
         </p>
       </div>
 
-      {!snapshot ? (
-        <div className={styles.loading} aria-busy={pending !== null}>
-          {pending ? (
-            <>
-              <LoaderCircle size={28} aria-hidden="true" />
-              <p>Ouverture du PC…</p>
-            </>
-          ) : (
-            <p>Votre collection n&apos;a pas pu être chargée.</p>
-          )}
-        </div>
-      ) : (
-        <>
-          <section
-            className={styles.instructions}
-            aria-labelledby="team-tips-heading"
-          >
-            <header className={styles.tipsHeader}>
-              <h2 className={styles.tipsHeading} id="team-tips-heading">
-                <Lightbulb size={20} aria-hidden="true" />
-                Tips
-              </h2>
-              {/* Seul ce bouton replie l'aide ; le titre n'est plus interactif. */}
-              <button
-                type="button"
-                className={styles.tipsToggle}
-                aria-expanded={tipsOpen}
-                aria-controls="team-controls-help"
-                aria-label={tipsOpen ? "Réduire les Tips" : "Afficher les Tips"}
-                title={tipsOpen ? "Réduire les Tips" : "Afficher les Tips"}
-                onClick={() => setTipsOpen((open) => !open)}
-              >
-                {tipsOpen ? (
-                  <ChevronUp size={18} aria-hidden="true" />
-                ) : (
-                  <ChevronDown size={18} aria-hidden="true" />
-                )}
-              </button>
-            </header>
-            {/* Général, souris, puis clavier : le même ordre à l'écran et à la lecture.
-                Le conteneur reste monté afin que le CSS puisse animer sa hauteur. */}
-            <div
-              className={styles.tipsReveal}
-              id="team-controls-help"
-              data-open={tipsOpen}
-              aria-hidden={!tipsOpen}
-            >
-              <div className={styles.tipsClip}>
-                <div className={styles.tipsContent}>
-                  <section
-                    className={styles.tipsGroup}
-                    aria-labelledby="team-tips-general"
-                  >
-                    <h3 id="team-tips-general">Général</h3>
-                    <ul className={styles.tipsList}>
-                      <li>
-                        <strong>Case occupée :</strong> les deux Pokémon
-                        échangent leur place.
-                      </li>
-                      <li>
-                        <strong>Échap :</strong> annulez le déplacement en cours.
-                      </li>
-                      <li>
-                        <strong>Sauvegarde automatique :</strong>{" "}
-                        l’équipe et le rangement du PC sont enregistrés après
-                        chaque déplacement ou échange.
-                      </li>
-                    </ul>
-                  </section>
-                  <section
-                    className={styles.tipsGroup}
-                    aria-labelledby="team-tips-mouse"
-                  >
-                    <h3 id="team-tips-mouse">Souris</h3>
-                    <ul className={styles.tipsList}>
-                      <li>
-                        <strong>Clic ou glisser-déposer :</strong> prenez et
-                        posez un Pokémon par clic, ou faites-le glisser vers une
-                        case.
-                      </li>
-                      <li>
-                        <strong>Cadre de la boîte :</strong> déposez le Pokémon
-                        sur le cadre pour utiliser la première case libre.
-                      </li>
-                      <li>
-                        <strong>Changer de boîte en glissant :</strong> maintenez
-                        le Pokémon sur une flèche pour ouvrir la boîte voisine.
-                      </li>
-                    </ul>
-                  </section>
-                  <section
-                    className={styles.tipsGroup}
-                    aria-labelledby="team-tips-keyboard"
-                  >
-                    <h3 id="team-tips-keyboard">Clavier</h3>
-                    <ul className={styles.tipsList}>
-                      <li>
-                        <strong>Entrée / Espace :</strong> prenez un Pokémon,
-                        puis posez-le sur la case choisie.
-                      </li>
-                      <li>
-                        <strong>Flèches directionnelles :</strong> passez d’une
-                        case à l’autre.
-                      </li>
-                      <li>
-                        <strong>Tab :</strong> parcourez les éléments interactifs
-                        de la page.
-                      </li>
-                    </ul>
-                  </section>
-                </div>
-              </div>
-            </div>
-          </section>
-
+      {/* Cette zone reçoit toute la hauteur encore disponible dans le shell.
+          Ses trois rangées restent stables pendant le chargement et la sauvegarde. */}
+      <div className={styles.content}>
+        {!snapshot ? (
+          <div className={styles.loading} aria-busy={pending !== null}>
+            {pending ? (
+              <>
+                <LoaderCircle size={28} aria-hidden="true" />
+                <p>Ouverture du PC…</p>
+              </>
+            ) : (
+              <p>Votre collection n&apos;a pas pu être chargée.</p>
+            )}
+          </div>
+        ) : (
+          <>
           <div className={styles.workspace} aria-busy={pending !== null}>
             <section
               className={`${styles.panel} ${styles.teamPanel}`}
@@ -813,7 +788,51 @@ export function TeamManager({ playerName }: { playerName: string }) {
                 ))}
               </div>
               <p className={styles.panelFoot}>
-                <span>
+                <button
+                  ref={releaseButton}
+                  type="button"
+                  className={styles.releaseButton}
+                  data-over={over === "release" || undefined}
+                  aria-label={
+                    carried && byId.get(carried)
+                      ? `Relâcher ${byId.get(carried)!.name} dans la nature`
+                      : "Relâcher un Pokémon dans la nature"
+                  }
+                  title="Relâcher dans la nature"
+                  disabled={frozen}
+                  onClick={() => {
+                    if (carried) {
+                      prepareRelease(carried);
+                      return;
+                    }
+                    collection.clearFeedback();
+                    setMoveError(
+                      "Prenez d’abord un Pokémon avant de le relâcher.",
+                    );
+                    setBoxError("");
+                    setAnnouncement("");
+                  }}
+                  onDragEnter={(event) => {
+                    event.stopPropagation();
+                    if (dragSource.current && !frozen) setOver("release");
+                  }}
+                  onDragOver={(event) => {
+                    event.stopPropagation();
+                    if (!dragSource.current || frozen) return;
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                    setOver("release");
+                  }}
+                  onDragLeave={() =>
+                    setOver((current) =>
+                      current === "release" ? undefined : current,
+                    )
+                  }
+                  onDrop={dropForRelease}
+                >
+                  <Leaf size={18} aria-hidden="true" />
+                </button>
+                <span className={styles.pcCount}>
                   {snapshot.count}{" "}
                   {snapshot.count > 1 ? "Pokémons" : "Pokémon"}{" "}
                   au total
@@ -827,7 +846,7 @@ export function TeamManager({ playerName }: { playerName: string }) {
             className={styles.saveFeedback}
             data-error={Boolean(boxError || moveError) || undefined}
           >
-            {pending === "save" ? (
+            {pending === "save" || pending === "release" ? (
               <LoaderCircle
                 className={styles.savingIcon}
                 size={16}
@@ -856,8 +875,23 @@ export function TeamManager({ playerName }: { playerName: string }) {
               onClose={closeDetails}
             />
           )}
-        </>
-      )}
+          {releaseCandidate && (
+            <PokemonReleaseDialog
+              key={releaseCandidate.id}
+              pokemon={releaseCandidate}
+              pending={pending === "release"}
+              onCancel={() => {
+                if (pending !== "release") setReleaseId(undefined);
+              }}
+              onConfirm={() => void confirmRelease()}
+            />
+          )}
+          {tipsOpen && (
+            <TeamTipsDialog onClose={() => setTipsOpen(false)} />
+          )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

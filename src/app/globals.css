@@ -4737,11 +4737,29 @@ body {
 }
 
 .dashboard-heading {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.dashboard-heading__line {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: clamp(24px, 4vw, 64px);
-  margin: 0;
+  min-width: 0;
+}
+
+.dashboard-heading__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--color-primary-light);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .dashboard-heading h1 {
@@ -4751,7 +4769,7 @@ body {
   line-height: 1.35;
 }
 
-.dashboard-heading > p {
+.dashboard-heading__line > p {
   margin: 0;
   color: var(--color-text-muted);
   font-size: clamp(16px, 1.35vw, 19px);

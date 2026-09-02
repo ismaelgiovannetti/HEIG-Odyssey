@@ -6,6 +6,13 @@ export class TeamPokemonNotOwnedError extends Error {
   }
 }
 
+export class TeamPokemonInBattleError extends Error {
+  constructor() {
+    super("Ce Pokémon participe à un combat en cours et ne peut pas être relâché.");
+    this.name = "TeamPokemonInBattleError";
+  }
+}
+
 export class TeamCompositionInvalidError extends Error {
   constructor(public readonly reasons: string[]) {
     super("Composition de l'équipe ou rangement du PC invalide.");

@@ -45,12 +45,22 @@ describe("persistance en mémoire d'une session de combat", () => {
       { battleType: "TRAINING", difficulty: "normal" },
     );
 
+    expect(
+      firstModule.isPokemonInActiveBattle("user-owner", "pokemon-owner"),
+    ).toBe(true);
+    expect(
+      firstModule.isPokemonInActiveBattle("other-user", "pokemon-owner"),
+    ).toBe(false);
+
     // Simule la recompilation de la route d'action après la création du combat.
     vi.resetModules();
     const secondModule = await import("@/lib/combat/battle-session-store");
     const session = secondModule.getBattleSession("battle-after-module-reload");
 
     expect(session).toBeDefined();
+    expect(
+      secondModule.isPokemonInActiveBattle("user-owner", "pokemon-owner"),
+    ).toBe(true);
     expect(session?.userId).toBe("user-owner");
     expect(session?.playerPokemonIds).toEqual(["pokemon-owner"]);
     expect(session?.difficulty).toBe("normal");

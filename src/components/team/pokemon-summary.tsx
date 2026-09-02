@@ -72,7 +72,7 @@ export function PokemonSummary({
   const stats = pokemon.stats;
   return (
     <section className={styles.summary} aria-label={`Fiche de ${pokemon.name}`}>
-      {/* Identité à gauche, statistiques au centre, talent et nature à droite. */}
+      {/* Le résumé supérieur reste consacré à l'identité et aux statistiques. */}
       <div className={styles.summaryTop}>
         <div className={styles.identity}>
           <PokemonSprite pokemon={pokemon} size={112} />
@@ -121,6 +121,48 @@ export function PokemonSummary({
             <p className={styles.muted}>Statistiques indisponibles.</p>
           )}
         </div>
+      </div>
+      <div className={styles.summaryBottom}>
+        {/* La limite du jeu est de quatre capacités : deux colonnes et deux
+            rangées gardent chaque carte lisible sans créer de case factice. */}
+        <div className={styles.moves}>
+          <h3>Capacités actuelles</h3>
+          {pokemon.moves.length ? (
+            <ul>
+              {pokemon.moves.map((move) => (
+                <li key={move.id}>
+                  <div className={styles.moveHeading}>
+                    <strong>{move.name}</strong>
+                    <span>
+                      {move.pp}/{move.maxPp} PP
+                    </span>
+                  </div>
+                  <div className={styles.moveDetails}>
+                    <PokemonTypes types={[move.type]} />
+                    <span>
+                      {
+                        {
+                          physical: "Physique",
+                          special: "Spéciale",
+                          status: "Statut",
+                        }[move.category]
+                      }
+                    </span>
+                    <span>Puissance : {move.power || "-"}</span>
+                    <span>
+                      Précision : {move.accuracy ? `${move.accuracy} %` : "-"}
+                    </span>
+                  </div>
+                  {move.description && (
+                    <p className={styles.muted}>{move.description}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={styles.muted}>Aucune capacité renseignée.</p>
+          )}
+        </div>
         <dl className={styles.pokemonFacts}>
           <div>
             <dt>Talent</dt>
@@ -135,45 +177,6 @@ export function PokemonSummary({
             <dd>{pokemon.experience.toLocaleString("fr-CH")} XP</dd>
           </div>
         </dl>
-      </div>
-      {/* La partie basse est entièrement réservée aux attaques réellement connues. */}
-      <div className={styles.moves}>
-        <h3>Capacités actuelles</h3>
-        {pokemon.moves.length ? (
-          <ul>
-            {pokemon.moves.map((move) => (
-              <li key={move.id}>
-                <div className={styles.moveHeading}>
-                  <strong>{move.name}</strong>
-                  <span>
-                    {move.pp}/{move.maxPp} PP
-                  </span>
-                </div>
-                <div className={styles.moveDetails}>
-                  <PokemonTypes types={[move.type]} />
-                  <span>
-                    {
-                      {
-                        physical: "Physique",
-                        special: "Spéciale",
-                        status: "Statut",
-                      }[move.category]
-                    }
-                  </span>
-                  <span>Puissance : {move.power || "-"}</span>
-                  <span>
-                    Précision : {move.accuracy ? `${move.accuracy} %` : "-"}
-                  </span>
-                </div>
-                {move.description && (
-                  <p className={styles.muted}>{move.description}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={styles.muted}>Aucune capacité renseignée.</p>
-        )}
       </div>
     </section>
   );
