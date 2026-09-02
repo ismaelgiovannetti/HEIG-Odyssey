@@ -5,6 +5,8 @@ import {
   saveAudioPreferences,
   AUDIO_STORAGE_KEY_MUTED,
   AUDIO_STORAGE_KEY_VOLUME,
+  BATTLE_AUDIO_STORAGE_KEY_MUTED,
+  BATTLE_AUDIO_STORAGE_KEY_VOLUME,
 } from "@/lib/audio/audio-preferences";
 
 describe("Audio Preferences & Persistence (T-US14-02, T-US08-03)", () => {
@@ -41,5 +43,21 @@ describe("Audio Preferences & Persistence (T-US14-02, T-US08-03)", () => {
     saveAudioPreferences({ volume: -0.2 }); // Doit être borné à 0.0
     reloaded = getSavedAudioPreferences();
     expect(reloaded.volume).toBe(0.0);
+  });
+
+  it("isole les préférences des combats de celles du reste de l'application", () => {
+    saveAudioPreferences({ isMuted: true, volume: 0.25 }, "battle");
+
+    expect(localStorage.getItem(BATTLE_AUDIO_STORAGE_KEY_MUTED)).toBe("true");
+    expect(localStorage.getItem(BATTLE_AUDIO_STORAGE_KEY_VOLUME)).toBe("0.25");
+    expect(localStorage.getItem(AUDIO_STORAGE_KEY_MUTED)).toBeNull();
+    expect(localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME)).toBeNull();
+    expect(getSavedAudioPreferences()).toEqual({ isMuted: false, volume: 0.7 });
+    expect(getSavedAudioPreferences("battle")).toEqual({ isMuted: true, volume: 0.25 });
+
+    saveAudioPreferences({ volume: 0.9 });
+
+    expect(getSavedAudioPreferences()).toEqual({ isMuted: false, volume: 0.9 });
+    expect(getSavedAudioPreferences("battle")).toEqual({ isMuted: true, volume: 0.25 });
   });
 });

@@ -1,13 +1,30 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { SoundtrackPlayer } from "@/components/audio/soundtrack-player";
+import {
+  AUDIO_STORAGE_KEY_VOLUME,
+  BATTLE_AUDIO_STORAGE_KEY_VOLUME,
+} from "@/lib/audio/audio-preferences";
 
 describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     vi.spyOn(window.HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
     vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+  });
+
+  it("modifie uniquement le volume des combats", () => {
+    localStorage.setItem(AUDIO_STORAGE_KEY_VOLUME, "0.4");
+    render(<SoundtrackPlayer trackId="hooh-battle-hgss" autoPlay={false} />);
+
+    fireEvent.change(screen.getByLabelText("Volume des combats"), {
+      target: { value: "0.2" },
+    });
+
+    expect(localStorage.getItem(BATTLE_AUDIO_STORAGE_KEY_VOLUME)).toBe("0.2");
+    expect(localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME)).toBe("0.4");
   });
 
   it("active la lecture en boucle (loop = true) pendant le combat", () => {
