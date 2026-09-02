@@ -139,7 +139,7 @@ describe("interface d'entraînement et de combat", () => {
       .mockResolvedValueOnce(response(teamSnapshot()))
       .mockResolvedValueOnce(response(startedBattle()));
 
-    render(<TrainingHub playerName="Tiago" />);
+    render(<TrainingHub />);
 
     expect(
       await screen.findByRole("heading", { name: "Votre équipe en lice" }),
@@ -161,18 +161,9 @@ describe("interface d'entraînement et de combat", () => {
       );
     });
     expect(
-      await screen.findByRole("heading", { name: "Simulation prête" }),
+      await screen.findByText(/Que doit faire Bulbizarre/i),
     ).toBeDefined();
-    const rewards = screen.getByText("Gains en cas de victoire").parentElement;
-    expect(rewards?.textContent).toContain("130 ₽");
-    expect(rewards?.textContent).toContain("320 XP");
-
-    await user.click(
-      screen.getByRole("button", { name: /Entrer dans l’arène/i }),
-    );
-    expect(
-      screen.getByText(/Que doit faire Bulbizarre/i),
-    ).toBeDefined();
+    expect(screen.queryByText("Simulation prête")).toBeNull();
     expect(screen.getByRole("region", { name: /Réplique de IA d'Entraînement/i })).toBeDefined();
     const audio = document.querySelector("audio");
     expect(audio?.src).toContain("battle-theme-1.mp3");
@@ -187,7 +178,7 @@ describe("interface d'entraînement et de combat", () => {
       .mockResolvedValueOnce(response({ success: false }, 500))
       .mockResolvedValueOnce(response(teamSnapshot()));
 
-    render(<TrainingHub playerName="Tiago" />);
+    render(<TrainingHub />);
 
     expect((await screen.findByRole("alert")).textContent).toMatch(
       /Impossible de confirmer l'état de la collection/i,
