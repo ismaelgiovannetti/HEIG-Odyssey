@@ -4,18 +4,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   BrainCircuit,
-  Coins,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Swords,
   UsersRound,
 } from "lucide-react";
 import { BattleArena } from "@/components/battle/battle-arena";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import {
+  PokemonSprite,
+  PokemonTypes,
+} from "@/components/team/pokemon-summary";
 import {
   BattleRequestError,
   readBattleStartResponse,
@@ -32,10 +32,6 @@ import {
   type TrainingDifficulty,
 } from "@/lib/training/difficulty";
 
-interface TrainingHubProps {
-  playerName: string;
-}
-
 const DIFFICULTY_ORDER: readonly TrainingDifficulty[] = [
   "easy",
   "normal",
@@ -44,38 +40,60 @@ const DIFFICULTY_ORDER: readonly TrainingDifficulty[] = [
 
 type TeamPokemon = CollectionSnapshot["pokemon"][number];
 
-/** Carte compacte d'un membre de l'équipe persistante du joueur. */
-function TeamCard({ pokemon }: { pokemon: TeamPokemon }) {
+/** Reprise en lecture seule d'une case de l'équipe, sans action de gestion. */
+function TeamCard({
+  pokemon,
+  slot,
+}: {
+  pokemon?: TeamPokemon;
+  slot: number;
+}) {
+  if (!pokemon) {
+    return (
+      <li className="training-team-card is-empty">
+        <span className="training-team-card__slot" aria-hidden="true">
+          {String(slot).padStart(2, "0")}
+        </span>
+        <span className="training-team-card__empty">Emplacement libre</span>
+      </li>
+    );
+  }
+
   const hpPercent = Math.round((pokemon.currentHp / pokemon.maxHp) * 100);
   return (
     <li className="training-team-card">
-      <span className="training-team-card__slot">{pokemon.teamPosition}</span>
-      <SpriteProvider
-        speciesId={pokemon.speciesId}
-        variant={pokemon.isShiny ? "front_shiny" : "front"}
-        alt=""
-        width={72}
-        height={72}
-        normalizeVisibleSize
-      />
+      <span className="training-team-card__slot" aria-hidden="true">
+        {String(slot).padStart(2, "0")}
+      </span>
+      <span className="training-team-card__sprite" aria-hidden="true">
+        <PokemonSprite pokemon={pokemon} size={80} normalizeVisibleSize />
+      </span>
       <div className="training-team-card__info">
-        <strong>{pokemon.nickname || pokemon.name}</strong>
-        <span>Niveau {pokemon.level}</span>
-        <small>{pokemon.types.join(" · ")}</small>
+        <span className="training-team-card__name-line">
+          <strong>{pokemon.nickname || pokemon.name}</strong>
+          <span>Niv. {pokemon.level}</span>
+        </span>
+        <PokemonTypes types={pokemon.types} />
+        <span className="training-team-card__hp-line">
+          <span
+            className="training-team-card__hp"
+            role="progressbar"
+            aria-label={`Points de vie de ${pokemon.nickname || pokemon.name}`}
+            aria-valuemin={0}
+            aria-valuemax={pokemon.maxHp}
+            aria-valuenow={pokemon.currentHp}
+          >
+            <span
+              style={{ width: `${Math.max(0, Math.min(100, hpPercent))}%` }}
+            />
+          </span>
+          <span className={pokemon.currentHp === 0 ? "is-fainted" : undefined}>
+            {pokemon.currentHp === 0
+              ? "K.O."
+              : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
+          </span>
+        </span>
       </div>
-      <div
-        className="training-team-card__hp"
-        role="progressbar"
-        aria-label={`Points de vie de ${pokemon.nickname || pokemon.name}`}
-        aria-valuemin={0}
-        aria-valuemax={pokemon.maxHp}
-        aria-valuenow={pokemon.currentHp}
-      >
-        <span style={{ width: `${Math.max(0, Math.min(100, hpPercent))}%` }} />
-      </div>
-      <small className={pokemon.currentHp === 0 ? "is-fainted" : undefined}>
-        {pokemon.currentHp}/{pokemon.maxHp} PV
-      </small>
     </li>
   );
 }
@@ -95,7 +113,7 @@ function TrainingLoading({ label }: { label: string }) {
  * Orchestre uniquement les états d'interface. L'identité, l'équipe légale,
  * l'adversaire et les récompenses restent déterminés par les API du serveur.
  */
-export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
+export function TrainingHub() {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<CollectionSnapshot | null>(null);
   const [teamPending, setTeamPending] = useState(true);
@@ -104,7 +122,6 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
     useState<TrainingDifficulty>("normal");
   const [preparedBattle, setPreparedBattle] =
     useState<BattleStartPayload | null>(null);
-  const [battleStarted, setBattleStarted] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [prepareError, setPrepareError] = useState("");
   const teamSequence = useRef(0);
@@ -157,14 +174,12 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
   const activeTeam = (snapshot?.pokemon ?? [])
     .filter((pokemon) => pokemon.teamPosition !== null)
     .sort((a, b) => (a.teamPosition ?? 0) - (b.teamPosition ?? 0));
+  const teamSlots = Array.from({ length: 6 }, (_, index) => ({
+    slot: index + 1,
+    pokemon: activeTeam.find((pokemon) => pokemon.teamPosition === index + 1),
+  }));
   const canPrepare =
     activeTeam.length > 0 && activeTeam.some((pokemon) => pokemon.currentHp > 0);
-  const averageLevel = activeTeam.length
-    ? Math.round(
-        activeTeam.reduce((sum, pokemon) => sum + pokemon.level, 0) /
-          activeTeam.length,
-      )
-    : 0;
 
   async function prepareOpponent() {
     if (!canPrepare || prepareLock.current) return;
@@ -201,7 +216,6 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
   }
 
   function returnToTraining() {
-    setBattleStarted(false);
     setPreparedBattle(null);
     setPrepareError("");
     // Les PV, niveaux et le solde peuvent avoir changé après le combat.
@@ -209,7 +223,7 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
     router.refresh();
   }
 
-  if (preparedBattle && battleStarted) {
+  if (preparedBattle) {
     return (
       <BattleArena
         key={preparedBattle.battleId}
@@ -220,103 +234,15 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
     );
   }
 
-  if (preparedBattle) {
-    const details = TRAINING_DIFFICULTIES[difficulty];
-    const rewards = calculateTrainingReward(difficulty);
-    const opponentTeam = preparedBattle.state.p2.team;
-    return (
-      <section className="training-preview" aria-labelledby="training-preview-title">
-        <header className="training-preview__header">
-          <div>
-            <p className="application-eyebrow">Adversaire généré</p>
-            <h1 id="training-preview-title">Simulation prête</h1>
-            <p>
-              Vérifiez la confrontation avant d’entrer dans l’arène. La
-              difficulté est maintenant transmise au serveur.
-            </p>
-          </div>
-          <span className="training-preview__difficulty" data-difficulty={difficulty}>
-            <BrainCircuit aria-hidden="true" size={22} />
-            {details.label}
-          </span>
-        </header>
-
-        <div className="training-preview__versus">
-          <section aria-labelledby="player-preview-title">
-            <span>Équipe active</span>
-            <h2 id="player-preview-title">{playerName}</h2>
-            <ul>
-              {activeTeam.map((pokemon) => (
-                <TeamCard key={pokemon.id} pokemon={pokemon} />
-              ))}
-            </ul>
-          </section>
-          <div className="training-preview__versus-mark" aria-hidden="true">
-            VS
-          </div>
-          <section aria-labelledby="opponent-preview-title">
-            <span>Adversaire adapté</span>
-            <h2 id="opponent-preview-title">{preparedBattle.trainer.name}</h2>
-            <ul>
-              {opponentTeam.map((pokemon) => (
-                <li className="training-team-card" key={pokemon.id}>
-                  <SpriteProvider
-                    speciesId={pokemon.speciesId}
-                    variant={pokemon.isShiny ? "front_shiny" : "front"}
-                    alt=""
-                    width={72}
-                    height={72}
-                    normalizeVisibleSize
-                  />
-                  <div className="training-team-card__info">
-                    <strong>{pokemon.name}</strong>
-                    <span>Niveau {pokemon.level}</span>
-                    <small>{pokemon.types.join(" · ")}</small>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-
-        <div className="training-preview__footer">
-          <div>
-            <span>Gains en cas de victoire</span>
-            <strong>
-              <Coins aria-hidden="true" size={17} /> {rewards.money} ₽
-              <Sparkles aria-hidden="true" size={17} /> {rewards.xp} XP
-            </strong>
-          </div>
-          <button
-            type="button"
-            className="battle-primary-button"
-            onClick={() => setBattleStarted(true)}
-          >
-            Entrer dans l’arène <ArrowRight aria-hidden="true" size={18} />
-          </button>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="training-hub" aria-labelledby="training-title">
       <header className="training-hub__hero">
-        <div>
-          <p className="application-eyebrow">
-            <BrainCircuit aria-hidden="true" size={16} /> Simulation tactique
-          </p>
+        <p className="application-eyebrow">
+          <BrainCircuit aria-hidden="true" size={16} /> Simulation tactique
+        </p>
+        <div className="training-hub__heading-line">
           <h1 id="training-title">Centre d’entraînement</h1>
-          <p>
-            Préparez votre équipe, choisissez le comportement adverse puis
-            affrontez une composition adaptée à votre niveau moyen.
-          </p>
-        </div>
-        <div className="training-hub__summary">
-          <UsersRound aria-hidden="true" size={26} />
-          <span>Équipe active</span>
-          <strong>{activeTeam.length}/6</strong>
-          <small>{averageLevel ? `Niveau moyen ${averageLevel}` : "Non chargée"}</small>
+          <p>Choisissez la difficulté et lancez l’entraînement.</p>
         </div>
       </header>
 
@@ -332,11 +258,14 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
           </button>
         </div>
       ) : (
-        <>
-          <section className="training-section" aria-labelledby="training-team-title">
+        <div className="training-hub__workspace">
+          <section
+            className="training-section training-team-section"
+            aria-labelledby="training-team-title"
+          >
             <div className="training-section__heading">
               <div>
-                <span>Étape 1</span>
+                <span>Équipe active</span>
                 <h2 id="training-team-title">Votre équipe en lice</h2>
               </div>
               <Link href="/team">
@@ -345,8 +274,12 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
             </div>
             {activeTeam.length > 0 ? (
               <ul className="training-team-list">
-                {activeTeam.map((pokemon) => (
-                  <TeamCard key={pokemon.id} pokemon={pokemon} />
+                {teamSlots.map(({ pokemon, slot }) => (
+                  <TeamCard
+                    key={pokemon?.id ?? `empty-${slot}`}
+                    pokemon={pokemon}
+                    slot={slot}
+                  />
                 ))}
               </ul>
             ) : (
@@ -358,72 +291,86 @@ export function TrainingHub({ playerName }: Readonly<TrainingHubProps>) {
             )}
           </section>
 
-          <fieldset className="training-section training-difficulties">
-            <legend>
-              <span>Étape 2</span>
-              Choisissez la difficulté
-            </legend>
-            <div className="training-difficulty-grid">
-              {DIFFICULTY_ORDER.map((value) => {
-                const details = TRAINING_DIFFICULTIES[value];
-                const reward = calculateTrainingReward(value);
-                const selected = difficulty === value;
-                return (
-                  <label key={value} data-difficulty={value} className={selected ? "is-selected" : undefined}>
-                    <input
-                      type="radio"
-                      name="training-difficulty"
-                      value={value}
-                      checked={selected}
-                      onChange={() => setDifficulty(value)}
-                    />
-                    <span className="training-difficulty-card__marker" aria-hidden="true" />
-                    <strong>{details.label}</strong>
-                    <span>{details.shortDescription}</span>
-                    <small>{details.behavior}</small>
-                    <span className="training-difficulty-card__reward">
-                      <Coins aria-hidden="true" size={15} /> {reward.money} ₽
-                      <Sparkles aria-hidden="true" size={15} /> {reward.xp} XP
-                    </span>
-                  </label>
-                );
-              })}
+          <section
+            className="training-control-panel"
+            aria-labelledby="training-difficulty-title"
+          >
+            <fieldset className="training-section training-difficulties">
+              <legend className="visually-hidden">
+                Choisissez la difficulté
+              </legend>
+              <div className="training-section__heading">
+                <div>
+                  <span>Configuration du combat</span>
+                  <h2 id="training-difficulty-title">Choisissez la difficulté</h2>
+                </div>
+              </div>
+              <div className="training-difficulty-grid">
+                {DIFFICULTY_ORDER.map((value) => {
+                  const details = TRAINING_DIFFICULTIES[value];
+                  const reward = calculateTrainingReward(value);
+                  const selected = difficulty === value;
+                  return (
+                    <label
+                      key={value}
+                      data-difficulty={value}
+                      className={selected ? "is-selected" : undefined}
+                    >
+                      <input
+                        type="radio"
+                        name="training-difficulty"
+                        value={value}
+                        checked={selected}
+                        onChange={() => setDifficulty(value)}
+                      />
+                      <span
+                        className="training-difficulty-card__marker"
+                        aria-hidden="true"
+                      />
+                      <strong>{details.label}</strong>
+                      <span>{details.shortDescription}</span>
+                      <small>{details.behavior}</small>
+                      <span className="training-difficulty-card__reward">
+                        <span>{reward.money} ₽</span>
+                        <span>{reward.xp} XP</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            {prepareError && (
+              <p className="training-feedback is-error" role="alert">
+                {prepareError}
+              </p>
+            )}
+            {!canPrepare && activeTeam.length > 0 && (
+              <p className="training-feedback is-error" role="alert">
+                Votre équipe ne contient aucun Pokémon apte au combat.
+              </p>
+            )}
+
+            <div className="training-hub__actions">
+              <button
+                type="button"
+                className="battle-primary-button"
+                disabled={!canPrepare || preparing}
+                onClick={() => void prepareOpponent()}
+              >
+                {preparing ? (
+                  <>
+                    <RefreshCw aria-hidden="true" size={18} /> Préparation du combat…
+                  </>
+                ) : (
+                  <>
+                    <Swords aria-hidden="true" size={18} /> Générer l’adversaire
+                  </>
+                )}
+              </button>
             </div>
-          </fieldset>
-
-          {prepareError && (
-            <p className="training-feedback is-error" role="alert">
-              {prepareError}
-            </p>
-          )}
-          {!canPrepare && activeTeam.length > 0 && (
-            <p className="training-feedback is-error">
-              Votre équipe ne contient aucun Pokémon apte au combat.
-            </p>
-          )}
-
-          <div className="training-hub__actions">
-            <Link className="battle-quiet-button" href="/dashboard">
-              <ArrowLeft aria-hidden="true" size={16} /> Retour à l’accueil
-            </Link>
-            <button
-              type="button"
-              className="battle-primary-button"
-              disabled={!canPrepare || preparing}
-              onClick={() => void prepareOpponent()}
-            >
-              {preparing ? (
-                <>
-                  <RefreshCw aria-hidden="true" size={18} /> Génération…
-                </>
-              ) : (
-                <>
-                  <Swords aria-hidden="true" size={18} /> Générer l’adversaire
-                </>
-              )}
-            </button>
-          </div>
-        </>
+          </section>
+        </div>
       )}
     </section>
   );

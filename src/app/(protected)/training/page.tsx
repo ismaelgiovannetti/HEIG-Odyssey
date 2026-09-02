@@ -18,7 +18,7 @@ export default async function TrainingPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
-      <TrainingHub playerName={player.name} />
+      <TrainingHub />
     </ApplicationShell>
   );
 }

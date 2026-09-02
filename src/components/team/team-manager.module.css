@@ -365,6 +365,23 @@
 .teamCard[data-empty] {
   border-style: dashed;
 }
+/* Les cartes occupées partagent les mêmes repères d'état que /training ;
+   les cases libres conservent uniquement leur contour discontinu. */
+.teamCard:not([data-empty]) {
+  border-left: 5px solid #5da978;
+}
+.teamCard .slotNumber {
+  top: 6px;
+  left: 7px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  font-size: 8px;
+  line-height: normal;
+  opacity: 1;
+}
 .teamCard[data-picked] {
   border-color: var(--color-primary-light);
   outline: 2px dashed var(--color-primary-light);
