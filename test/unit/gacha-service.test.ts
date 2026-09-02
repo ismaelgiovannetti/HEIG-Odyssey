@@ -3,6 +3,8 @@ import {
   determineSpeciesRarity,
   rollGachaPull,
   executeGachaPull,
+  GachaIdempotencyConflictError,
+  GachaPcFullError,
   InsufficientFundsError,
   BannerNotFoundError,
 } from "@/lib/gacha/gacha-service";
@@ -115,6 +117,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
   describe("executeGachaPull - Transaction et Solde (T-US12-02, T-US12-04)", () => {
     it("refuse le tirage si le solde de Pokédollars est insuffisant", async () => {
       const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-poor" }]),
         userProfile: {
           findUnique: vi.fn().mockResolvedValue({ userId: "user-poor", pokedollars: 50 }),
         },
@@ -134,13 +137,18 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
 
     it("débite le solde, enregistre la créature dans le PC et trace le GachaPull", async () => {
       const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
           findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
           update: vi.fn().mockResolvedValue({ pokedollars: 400 }),
         },
         userPokemon: {
+          findMany: vi.fn().mockResolvedValue([]),
           count: vi.fn().mockResolvedValue(0),
           create: vi.fn().mockResolvedValue({ id: "new-pkmn-123" }),
+        },
+        gachaBanner: {
+          upsert: vi.fn().mockResolvedValue({ id: "banner-standard" }),
         },
         gachaPull: {
           create: vi.fn().mockResolvedValue({ id: "pull-rec-123" }),
@@ -166,27 +174,39 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
 
       expect(mockTx.userProfile.update).toHaveBeenCalledWith({
         where: { userId: "user-1" },
-        data: { pokedollars: { decrement: 100 } },
+        data: {
+          pokedollars: { decrement: 100 },
+          collectionRevision: { increment: 1 },
+        },
       });
 
       expect(mockTx.userPokemon.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId: "user-1",
           level: 5,
-          teamPosition: null, // PC
+          teamPosition: null,
+          boxNumber: 1,
+          boxSlot: 1,
+          evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          moves: expect.any(Array),
         }),
       });
     });
 
     it("détecte correctement un doublon si l'espèce est déjà possédée", async () => {
       const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
           findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
           update: vi.fn().mockResolvedValue({ pokedollars: 400 }),
         },
         userPokemon: {
+          findMany: vi.fn().mockResolvedValue([{ boxNumber: 1, boxSlot: 1 }]),
           count: vi.fn().mockResolvedValue(2), // Déjà 2 exemplaires
           create: vi.fn().mockResolvedValue({ id: "new-pkmn-dup" }),
+        },
+        gachaBanner: {
+          upsert: vi.fn().mockResolvedValue({ id: "banner-standard" }),
         },
         gachaPull: {
           create: vi.fn().mockResolvedValue({ id: "pull-rec-dup" }),
@@ -233,6 +253,58 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       expect(result.isCachedPull).toBe(true);
       expect(result.pokemon.speciesId).toBe("riolu");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("refuse de rejouer la clé d'idempotence d'un autre joueur", async () => {
+      const mockPrisma = {
+        gachaPull: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "foreign-pull",
+            userId: "other-user",
+            bannerId: "banner-standard",
+            speciesId: "riolu",
+          }),
+        },
+      };
+
+      await expect(
+        executeGachaPull(
+          { userId: "user-1", bannerId: "banner-standard", idempotencyKey: "foreign-key" },
+          mockPrisma as any,
+        ),
+      ).rejects.toThrow(GachaIdempotencyConflictError);
+    });
+
+    it("annule le tirage lorsque les vingt boîtes du PC sont pleines", async () => {
+      const occupied = Array.from({ length: 20 * 35 }, (_, index) => ({
+        boxNumber: Math.floor(index / 35) + 1,
+        boxSlot: (index % 35) + 1,
+      }));
+      const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-full" }]),
+        userProfile: {
+          findUnique: vi.fn().mockResolvedValue({ userId: "user-full", pokedollars: 500 }),
+          update: vi.fn(),
+        },
+        userPokemon: {
+          findMany: vi.fn().mockResolvedValue(occupied),
+          count: vi.fn(),
+          create: vi.fn(),
+        },
+      };
+      const mockPrisma = {
+        gachaPull: { findUnique: vi.fn().mockResolvedValue(null) },
+        $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
+      };
+
+      await expect(
+        executeGachaPull(
+          { userId: "user-full", bannerId: "banner-standard" },
+          mockPrisma as any,
+        ),
+      ).rejects.toThrow(GachaPcFullError);
+      expect(mockTx.userProfile.update).not.toHaveBeenCalled();
+      expect(mockTx.userPokemon.create).not.toHaveBeenCalled();
     });
 
     it("échoue si la bannière demandée n'existe pas", async () => {

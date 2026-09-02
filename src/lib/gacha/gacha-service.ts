@@ -1,6 +1,9 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 import { loadGachaBanners, getSpecies, loadSpecies } from "../content/loader";
+import { hydrateMoves } from "../content/moves";
 import type { GachaBannerConfig, Species } from "../content/schemas";
+import { PC_BOX_CAPACITY, PC_BOX_COUNT } from "../team/team-contract";
 import { calculateMaxHp } from "../team/team-validator";
 
 export const POKEMON_NATURES = [
@@ -29,7 +32,22 @@ export class InsufficientFundsError extends Error {
   }
 }
 
+export class GachaPcFullError extends Error {
+  constructor(message = "Votre PC est plein. Libérez une place avant de recruter une nouvelle créature.") {
+    super(message);
+    this.name = "GachaPcFullError";
+  }
+}
+
+export class GachaIdempotencyConflictError extends Error {
+  constructor(message = "Cette tentative de tirage ne correspond pas à la requête courante.") {
+    super(message);
+    this.name = "GachaIdempotencyConflictError";
+  }
+}
+
 const OFFICIAL_STARTER_DEX = new Set([1, 4, 7, 152, 155, 158, 252, 255, 258, 387, 390, 393]);
+const INITIAL_EVS = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
 
 /**
  * Détermine la rareté intrinsèque d'une espèce selon ses caractéristiques (T-US12-01).
@@ -190,10 +208,13 @@ export async function executeGachaPull(
   // 2. Vérification d'idempotence préalable
   const existingPull = await client.gachaPull.findUnique({
     where: { idempotencyKey: resolvedIdempotencyKey },
-    include: { banner: true },
   });
 
   if (existingPull) {
+    // Une clé est rejouable uniquement par son propriétaire et pour le même portail.
+    if (existingPull.userId !== userId || existingPull.bannerId !== banner.id) {
+      throw new GachaIdempotencyConflictError();
+    }
     const profile = await client.userProfile.findUnique({ where: { userId } });
     const species = getSpecies(existingPull.speciesId);
 
@@ -222,10 +243,17 @@ export async function executeGachaPull(
 
   // 3. Tirage et Transaction atomique
   const roll = rollGachaPull(banner, rng);
-  const maxHp = calculateMaxHp(roll.species.baseStats.hp, roll.ivs.hp, 5);
+  const maxHp = calculateMaxHp(roll.species.baseStats.hp, 5, roll.ivs.hp, 0);
+  const moves = hydrateMoves(roll.species.defaultMoves);
 
   const result = await client.$transaction(async (tx: any) => {
-    // A. Contrôle et débit du solde
+    // Le verrou sérialise débit et rangement pour un même joueur. Deux clics
+    // simultanés ne peuvent donc ni rendre le solde négatif ni partager une case.
+    await tx.$queryRaw(
+      Prisma.sql`SELECT "id" FROM "user_profile" WHERE "userId" = ${userId} FOR UPDATE`,
+    );
+
+    // A. Contrôle du solde après acquisition du verrou.
     const profile = await tx.userProfile.findUnique({
       where: { userId },
     });
@@ -234,16 +262,31 @@ export async function executeGachaPull(
       throw new InsufficientFundsError();
     }
 
-    const updatedProfile = await tx.userProfile.update({
-      where: { userId },
-      data: {
-        pokedollars: {
-          decrement: banner.costPokedollars,
-        },
-      },
+    // B. La première case libre est déterminée dans la même transaction que
+    // la création ; la collection reste donc immédiatement lisible par /team.
+    const storedPokemon = await tx.userPokemon.findMany({
+      where: { userId, teamPosition: null },
+      select: { boxNumber: true, boxSlot: true },
     });
+    const occupied = new Set(
+      storedPokemon
+        .filter((pokemon: { boxNumber: number | null; boxSlot: number | null }) =>
+          pokemon.boxNumber !== null && pokemon.boxSlot !== null)
+        .map((pokemon: { boxNumber: number | null; boxSlot: number | null }) =>
+          `${pokemon.boxNumber}:${pokemon.boxSlot}`),
+    );
+    let pcPlacement: { boxNumber: number; boxSlot: number } | null = null;
+    for (let boxNumber = 1; boxNumber <= PC_BOX_COUNT && !pcPlacement; boxNumber += 1) {
+      for (let boxSlot = 1; boxSlot <= PC_BOX_CAPACITY; boxSlot += 1) {
+        if (!occupied.has(`${boxNumber}:${boxSlot}`)) {
+          pcPlacement = { boxNumber, boxSlot };
+          break;
+        }
+      }
+    }
+    if (!pcPlacement) throw new GachaPcFullError();
 
-    // B. Détection de doublon dans la collection
+    // C. Détection de doublon dans la collection.
     const existingCount = await tx.userPokemon.count({
       where: {
         userId,
@@ -252,7 +295,7 @@ export async function executeGachaPull(
     });
     const isDuplicate = existingCount > 0;
 
-    // C. Enregistrement de la nouvelle créature dans le stockage (PC)
+    // D. Enregistrement complet de la nouvelle créature dans le stockage (PC).
     const newPokemon = await tx.userPokemon.create({
       data: {
         userId,
@@ -262,11 +305,42 @@ export async function executeGachaPull(
         currentHp: maxHp,
         maxHp,
         ivs: roll.ivs,
-        teamPosition: null, // Placé directement dans le PC
+        evs: INITIAL_EVS,
+        moves,
+        ability: roll.species.possibleAbilities[0],
+        nature: roll.nature,
+        gender: "GENDERLESS",
+        isShiny: roll.isShiny,
+        teamPosition: null,
+        boxNumber: pcPlacement.boxNumber,
+        boxSlot: pcPlacement.boxSlot,
       },
     });
 
-    // D. Enregistrement du tirage gacha
+    // E. Le contenu JSON fait autorité. L'upsert maintient la clé étrangère
+    // même sur une base déployée avant l'ajout des nouveaux portails.
+    await tx.gachaBanner.upsert({
+      where: { id: banner.id },
+      update: {
+        name: banner.name,
+        description: banner.description,
+        costPokedollars: banner.costPokedollars,
+        rates: banner.rates,
+        poolSpecies: banner.poolSpecies,
+        isActive: banner.isActive,
+      },
+      create: {
+        id: banner.id,
+        name: banner.name,
+        description: banner.description,
+        costPokedollars: banner.costPokedollars,
+        rates: banner.rates,
+        poolSpecies: banner.poolSpecies,
+        isActive: banner.isActive,
+      },
+    });
+
+    // F. Enregistrement du tirage avant le débit final.
     const gachaPullRecord = await tx.gachaPull.create({
       data: {
         userId,
@@ -278,13 +352,23 @@ export async function executeGachaPull(
       },
     });
 
+    // Le solde et la version de collection changent ensemble : un onglet
+    // /team déjà ouvert détectera proprement la nouvelle créature.
+    const updatedProfile = await tx.userProfile.update({
+      where: { userId },
+      data: {
+        pokedollars: { decrement: banner.costPokedollars },
+        collectionRevision: { increment: 1 },
+      },
+    });
+
     return {
       pullId: gachaPullRecord.id,
       pokemonId: newPokemon.id,
       newBalance: updatedProfile.pokedollars,
       isDuplicate,
     };
-  });
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted });
 
   return {
     success: true,

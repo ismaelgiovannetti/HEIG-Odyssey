@@ -2,6 +2,7 @@ import { Sparkles } from "lucide-react";
 import { SpriteProvider } from "@/components/SpriteProvider";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
 import type { PokemonType } from "@/lib/content/schemas";
+import { formatGameInteger } from "@/lib/format-number";
 import styles from "./team-manager.module.css";
 
 const TYPE_LABELS: Record<PokemonType, string> = {
@@ -174,7 +175,7 @@ export function PokemonSummary({
           </div>
           <div>
             <dt>Expérience</dt>
-            <dd>{pokemon.experience.toLocaleString("fr-CH")} XP</dd>
+            <dd>{formatGameInteger(pokemon.experience)} XP</dd>
           </div>
         </dl>
       </div>

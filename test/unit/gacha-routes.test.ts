@@ -12,6 +12,22 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
+function postRequest(body: unknown, headers: Record<string, string> = {}) {
+  return new Request("http://localhost:3000/api/gacha/pull", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+      ...headers,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,14 +69,11 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
 
     it("renvoie 400 si le body est invalide", async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
-        user: { id: "usr_123" },
+        user: { id: "usr_123", emailVerified: true },
         session: { id: "ses_123" },
       } as any);
 
-      const req = new Request("http://localhost:3000/api/gacha/pull", {
-        method: "POST",
-        body: JSON.stringify({}), // Manque bannerId
-      });
+      const req = postRequest({}); // Manque bannerId et clé d'idempotence.
 
       const res = await pullRoute(req);
       expect(res.status).toBe(400);
@@ -71,7 +84,7 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
 
     it("renvoie 400 si les fonds sont insuffisants", async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
-        user: { id: "usr_poor" },
+        user: { id: "usr_poor", emailVerified: true },
         session: { id: "ses_123" },
       } as any);
 
@@ -79,9 +92,9 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
         new gachaService.InsufficientFundsError("Solde insuffisant")
       );
 
-      const req = new Request("http://localhost:3000/api/gacha/pull", {
-        method: "POST",
-        body: JSON.stringify({ bannerId: "banner-standard" }),
+      const req = postRequest({
+        bannerId: "banner-standard",
+        idempotencyKey: "pull-poor-123",
       });
 
       const res = await pullRoute(req);
@@ -94,7 +107,7 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
 
     it("exécute le tirage et renvoie 200 avec les données du Pokémon obtenu", async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
-        user: { id: "usr_rich" },
+        user: { id: "usr_rich", emailVerified: true },
         session: { id: "ses_123" },
       } as any);
 
@@ -119,9 +132,9 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
         isDuplicate: false,
       });
 
-      const req = new Request("http://localhost:3000/api/gacha/pull", {
-        method: "POST",
-        body: JSON.stringify({ bannerId: "banner-standard" }),
+      const req = postRequest({
+        bannerId: "banner-standard",
+        idempotencyKey: "pull-rich-123",
       });
 
       const res = await pullRoute(req);
@@ -131,6 +144,37 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
       expect(json.success).toBe(true);
       expect(json.data.pokemon.speciesId).toBe("riolu");
       expect(json.data.newBalance).toBe(900);
+    });
+
+    it("refuse une origine différente avant toute dépense", async () => {
+      vi.mocked(auth.api.getSession).mockResolvedValue({
+        user: { id: "usr_123", emailVerified: true },
+        session: { id: "ses_123" },
+      } as any);
+
+      const res = await pullRoute(
+        postRequest(
+          { bannerId: "banner-standard", idempotencyKey: "foreign-origin" },
+          { Origin: "https://example.net" },
+        ),
+      );
+
+      expect(res.status).toBe(403);
+      expect(gachaService.executeGachaPull).not.toHaveBeenCalled();
+    });
+
+    it("refuse un compte dont l'adresse e-mail n'est pas vérifiée", async () => {
+      vi.mocked(auth.api.getSession).mockResolvedValue({
+        user: { id: "usr_123", emailVerified: false },
+        session: { id: "ses_123" },
+      } as any);
+
+      const res = await pullRoute(
+        postRequest({ bannerId: "banner-standard", idempotencyKey: "email-unverified" }),
+      );
+
+      expect(res.status).toBe(403);
+      expect(gachaService.executeGachaPull).not.toHaveBeenCalled();
     });
   });
 });

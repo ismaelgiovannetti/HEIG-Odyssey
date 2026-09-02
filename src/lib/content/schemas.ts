@@ -195,6 +195,23 @@ export const GachaBannerConfigSchema = z.object({
   }),
   poolSpecies: z.array(z.string()).min(1),
   isActive: z.boolean().default(true),
+}).superRefine((banner, context) => {
+  const rarityTotal = banner.rates.common + banner.rates.rare + banner.rates.epic;
+  if (Math.abs(rarityTotal - 1) > 1e-9) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["rates"],
+      message: "Common, rare and epic rates must add up to 1",
+    });
+  }
+
+  if (new Set(banner.poolSpecies).size !== banner.poolSpecies.length) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["poolSpecies"],
+      message: "A gacha pool cannot contain duplicate species",
+    });
+  }
 });
 
 export type GachaBannerConfig = z.infer<typeof GachaBannerConfigSchema>;
