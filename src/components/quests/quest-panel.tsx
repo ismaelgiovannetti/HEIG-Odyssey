@@ -206,8 +206,8 @@ function QuestGroup({
 }
 
 /**
- * Bouton compact et panneau de missions communs à tous les espaces du jeu.
- * Un rechargement sans cache garantit les rotations du compte courant.
+ * Indicateur compact et panneau de missions communs à tous les espaces du
+ * jeu. Un rechargement sans cache garantit les rotations du compte courant.
  */
 export function QuestPanel() {
   const router = useRouter();
@@ -275,21 +275,15 @@ export function QuestPanel() {
 
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
 
-    function handlePointerDown(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
-    }
-
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       setIsOpen(false);
       triggerRef.current?.focus();
     }
 
-    document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       window.clearInterval(timer);
-      document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, loadQuests]);
@@ -343,7 +337,18 @@ export function QuestPanel() {
     : "–/–";
 
   return (
-    <div className="quest-menu" ref={containerRef}>
+    <div
+      className={isOpen ? "quest-menu is-open" : "quest-menu"}
+      ref={containerRef}
+      // La souris pilote le survol ; le focus conserve un accès équivalent au clavier.
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+      onFocus={() => setIsOpen(true)}
+      onBlur={(event) => {
+        const nextFocusedElement = event.relatedTarget as Node | null;
+        if (!event.currentTarget.contains(nextFocusedElement)) setIsOpen(false);
+      }}
+    >
       <button
         ref={triggerRef}
         className={isOpen ? "quest-menu__trigger is-open" : "quest-menu__trigger"}
@@ -352,9 +357,13 @@ export function QuestPanel() {
         aria-label={`Missions : ${counterText} terminées`}
         aria-expanded={isOpen}
         aria-controls="quest-panel"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={(event) => {
+          // Les clics de souris ne basculent plus le panneau ; Entrée et Espace
+          // continuent cependant de l'ouvrir pour la navigation au clavier.
+          if (event.detail === 0) setIsOpen(true);
+        }}
       >
-        <Diamond aria-hidden="true" size={11} />
+        <Diamond aria-hidden="true" size={15} strokeWidth={2.4} />
         <strong>{counterText}</strong>
       </button>
 

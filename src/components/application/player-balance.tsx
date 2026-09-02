@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Coins } from "lucide-react";
 import {
   PLAYER_BALANCE_EVENT,
   type PlayerBalanceEventDetail,
@@ -49,9 +48,8 @@ export function PlayerBalance({
       aria-label={`${formattedBalance} Pokédollars`}
       aria-live="polite"
     >
-      <Coins aria-hidden="true" size={18} />
-      <strong>{formattedBalance}</strong>
       <span aria-hidden="true">₽</span>
+      <strong>{formattedBalance}</strong>
     </span>
   );
 }
