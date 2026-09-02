@@ -1,8 +1,8 @@
-import { Sparkles, Swords, ArrowUpRight } from "lucide-react";
+import { Sparkles, Swords } from "lucide-react";
 import { SpriteProvider } from "@/components/SpriteProvider";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
 import type { PokemonType } from "@/lib/content/schemas";
-import type { EvolutionTarget } from "./pokemon-evolution-dialog";
+import type { EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 import { formatGameInteger } from "@/lib/format-number";
 import styles from "./team-manager.module.css";
 

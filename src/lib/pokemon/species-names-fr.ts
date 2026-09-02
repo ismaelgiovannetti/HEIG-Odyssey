@@ -1,5 +1,3 @@
-import { getSpecies } from "../content/loader";
-
 export const FRENCH_SPECIES_NAMES: Record<string, string> = {
   bulbasaur: "Bulbizarre", ivysaur: "Herbizarre", venusaur: "Florizarre",
   charmander: "Salamèche", charmeleon: "Reptincel", charizard: "Dracaufeu",
@@ -222,5 +220,5 @@ export const FRENCH_SPECIES_NAMES: Record<string, string> = {
 
 export function getSpeciesFrenchName(speciesId: string, fallbackName?: string): string {
   const normalized = speciesId.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return FRENCH_SPECIES_NAMES[normalized] || getSpecies(speciesId)?.name || fallbackName || speciesId;
+  return FRENCH_SPECIES_NAMES[normalized] || fallbackName || speciesId;
 }

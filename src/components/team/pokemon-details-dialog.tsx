@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
-import { getEvolutionOptions, type EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-service";
+import { getEvolutionOptions, type EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 import { PokemonSummary } from "./pokemon-summary";
 import { PokemonMovesEditor } from "./pokemon-moves-editor";
 import { PokemonEvolutionDialog } from "./pokemon-evolution-dialog";

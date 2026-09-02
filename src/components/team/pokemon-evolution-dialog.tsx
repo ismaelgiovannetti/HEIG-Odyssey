@@ -7,13 +7,7 @@ import { SpriteProvider } from "@/components/SpriteProvider";
 import { playPokemonCry } from "@/lib/audio/pokemon-cry";
 import styles from "./team-manager.module.css";
 
-export interface EvolutionTarget {
-  targetSpeciesId: string;
-  targetName: string;
-  requiredLevel: number;
-  canEvolve: boolean;
-  evolutionMethod: string;
-}
+import type { EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 
 export function PokemonEvolutionDialog({
   pokemon,
