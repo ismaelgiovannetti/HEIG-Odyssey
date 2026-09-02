@@ -71,6 +71,18 @@ export async function getLearnableMovesForSpecies(
   const result: LearnableMove[] = [];
 
   for (const [mId, learnedLevel] of movesMap.entries()) {
+    const moveData = dex.moves.get(mId);
+
+    // Filtrer strictement les capacités des Générations 1 à 4
+    if (
+      !moveData ||
+      !moveData.exists ||
+      (moveData.gen && moveData.gen > 4) ||
+      moveData.isNonstandard
+    ) {
+      continue;
+    }
+
     const hydrated = hydrateShowdownMove(mId);
     result.push({
       ...hydrated,

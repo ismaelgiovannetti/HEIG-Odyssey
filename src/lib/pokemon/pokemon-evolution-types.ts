@@ -46,6 +46,17 @@ export function getEvolutionOptions(
 
   for (const evoId of speciesData.evos) {
     const targetData = dex.species.get(evoId);
+
+    // Filtrer strictement les évolutions des Générations 1 à 4 (Pokédex #1 à #493)
+    if (
+      !targetData ||
+      !targetData.exists ||
+      (targetData.gen && targetData.gen > 4) ||
+      (targetData.num && targetData.num > 493)
+    ) {
+      continue;
+    }
+
     const targetName = getSpeciesFrenchName(evoId, targetData.name || evoId);
 
     const requiredLevel = getRequiredLevelForEvolution(targetData);

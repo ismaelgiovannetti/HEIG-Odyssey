@@ -32,9 +32,9 @@ describe("pokemon-evolution-service", () => {
       expect(options).toHaveLength(0);
     });
 
-    it("returns multiple evolutions for Eevee", () => {
+    it("returns exactly the 7 Gen 1-4 evolutions for Eevee and excludes Gen 6+ (Sylveon)", () => {
       const options = getEvolutionOptions("eevee", 25);
-      expect(options.length).toBeGreaterThanOrEqual(7);
+      expect(options).toHaveLength(7);
 
       const evoIds = options.map((o) => o.targetSpeciesId);
       expect(evoIds).toContain("vaporeon");
@@ -44,6 +44,13 @@ describe("pokemon-evolution-service", () => {
       expect(evoIds).toContain("umbreon");
       expect(evoIds).toContain("leafeon");
       expect(evoIds).toContain("glaceon");
+      // Sylveon (Gen 6) must NOT be present
+      expect(evoIds).not.toContain("sylveon");
+    });
+
+    it("excludes Gen 9 cross-gen evolutions (e.g. Primeape -> Annihilape)", () => {
+      const options = getEvolutionOptions("primeape", 50);
+      expect(options).toHaveLength(0);
     });
   });
 });
