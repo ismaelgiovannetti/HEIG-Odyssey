@@ -85,12 +85,12 @@ describe("Gen 4 Battle Engine (US-06)", () => {
     expect(state.p2.team.length).toBe(1);
 
     const p1Active = state.p1.team[0];
-    expect(p1Active.name).toBe("Turtwig");
+    expect(p1Active.name).toBe("Tortipouss");
     expect(p1Active.currentHp).toBeGreaterThan(0);
     expect(p1Active.isActive).toBe(true);
 
     const p2Active = state.p2.team[0];
-    expect(p2Active.name).toBe("Piplup");
+    expect(p2Active.name).toBe("Tiplouf");
     expect(p2Active.currentHp).toBeGreaterThan(0);
     expect(p2Active.isActive).toBe(true);
   });

@@ -15,6 +15,8 @@ import type {
 } from "./types";
 import type { TrainerPokemon, TrainerPokemonInput, Move, PokemonType } from "../content/schemas";
 import { getSpecies } from "../content/loader";
+import { getMoveFrenchName } from "../pokemon/move-names-fr";
+import { getSpeciesFrenchName } from "../pokemon/species-names-fr";
 
 const dex = Dex.forGen(4);
 
@@ -189,7 +191,7 @@ export class BattleEngine {
         case "move": {
           // |move|p1a: Turtwig|Tackle|p2a: Chimchar
           const userStr = parts[1] || "";
-          const moveName = parts[2] || "";
+          const rawMoveName = parts[2] || "";
           const targetStr = parts[3] || "";
 
           const side: BattleSideId = userStr.startsWith("p1") ? "p1" : "p2";
@@ -199,13 +201,15 @@ export class BattleEngine {
             ? "p2"
             : undefined;
 
+          const frenchMove = getMoveFrenchName(rawMoveName, rawMoveName);
+
           events.push({
             type: "move",
             turn,
             side,
-            moveName,
+            moveName: frenchMove,
             targetSide,
-            message: `${this.formatName(userStr)} utilise ${moveName} !`,
+            message: `${this.formatName(userStr)} utilise ${frenchMove} !`,
           });
           break;
         }
@@ -338,13 +342,15 @@ export class BattleEngine {
           const userStr = parts[1] || "";
           const details = parts[2] || "";
           const side: BattleSideId = userStr.startsWith("p1") ? "p1" : "p2";
-          const pkmnName = details.split(",")[0] || userStr;
+          const rawPkmnName = (details.split(",")[0] || userStr).trim();
+          const cleanId = rawPkmnName.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const frenchPkmnName = getSpeciesFrenchName(cleanId, rawPkmnName);
 
           events.push({
             type: "switch",
             turn,
             side,
-            message: `${side === "p1" ? this.p1Info.name : this.p2Info.name} envoie ${pkmnName} au combat !`,
+            message: `${side === "p1" ? this.p1Info.name : this.p2Info.name} envoie ${frenchPkmnName} au combat !`,
           });
           break;
         }
@@ -433,9 +439,10 @@ export class BattleEngine {
 
       const moveInfos: BattleMoveInfo[] = pkmn.moveSlots.map((slot) => {
         const moveData = dex.moves.get(slot.id);
+        const frenchName = getMoveFrenchName(slot.id, moveData.name || slot.id);
         return {
           id: slot.id,
-          name: moveData.name,
+          name: frenchName,
           type: (moveData.type === "???" ? "Ghost" : moveData.type) as PokemonType,
           category: (moveData.category.toLowerCase() as "physical" | "special" | "status") || "physical",
           power: moveData.basePower || 0,
@@ -450,11 +457,12 @@ export class BattleEngine {
       const maxHp = pkmn.maxhp || 1;
       const hpPercent = Math.round((currentHp / maxHp) * 100);
       const isActive = Boolean(pkmn.isActive) || simSide.active.includes(pkmn);
+      const frenchSpeciesName = getSpeciesFrenchName(pkmn.species.id, pkmn.name);
 
       return {
         id: `${sideId}-${index}-${pkmn.species.id}`,
         speciesId: pkmn.species.id,
-        name: pkmn.name,
+        name: frenchSpeciesName,
         nickname: original?.nickname,
         level: pkmn.level,
         types: (pkmn.types as PokemonType[]) || ["Normal"],
@@ -492,15 +500,20 @@ export class BattleEngine {
   private formatName(str: string): string {
     if (!str) return "Pokémon";
     const parts = str.split(": ");
-    return parts.length > 1 ? parts[1] : str;
+    const raw = parts.length > 1 ? parts[1] : str;
+    const cleanId = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return getSpeciesFrenchName(cleanId, raw);
   }
 
   private parseHp(str: string): [number, number] {
     if (!str) return [0, 0];
-    if (str.includes("fnt")) return [0, 0];
-    const parts = str.split("/");
+    const clean = str.replace(" fnt", "").trim();
+    const parts = clean.split("/");
     if (parts.length === 2) {
       return [parseInt(parts[0], 10) || 0, parseInt(parts[1], 10) || 0];
+    }
+    if (str.includes("fnt") || str === "0") {
+      return [0, 0];
     }
     return [0, 0];
   }

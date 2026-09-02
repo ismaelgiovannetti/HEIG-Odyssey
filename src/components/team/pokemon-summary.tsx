@@ -4,6 +4,8 @@ import type { CollectionEntry } from "@/lib/team/collection-entry";
 import type { PokemonType } from "@/lib/content/schemas";
 import type { EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 import { formatGameInteger } from "@/lib/format-number";
+import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
+import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
 import styles from "./team-manager.module.css";
 
 const TYPE_LABELS: Record<PokemonType, string> = {
@@ -179,7 +181,7 @@ export function PokemonSummary({
               {pokemon.moves.map((move) => (
                 <li key={move.id}>
                   <div className={styles.moveHeading}>
-                    <strong>{move.name}</strong>
+                    <strong>{getMoveFrenchName(move.id, move.name)}</strong>
                     <span>
                       {move.pp}/{move.maxPp} PP
                     </span>

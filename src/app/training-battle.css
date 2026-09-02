@@ -606,14 +606,26 @@
   position: absolute;
   z-index: 1;
   display: flex;
-  width: min(76%, 650px);
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
 }
 
-.battle-combatant--opponent { top: 34px; left: 36px; align-items: flex-start; }
-.battle-combatant--player { right: 36px; bottom: 26px; }
+.battle-combatant--opponent {
+  top: 28px;
+  left: 36px;
+  right: 52px;
+  width: calc(100% - 88px);
+  align-items: flex-start;
+}
+
+.battle-combatant--player {
+  bottom: 24px;
+  left: 48px;
+  right: 36px;
+  width: calc(100% - 84px);
+  align-items: flex-end;
+}
 
 .battle-combatant__sprite {
   position: relative;
@@ -622,50 +634,102 @@
   min-height: 190px;
   place-items: center;
   filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
-  transition: transform 180ms ease;
 }
 
-/* Animations d'attaque, d'impact et de K.O. */
+/* Animations de combat : Sortie de Pokéball, Attaque, Dégâts, et K.O. */
+.battle-combatant__sprite.is-entering-pokeball {
+  animation: pokeballEntrance 320ms ease-out forwards;
+}
+
 .battle-combatant__sprite.is-attacking-player {
-  animation: attackLungePlayer 420ms ease-out;
+  animation: attackLungePlayer 280ms ease-in-out;
 }
 
 .battle-combatant__sprite.is-attacking-opponent {
-  animation: attackLungeOpponent 420ms ease-out;
+  animation: attackLungeOpponent 280ms ease-in-out;
 }
 
-.battle-combatant__sprite.is-taking-damage {
-  animation: damageShake 360ms ease-out;
+.battle-combatant__sprite.is-taking-damage-player {
+  animation: damagePlayer 240ms ease-out;
+}
+
+.battle-combatant__sprite.is-taking-damage-opponent {
+  animation: damageOpponent 240ms ease-out;
 }
 
 .battle-combatant__sprite.is-fainting {
-  animation: faintSlide 600ms ease-in forwards;
+  animation: faintSlide 500ms ease-in forwards;
+}
+
+@keyframes pokeballEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+    filter: brightness(2.5) drop-shadow(0 0 20px #ef4444);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
 }
 
 @keyframes attackLungePlayer {
-  0% { transform: translate(0, 0); }
-  40% { transform: translate(40px, -24px) scale(1.08); }
-  70% { transform: translate(45px, -28px) scale(1.1); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(28px, -16px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 @keyframes attackLungeOpponent {
-  0% { transform: translate(0, 0); }
-  40% { transform: translate(-40px, 24px) scale(1.08); }
-  70% { transform: translate(-45px, 28px) scale(1.1); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-28px, 16px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
-@keyframes damageShake {
-  0% { transform: translate(0, 0); filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%)); }
-  30% { transform: translate(-6px, 0); filter: drop-shadow(0 0 14px #ef4444) brightness(1.6); opacity: 0.7; }
-  65% { transform: translate(3px, 0); filter: drop-shadow(0 0 8px #ef4444) brightness(1.2); opacity: 0.9; }
-  100% { transform: translate(0, 0); filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%)); opacity: 1; }
+@keyframes damagePlayer {
+  0% {
+    transform: translate(0, 0);
+    filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
+  50% {
+    transform: translate(-8px, 5px);
+    filter: brightness(1.4) drop-shadow(0 0 16px #ef4444);
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
+}
+
+@keyframes damageOpponent {
+  0% {
+    transform: translate(0, 0);
+    filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
+  50% {
+    transform: translate(8px, -5px);
+    filter: brightness(1.4) drop-shadow(0 0 16px #ef4444);
+  }
+  100% {
+    transform: translate(0, 0);
+    filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
 }
 
 @keyframes faintSlide {
   0% { transform: translateY(0); opacity: 1; }
-  40% { opacity: 0.8; }
   100% { transform: translateY(60px); opacity: 0; }
 }
 

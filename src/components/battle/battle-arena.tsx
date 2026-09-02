@@ -26,6 +26,8 @@ import {
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
 import { formatGameInteger } from "@/lib/format-number";
 import { playBattleSfx } from "@/lib/audio/battle-sfx";
+import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
+import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
 
 type BattleMode = "campaign" | "training";
 type PlayerAction =
@@ -37,6 +39,26 @@ interface BattleArenaProps {
   mode: BattleMode;
   onReturn: () => void;
 }
+
+const TYPE_LABELS_FR: Record<string, string> = {
+  Normal: "Normal",
+  Fire: "Feu",
+  Water: "Eau",
+  Grass: "Plante",
+  Electric: "Électrik",
+  Ice: "Glace",
+  Fighting: "Combat",
+  Poison: "Poison",
+  Ground: "Sol",
+  Flying: "Vol",
+  Psychic: "Psy",
+  Bug: "Insecte",
+  Rock: "Roche",
+  Ghost: "Spectre",
+  Dragon: "Dragon",
+  Steel: "Acier",
+  Dark: "Ténèbres",
+};
 
 const STATUS_LABELS: Record<string, string> = {
   brn: "Brûlure",
@@ -73,18 +95,36 @@ interface HpOverride {
 function PokemonStatus({
   pokemon,
   hpOverride,
+  statusOverride,
 }: {
   pokemon: BattlePokemonPayload;
   hpOverride?: HpOverride | null;
+  statusOverride?: string | null;
 }) {
-  const currentHp = hpOverride ? hpOverride.currentHp : pokemon.currentHp;
-  const maxHp = hpOverride ? hpOverride.maxHp : pokemon.maxHp;
-  const hpPercent = hpOverride ? hpOverride.hpPercent : pokemon.hpPercent;
+  const currentHp =
+    hpOverride !== null && hpOverride !== undefined
+      ? hpOverride.currentHp
+      : pokemon.currentHp;
+  const maxHp =
+    hpOverride && hpOverride.maxHp > 0
+      ? hpOverride.maxHp
+      : pokemon.maxHp > 0
+        ? pokemon.maxHp
+        : 1;
+  const hpPercent =
+    hpOverride && typeof hpOverride.hpPercent === "number"
+      ? hpOverride.hpPercent
+      : maxHp > 0
+        ? Math.round((currentHp / maxHp) * 100)
+        : 0;
+
+  const displayName = pokemon.nickname || getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
+  const effectiveStatus = statusOverride !== undefined ? statusOverride : pokemon.status;
 
   return (
     <div className="battle-pokemon-status">
       <div className="battle-pokemon-status__heading">
-        <strong>{pokemon.nickname || pokemon.name}</strong>
+        <strong>{displayName}</strong>
         <span>Niv. {pokemon.level}</span>
       </div>
       <div className="battle-pokemon-status__meta">
@@ -96,7 +136,7 @@ function PokemonStatus({
       <div
         className="battle-hp"
         role="progressbar"
-        aria-label={`Points de vie de ${pokemon.nickname || pokemon.name}`}
+        aria-label={`Points de vie de ${displayName}`}
         aria-valuemin={0}
         aria-valuemax={maxHp}
         aria-valuenow={currentHp}
@@ -107,9 +147,9 @@ function PokemonStatus({
         />
       </div>
       <div className="battle-pokemon-status__footer">
-        <span>{pokemon.types.join(" · ")}</span>
-        {pokemon.status && (
-          <strong>{STATUS_LABELS[pokemon.status] ?? pokemon.status}</strong>
+        <span>{pokemon.types.map((t) => TYPE_LABELS_FR[t] || t).join(" · ")}</span>
+        {effectiveStatus && (
+          <strong>{STATUS_LABELS[effectiveStatus] ?? effectiveStatus}</strong>
         )}
       </div>
     </div>
@@ -248,6 +288,10 @@ export function BattleArena({
   const [playerHp, setPlayerHp] = useState<HpOverride | null>(null);
   const [opponentHp, setOpponentHp] = useState<HpOverride | null>(null);
 
+  // Statuts instantanés appliqués dès l'apparition du log
+  const [playerStatus, setPlayerStatus] = useState<string | null | undefined>(undefined);
+  const [opponentStatus, setOpponentStatus] = useState<string | null | undefined>(undefined);
+
   const requestLock = useRef(false);
   const requestController = useRef<AbortController | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
@@ -270,6 +314,22 @@ export function BattleArena({
       className="battle-soundtrack"
     />
   );
+
+  const introTriggered = useRef(false);
+
+  useEffect(() => {
+    if (introTriggered.current) return;
+    introTriggered.current = true;
+
+    // Animation d'entrée en combat (sortie de Pokéball)
+    setPlayerAnim("is-entering-pokeball");
+    setOpponentAnim("is-entering-pokeball");
+    const t = setTimeout(() => {
+      setPlayerAnim("");
+      setOpponentAnim("");
+    }, 320);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (finished) resultRef.current?.focus();
@@ -320,91 +380,143 @@ export function BattleArena({
           }
 
           if (event.type === "move") {
-            const isPlayer =
+            const isPlayerAttacker =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
 
-            if (isPlayer) {
+            // Animation d'attaque (élan vers l'avant net)
+            if (isPlayerAttacker) {
               setPlayerAnim("is-attacking-player");
-              setTimeout(() => setPlayerAnim(""), 420);
+              await sleep(280);
+              setPlayerAnim("");
             } else {
               setOpponentAnim("is-attacking-opponent");
-              setTimeout(() => setOpponentAnim(""), 420);
+              await sleep(280);
+              setOpponentAnim("");
             }
-            // Transition vive après l'attaque pour enchaîner directement sur l'impact
-            await sleep(750);
+            await sleep(350);
           } else if (event.type === "damage") {
             const isPlayerTarget =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
 
-            // Appliquer les dégâts à la jauge de PV immédiatement dès l'impact
-            if (isPlayerTarget) {
-              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
-                setPlayerHp({
-                  currentHp: event.currentHp,
-                  maxHp: event.maxHp,
-                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
-                });
-              }
-              setPlayerAnim("is-taking-damage");
-              setTimeout(() => setPlayerAnim(""), 380);
-            } else {
-              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
-                setOpponentHp({
-                  currentHp: event.currentHp,
-                  maxHp: event.maxHp,
-                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
-                });
-              }
-              setOpponentAnim("is-taking-damage");
-              setTimeout(() => setOpponentAnim(""), 380);
-            }
+            const targetMaxHp = isPlayerTarget ? player.maxHp : opponent.maxHp;
+            const finalMaxHp =
+              typeof event.maxHp === "number" && event.maxHp > 0
+                ? event.maxHp
+                : targetMaxHp > 0
+                  ? targetMaxHp
+                  : 1;
+            const finalCurrHp =
+              typeof event.currentHp === "number" ? event.currentHp : 0;
+            const finalPercent = Math.round((finalCurrHp / finalMaxHp) * 100);
 
-            // Déterminer le SFX précis lié à cet impact (super efficace, peu efficace, coup critique, ou normal)
-            const nextEvent = next.events[i + 1];
-            if (nextEvent?.type === "effectiveness" && nextEvent.multiplier && nextEvent.multiplier > 1) {
-              playBattleSfx("super_effective");
-            } else if (nextEvent?.type === "effectiveness" && nextEvent.multiplier && nextEvent.multiplier < 1 && nextEvent.multiplier > 0) {
-              playBattleSfx("resisted");
-            } else if (nextEvent?.type === "critical_hit") {
-              playBattleSfx("critical");
+            // Mise à jour de la jauge et recul d'impact franc
+            if (isPlayerTarget) {
+              setPlayerHp({
+                currentHp: finalCurrHp,
+                maxHp: finalMaxHp,
+                hpPercent: finalPercent,
+              });
+              setPlayerAnim("is-taking-damage-player");
+              await sleep(240);
+              setPlayerAnim("");
             } else {
-              playBattleSfx("hit");
+              setOpponentHp({
+                currentHp: finalCurrHp,
+                maxHp: finalMaxHp,
+                hpPercent: finalPercent,
+              });
+              setOpponentAnim("is-taking-damage-opponent");
+              await sleep(240);
+              setOpponentAnim("");
             }
 
             // Laisser le temps à la barre de PV de descendre (y compris jusqu'à 0)
-            await sleep(1350);
+            await sleep(650);
           } else if (event.type === "effectiveness") {
             // Affichage du message d'efficacité après que les dégâts soient visibles
             await sleep(1350);
           } else if (event.type === "critical_hit") {
             await sleep(1250);
           } else if (event.type === "status_inflicted") {
+            const isPlayerTarget =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            if (isPlayerTarget) {
+              setPlayerStatus(event.status || null);
+            } else {
+              setOpponentStatus(event.status || null);
+            }
+
             if (event.status === "par") playBattleSfx("status_par");
             else if (event.status === "slp") playBattleSfx("status_slp");
             else if (event.status === "brn") playBattleSfx("status_brn");
             else if (event.status === "psn" || event.status === "tox") playBattleSfx("status_psn");
             await sleep(1350);
+          } else if (event.type === "status_cleared") {
+            const isPlayerTarget =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            if (isPlayerTarget) {
+              setPlayerStatus(null);
+            } else {
+              setOpponentStatus(null);
+            }
+            await sleep(1000);
           } else if (event.type === "faint") {
             const isPlayerFaint =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
 
-            // S'assurer que les PV sont bien à 0 lors de l'annonce du K.O.
+            // S'assurer que les PV sont bien à 0/maxHp lors de l'annonce du K.O.
             if (isPlayerFaint) {
-              setPlayerHp((prev) => (prev ? { ...prev, currentHp: 0, hpPercent: 0 } : { currentHp: 0, maxHp: player.maxHp, hpPercent: 0 }));
+              setPlayerHp({
+                currentHp: 0,
+                maxHp: player.maxHp > 0 ? player.maxHp : 1,
+                hpPercent: 0,
+              });
               setPlayerAnim("is-fainting");
+              setPlayerStatus(null);
             } else {
-              setOpponentHp((prev) => (prev ? { ...prev, currentHp: 0, hpPercent: 0 } : { currentHp: 0, maxHp: opponent.maxHp, hpPercent: 0 }));
+              setOpponentHp({
+                currentHp: 0,
+                maxHp: opponent.maxHp > 0 ? opponent.maxHp : 1,
+                hpPercent: 0,
+              });
               setOpponentAnim("is-fainting");
+              setOpponentStatus(null);
             }
 
             playBattleSfx("faint");
             await sleep(1500);
           } else if (event.type === "switch") {
-            playBattleSfx("switch");
-            await sleep(1250);
+            const isPlayerSwitch =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            // Sortie de Pokéball du nouveau Pokémon actif
+            if (isPlayerSwitch) {
+              setPlayerStatus(undefined);
+              setPlayerHp(null);
+              setState((prev) => ({ ...prev, p1: next.state.p1 }));
+              playBattleSfx("switch");
+              setPlayerAnim("is-entering-pokeball");
+              await sleep(320);
+              setPlayerAnim("");
+            } else {
+              setOpponentStatus(undefined);
+              setOpponentHp(null);
+              setState((prev) => ({ ...prev, p2: next.state.p2 }));
+              playBattleSfx("switch");
+              setOpponentAnim("is-entering-pokeball");
+              await sleep(320);
+              setOpponentAnim("");
+            }
+
+            await sleep(650);
           } else if (event.type === "miss") {
             playBattleSfx("miss");
             await sleep(1200);
@@ -418,6 +530,8 @@ export function BattleArena({
       setState(next.state);
       setPlayerHp(null);
       setOpponentHp(null);
+      setPlayerStatus(undefined);
+      setOpponentStatus(undefined);
       setPlayerAnim("");
       setOpponentAnim("");
       setRewards(next.rewards);
@@ -500,60 +614,80 @@ export function BattleArena({
         <div className="battle-interface__body">
           <div className="battle-scene" aria-label="Arène de combat">
             {/* Combattant adverse */}
-            <div className="battle-combatant battle-combatant--opponent">
-              <PokemonStatus pokemon={opponent} hpOverride={opponentHp} />
-              <div className={`battle-combatant__sprite ${opponentAnim}`}>
-                {opponent.status && (
-                  <div
-                    className={`status-overlay status-overlay--${opponent.status}`}
-                    aria-hidden="true"
-                  >
-                    {opponent.status === "par" && "⚡"}
-                    {opponent.status === "slp" && "💤"}
-                    {opponent.status === "brn" && "🔥"}
-                    {(opponent.status === "psn" || opponent.status === "tox") && "☠️"}
-                    {opponent.status === "frz" && "❄️"}
+            {(() => {
+              const effectiveOpponentStatus =
+                opponentStatus !== undefined ? opponentStatus : opponent.status;
+              return (
+                <div className="battle-combatant battle-combatant--opponent">
+                  <PokemonStatus
+                    pokemon={opponent}
+                    hpOverride={opponentHp}
+                    statusOverride={opponentStatus}
+                  />
+                  <div className={`battle-combatant__sprite ${opponentAnim}`}>
+                    {effectiveOpponentStatus && (
+                      <div
+                        className={`status-overlay status-overlay--${effectiveOpponentStatus}`}
+                        aria-hidden="true"
+                      >
+                        {effectiveOpponentStatus === "par" && "⚡"}
+                        {effectiveOpponentStatus === "slp" && "💤"}
+                        {effectiveOpponentStatus === "brn" && "🔥"}
+                        {(effectiveOpponentStatus === "psn" || effectiveOpponentStatus === "tox") && "☠️"}
+                        {effectiveOpponentStatus === "frz" && "❄️"}
+                      </div>
+                    )}
+                    <SpriteProvider
+                      speciesId={opponent.speciesId}
+                      variant={opponent.isShiny ? "front_shiny" : "front"}
+                      alt={opponent.nickname || opponent.name}
+                      width={176}
+                      height={176}
+                      normalizeVisibleSize
+                      priority
+                    />
                   </div>
-                )}
-                <SpriteProvider
-                  speciesId={opponent.speciesId}
-                  variant={opponent.isShiny ? "front_shiny" : "front"}
-                  alt={opponent.nickname || opponent.name}
-                  width={176}
-                  height={176}
-                  normalizeVisibleSize
-                  priority
-                />
-              </div>
-            </div>
+                </div>
+              );
+            })()}
 
             {/* Combattant joueur */}
-            <div className="battle-combatant battle-combatant--player">
-              <div className={`battle-combatant__sprite ${playerAnim}`}>
-                {player.status && (
-                  <div
-                    className={`status-overlay status-overlay--${player.status}`}
-                    aria-hidden="true"
-                  >
-                    {player.status === "par" && "⚡"}
-                    {player.status === "slp" && "💤"}
-                    {player.status === "brn" && "🔥"}
-                    {(player.status === "psn" || player.status === "tox") && "☠️"}
-                    {player.status === "frz" && "❄️"}
+            {(() => {
+              const effectivePlayerStatus =
+                playerStatus !== undefined ? playerStatus : player.status;
+              return (
+                <div className="battle-combatant battle-combatant--player">
+                  <div className={`battle-combatant__sprite ${playerAnim}`}>
+                    {effectivePlayerStatus && (
+                      <div
+                        className={`status-overlay status-overlay--${effectivePlayerStatus}`}
+                        aria-hidden="true"
+                      >
+                        {effectivePlayerStatus === "par" && "⚡"}
+                        {effectivePlayerStatus === "slp" && "💤"}
+                        {effectivePlayerStatus === "brn" && "🔥"}
+                        {(effectivePlayerStatus === "psn" || effectivePlayerStatus === "tox") && "☠️"}
+                        {effectivePlayerStatus === "frz" && "❄️"}
+                      </div>
+                    )}
+                    <SpriteProvider
+                      speciesId={player.speciesId}
+                      variant={player.isShiny ? "back_shiny" : "back"}
+                      alt={player.nickname || player.name}
+                      width={190}
+                      height={190}
+                      normalizeVisibleSize
+                      priority
+                    />
                   </div>
-                )}
-                <SpriteProvider
-                  speciesId={player.speciesId}
-                  variant={player.isShiny ? "back_shiny" : "back"}
-                  alt={player.nickname || player.name}
-                  width={190}
-                  height={190}
-                  normalizeVisibleSize
-                  priority
-                />
-              </div>
-              <PokemonStatus pokemon={player} hpOverride={playerHp} />
-            </div>
+                  <PokemonStatus
+                    pokemon={player}
+                    hpOverride={playerHp}
+                    statusOverride={playerStatus}
+                  />
+                </div>
+              );
+            })()}
           </div>
 
           {/* Panneau de commandes et journal rétro */}
@@ -583,7 +717,7 @@ export function BattleArena({
                 <strong>
                   {switchRequired
                     ? "Choisissez un Pokémon apte"
-                    : `Que doit faire ${player.nickname || player.name} ?`}
+                    : `Que doit faire ${player.nickname || getSpeciesFrenchName(player.speciesId, player.name)} ?`}
                 </strong>
               </div>
               <span>
@@ -594,51 +728,60 @@ export function BattleArena({
 
             {!showTeam && !switchRequired ? (
               <div className="battle-moves">
-                {player.moves.map((move, index) => (
-                  <button
-                    key={`${move.id}-${index}`}
-                    type="button"
-                    data-type={move.type}
-                    disabled={controlsDisabled || move.disabled || move.pp === 0}
-                    onClick={() => void submitAction({ type: "move", moveIndex: index })}
-                  >
-                    <strong>{move.name}</strong>
-                    <span>
-                      {move.type} · {move.pp}/{move.maxPp} PP
-                    </span>
-                  </button>
-                ))}
+                {player.moves.map((move, index) => {
+                  const frenchMoveName = getMoveFrenchName(move.id, move.name);
+                  const frenchType = TYPE_LABELS_FR[move.type] || move.type;
+
+                  return (
+                    <button
+                      key={`${move.id}-${index}`}
+                      type="button"
+                      data-type={move.type}
+                      disabled={controlsDisabled || move.disabled || move.pp === 0}
+                      onClick={() => void submitAction({ type: "move", moveIndex: index })}
+                    >
+                      <strong>{frenchMoveName}</strong>
+                      <span>
+                        {frenchType} · {move.pp}/{move.maxPp} PP
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="battle-switches">
-                {state.p1.team.map((pokemon, index) => (
-                  <button
-                    key={pokemon.id}
-                    type="button"
-                    disabled={controlsDisabled || pokemon.isActive || pokemon.isFainted}
-                    onClick={() =>
-                      void submitAction({ type: "switch", targetPokemonIndex: index })
-                    }
-                  >
-                    <SpriteProvider
-                      speciesId={pokemon.speciesId}
-                      variant={pokemon.isShiny ? "front_shiny" : "front"}
-                      alt=""
-                      width={42}
-                      height={42}
-                    />
-                    <span>
-                      <strong>{pokemon.nickname || pokemon.name}</strong>
-                      <small>
-                        {pokemon.isFainted
-                          ? "K.O."
-                          : pokemon.isActive
-                            ? "Au combat"
-                            : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
-                      </small>
-                    </span>
-                  </button>
-                ))}
+                {state.p1.team.map((pokemon, index) => {
+                  const switchName = pokemon.nickname || getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
+
+                  return (
+                    <button
+                      key={pokemon.id}
+                      type="button"
+                      disabled={controlsDisabled || pokemon.isActive || pokemon.isFainted}
+                      onClick={() =>
+                        void submitAction({ type: "switch", targetPokemonIndex: index })
+                      }
+                    >
+                      <SpriteProvider
+                        speciesId={pokemon.speciesId}
+                        variant={pokemon.isShiny ? "front_shiny" : "front"}
+                        alt=""
+                        width={42}
+                        height={42}
+                      />
+                      <span>
+                        <strong>{switchName}</strong>
+                        <small>
+                          {pokemon.isFainted
+                            ? "K.O."
+                            : pokemon.isActive
+                              ? "Au combat"
+                              : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
+                        </small>
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
 
