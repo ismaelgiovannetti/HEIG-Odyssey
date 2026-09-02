@@ -5,6 +5,7 @@ import {
   PLAYER_BALANCE_EVENT,
   type PlayerBalanceEventDetail,
 } from "@/lib/player/player-balance-events";
+import { formatGameInteger } from "@/lib/format-number";
 
 interface PlayerBalanceProps {
   initialBalance: number;
@@ -39,7 +40,8 @@ export function PlayerBalance({
     return () => window.removeEventListener(PLAYER_BALANCE_EVENT, updateBalance);
   }, []);
 
-  const formattedBalance = new Intl.NumberFormat("fr-CH").format(balance);
+  // Format déterministe : le premier rendu client doit être identique au SSR.
+  const formattedBalance = formatGameInteger(balance);
 
   return (
     <span

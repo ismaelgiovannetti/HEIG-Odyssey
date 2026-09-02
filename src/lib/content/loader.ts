@@ -156,6 +156,7 @@ export function loadGachaBanners(): GachaBannerConfig[] {
   const validated = GachaConfigSchema.parse(raw);
 
   const species = loadSpecies();
+  const availableSpecies = new Set<string>();
   for (const banner of validated.banners) {
     for (const spId of banner.poolSpecies) {
       if (!species.has(spId)) {
@@ -163,7 +164,19 @@ export function loadGachaBanners(): GachaBannerConfig[] {
           `Gacha banner "${banner.id}" references unknown speciesId: "${spId}"`
         );
       }
+      if (banner.isActive) availableSpecies.add(spId);
     }
+  }
+
+  // Chaque espèce du Pokédex doit rester obtenable dans au moins une bannière
+  // active ; ce contrôle empêche une modification de contenu de la rendre orpheline.
+  const unavailableSpecies = [...species.keys()].filter(
+    (speciesId) => !availableSpecies.has(speciesId),
+  );
+  if (unavailableSpecies.length > 0) {
+    throw new Error(
+      `Species missing from active gacha banners: ${unavailableSpecies.join(", ")}`,
+    );
   }
 
   cachedGacha = validated.banners;

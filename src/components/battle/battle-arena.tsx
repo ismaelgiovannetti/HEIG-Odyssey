@@ -24,6 +24,7 @@ import {
   type BattleStatePayload,
 } from "@/lib/combat/battle-client";
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
+import { formatGameInteger } from "@/lib/format-number";
 
 type BattleMode = "campaign" | "training";
 type PlayerAction =
@@ -165,7 +166,7 @@ function BattleResult({
               </div>
               <div>
                 <dt>Nouveau solde</dt>
-                <dd>{rewards.newBalance.toLocaleString("fr-CH")} ₽</dd>
+                <dd>{formatGameInteger(rewards.newBalance)} ₽</dd>
               </div>
             </dl>
             {rewards.teamLeveledUp.length > 0 && (
