@@ -86,10 +86,15 @@ const RewardSchema = z.object({
   })),
 });
 
-const EventSchema = z.object({
+export const EventSchema = z.object({
   type: z.string().min(1),
   turn: z.number().int().nonnegative(),
   message: z.string(),
+  side: z.enum(["p1", "p2"]).optional(),
+  currentHp: z.number().optional(),
+  maxHp: z.number().optional(),
+  multiplier: z.number().optional(),
+  status: z.string().optional(),
 }).passthrough();
 
 const StartResponseSchema = z.object({

@@ -25,6 +25,7 @@ import {
 } from "@/lib/combat/battle-client";
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
 import { formatGameInteger } from "@/lib/format-number";
+import { playBattleSfx } from "@/lib/audio/battle-sfx";
 
 type BattleMode = "campaign" | "training";
 type PlayerAction =
@@ -62,8 +63,24 @@ function hpTone(percent: number) {
   return "healthy";
 }
 
+interface HpOverride {
+  currentHp: number;
+  maxHp: number;
+  hpPercent: number;
+}
+
 /** Résumé accessible des PV, types et altérations d'un combattant. */
-function PokemonStatus({ pokemon }: { pokemon: BattlePokemonPayload }) {
+function PokemonStatus({
+  pokemon,
+  hpOverride,
+}: {
+  pokemon: BattlePokemonPayload;
+  hpOverride?: HpOverride | null;
+}) {
+  const currentHp = hpOverride ? hpOverride.currentHp : pokemon.currentHp;
+  const maxHp = hpOverride ? hpOverride.maxHp : pokemon.maxHp;
+  const hpPercent = hpOverride ? hpOverride.hpPercent : pokemon.hpPercent;
+
   return (
     <div className="battle-pokemon-status">
       <div className="battle-pokemon-status__heading">
@@ -73,7 +90,7 @@ function PokemonStatus({ pokemon }: { pokemon: BattlePokemonPayload }) {
       <div className="battle-pokemon-status__meta">
         <span>PV</span>
         <strong>
-          {pokemon.currentHp}/{pokemon.maxHp}
+          {currentHp}/{maxHp}
         </strong>
       </div>
       <div
@@ -81,12 +98,12 @@ function PokemonStatus({ pokemon }: { pokemon: BattlePokemonPayload }) {
         role="progressbar"
         aria-label={`Points de vie de ${pokemon.nickname || pokemon.name}`}
         aria-valuemin={0}
-        aria-valuemax={pokemon.maxHp}
-        aria-valuenow={pokemon.currentHp}
+        aria-valuemax={maxHp}
+        aria-valuenow={currentHp}
       >
         <span
-          data-tone={hpTone(pokemon.hpPercent)}
-          style={{ width: `${pokemon.hpPercent}%` }}
+          data-tone={hpTone(hpPercent)}
+          style={{ width: `${Math.max(0, Math.min(100, hpPercent))}%` }}
         />
       </div>
       <div className="battle-pokemon-status__footer">
@@ -200,6 +217,10 @@ function BattleResult({
   );
 }
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * Interface commune aux combats de campagne et d'entraînement. Le navigateur
  * choisit uniquement une action ; le serveur conserve l'état et décide l'IA.
@@ -210,21 +231,31 @@ export function BattleArena({
   onReturn,
 }: Readonly<BattleArenaProps>) {
   const [state, setState] = useState(initialBattle.state);
-  const [events, setEvents] = useState<string[]>(
-    initialBattle.state.logs.slice(-4),
+  const [currentMessage, setCurrentMessage] = useState<string>(
+    initialBattle.trainer.introCatchline || "Le combat commence.",
   );
   const [rewards, setRewards] = useState<BattleRewardPayload>();
   const [pending, setPending] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [error, setError] = useState("");
   const [showTeam, setShowTeam] = useState(false);
+
+  // Animations visuelles des combattants
+  const [playerAnim, setPlayerAnim] = useState<string>("");
+  const [opponentAnim, setOpponentAnim] = useState<string>("");
+
+  // Jauges de PV dynamiques interpolées pendant les animations
+  const [playerHp, setPlayerHp] = useState<HpOverride | null>(null);
+  const [opponentHp, setOpponentHp] = useState<HpOverride | null>(null);
+
   const requestLock = useRef(false);
   const requestController = useRef<AbortController | null>(null);
   const resultRef = useRef<HTMLDivElement | null>(null);
 
   const player = activePokemon(state.p1);
   const opponent = activePokemon(state.p2);
-  const finished = state.phase === "finished";
-  const switchRequired = state.phase === "switch_required";
+  const finished = state.phase === "finished" && !isAnimating;
+  const switchRequired = state.phase === "switch_required" && !isAnimating;
   const soundtrackPhase: SoundtrackPhase = finished
     ? state.winner === "p1"
       ? "victory"
@@ -253,9 +284,10 @@ export function BattleArena({
   );
 
   async function submitAction(action: PlayerAction) {
-    if (requestLock.current || finished) return;
+    if (requestLock.current || finished || isAnimating) return;
     requestLock.current = true;
     setPending(true);
+    setIsAnimating(true);
     setError("");
     const controller = new AbortController();
     requestController.current = controller;
@@ -275,27 +307,116 @@ export function BattleArena({
           action,
         }),
       });
+
       const next = await readBattleActionResponse(response);
+      setPending(false);
+
+      // Déroulement séquentiel et immersif des événements du tour
+      if (next.events && next.events.length > 0) {
+        for (const event of next.events) {
+          if (event.message) {
+            setCurrentMessage(event.message);
+          }
+
+          if (event.type === "move") {
+            const isPlayer =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            if (isPlayer) {
+              setPlayerAnim("is-attacking-player");
+              setTimeout(() => setPlayerAnim(""), 420);
+            } else {
+              setOpponentAnim("is-attacking-opponent");
+              setTimeout(() => setOpponentAnim(""), 420);
+            }
+            await sleep(850);
+          } else if (event.type === "damage") {
+            const isPlayerTarget =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            playBattleSfx("hit");
+            if (isPlayerTarget) {
+              setPlayerAnim("is-taking-damage");
+              setTimeout(() => setPlayerAnim(""), 460);
+              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
+                setPlayerHp({
+                  currentHp: event.currentHp,
+                  maxHp: event.maxHp,
+                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
+                });
+              }
+            } else {
+              setOpponentAnim("is-taking-damage");
+              setTimeout(() => setOpponentAnim(""), 460);
+              if (typeof event.currentHp === "number" && typeof event.maxHp === "number") {
+                setOpponentHp({
+                  currentHp: event.currentHp,
+                  maxHp: event.maxHp,
+                  hpPercent: Math.round((event.currentHp / event.maxHp) * 100),
+                });
+              }
+            }
+            await sleep(900);
+          } else if (event.type === "effectiveness") {
+            if (event.multiplier && event.multiplier > 1) {
+              playBattleSfx("super_effective");
+            } else if (event.multiplier && event.multiplier < 1 && event.multiplier > 0) {
+              playBattleSfx("resisted");
+            }
+            await sleep(750);
+          } else if (event.type === "critical_hit") {
+            playBattleSfx("critical");
+            await sleep(750);
+          } else if (event.type === "status_inflicted") {
+            if (event.status === "par") playBattleSfx("status_par");
+            else if (event.status === "slp") playBattleSfx("status_slp");
+            else if (event.status === "brn") playBattleSfx("status_brn");
+            else if (event.status === "psn" || event.status === "tox") playBattleSfx("status_psn");
+            await sleep(850);
+          } else if (event.type === "faint") {
+            const isPlayerFaint =
+              event.side === "p1" ||
+              (!event.side && event.message?.includes(player.nickname || player.name));
+
+            playBattleSfx("faint");
+            if (isPlayerFaint) {
+              setPlayerAnim("is-fainting");
+            } else {
+              setOpponentAnim("is-fainting");
+            }
+            await sleep(950);
+          } else if (event.type === "switch") {
+            playBattleSfx("switch");
+            await sleep(800);
+          } else if (event.type === "miss") {
+            playBattleSfx("miss");
+            await sleep(750);
+          } else {
+            await sleep(650);
+          }
+        }
+      }
+
+      // Synchronisation de l'état final
       setState(next.state);
-      setEvents(
-        next.events.map((event) => event.message).filter(Boolean).slice(-5),
-      );
+      setPlayerHp(null);
+      setOpponentHp(null);
+      setPlayerAnim("");
+      setOpponentAnim("");
       setRewards(next.rewards);
       if (next.rewards) {
         publishPlayerBalance(next.rewards.newBalance);
       }
       setShowTeam(next.state.phase === "switch_required");
-      // Le verrou est libéré au prochain cycle seulement, après que React a
-      // remplacé les commandes associées à l'ancien état.
       await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
     } catch (cause) {
       if (cause instanceof BattleStateConflictError) {
         setState(cause.state);
-        setEvents(cause.state.logs.slice(-5));
+        setCurrentMessage(cause.state.logs.at(-1) || cause.message);
         setShowTeam(cause.state.phase === "switch_required");
         setError(cause.message);
-        // Une réponse 409 est exploitable : l'état courant renvoyé par le
-        // serveur remplace l'état obsolète avant de réactiver les boutons.
         await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
       } else {
         setError(
@@ -309,6 +430,7 @@ export function BattleArena({
       requestController.current = null;
       requestLock.current = false;
       setPending(false);
+      setIsAnimating(false);
     }
   }
 
@@ -329,179 +451,215 @@ export function BattleArena({
     );
   }
 
+  const controlsDisabled = pending || isAnimating;
+
   return (
     <>
       {soundtrack}
       <section className="battle-interface" aria-labelledby="battle-title">
-      <header className="battle-interface__header">
-        <div>
-          <p className="application-eyebrow">
-            {mode === "training" ? "Simulation tactique" : "Combat de campagne"}
-          </p>
-          <h1 id="battle-title">{initialBattle.trainer.name}</h1>
-          <p>{initialBattle.trainer.title || "Dresseur adverse"}</p>
-        </div>
-        <div className="battle-interface__turn" aria-label={`Tour ${state.turn}`}>
-          <Swords aria-hidden="true" size={20} />
-          <span>Tour</span>
-          <strong>{state.turn}</strong>
-        </div>
-      </header>
+        <header className="battle-interface__header">
+          <div>
+            <p className="application-eyebrow">
+              {mode === "training" ? "Simulation tactique" : "Combat de campagne"}
+            </p>
+            <h1 id="battle-title">{initialBattle.trainer.name}</h1>
+            <p>{initialBattle.trainer.title || "Dresseur adverse"}</p>
+          </div>
+          <div className="battle-interface__turn" aria-label={`Tour ${state.turn}`}>
+            <Swords aria-hidden="true" size={20} />
+            <span>Tour</span>
+            <strong>{state.turn}</strong>
+          </div>
+        </header>
 
-      <BattleCatchlines
-        trainerName={initialBattle.trainer.name}
-        trainerTitle={initialBattle.trainer.title}
-        trainerSprite={initialBattle.trainer.sprite}
-        introCatchline={initialBattle.trainer.introCatchline || "Le combat commence."}
-        victoryCatchline={initialBattle.trainer.victoryCatchline || `${initialBattle.trainer.name} remporte cette confrontation.`}
-        defeatCatchline={initialBattle.trainer.defeatCatchline || `${initialBattle.trainer.name} reconnaît votre victoire.`}
-        currentPhase={soundtrackPhase}
-      />
+        <BattleCatchlines
+          trainerName={initialBattle.trainer.name}
+          trainerTitle={initialBattle.trainer.title}
+          trainerSprite={initialBattle.trainer.sprite}
+          introCatchline={initialBattle.trainer.introCatchline || "Le combat commence."}
+          victoryCatchline={trainerVictoryCatchline(initialBattle.trainer)}
+          defeatCatchline={trainerDefeatCatchline(initialBattle.trainer)}
+          currentPhase={soundtrackPhase}
+        />
 
-      <div className="battle-interface__body">
-        <div className="battle-scene" aria-label="Arène de combat">
-          <div className="battle-combatant battle-combatant--opponent">
-            <PokemonStatus pokemon={opponent} />
-            <div className="battle-combatant__sprite">
-              <SpriteProvider
-                speciesId={opponent.speciesId}
-                variant={opponent.isShiny ? "front_shiny" : "front"}
-                alt={opponent.nickname || opponent.name}
-                width={176}
-                height={176}
-                normalizeVisibleSize
-                priority
-              />
+        <div className="battle-interface__body">
+          <div className="battle-scene" aria-label="Arène de combat">
+            {/* Combattant adverse */}
+            <div className="battle-combatant battle-combatant--opponent">
+              <PokemonStatus pokemon={opponent} hpOverride={opponentHp} />
+              <div className={`battle-combatant__sprite ${opponentAnim}`}>
+                {opponent.status && (
+                  <div
+                    className={`status-overlay status-overlay--${opponent.status}`}
+                    aria-hidden="true"
+                  >
+                    {opponent.status === "par" && "⚡"}
+                    {opponent.status === "slp" && "💤"}
+                    {opponent.status === "brn" && "🔥"}
+                    {(opponent.status === "psn" || opponent.status === "tox") && "☠️"}
+                    {opponent.status === "frz" && "❄️"}
+                  </div>
+                )}
+                <SpriteProvider
+                  speciesId={opponent.speciesId}
+                  variant={opponent.isShiny ? "front_shiny" : "front"}
+                  alt={opponent.nickname || opponent.name}
+                  width={176}
+                  height={176}
+                  normalizeVisibleSize
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Combattant joueur */}
+            <div className="battle-combatant battle-combatant--player">
+              <div className={`battle-combatant__sprite ${playerAnim}`}>
+                {player.status && (
+                  <div
+                    className={`status-overlay status-overlay--${player.status}`}
+                    aria-hidden="true"
+                  >
+                    {player.status === "par" && "⚡"}
+                    {player.status === "slp" && "💤"}
+                    {player.status === "brn" && "🔥"}
+                    {(player.status === "psn" || player.status === "tox") && "☠️"}
+                    {player.status === "frz" && "❄️"}
+                  </div>
+                )}
+                <SpriteProvider
+                  speciesId={player.speciesId}
+                  variant={player.isShiny ? "back_shiny" : "back"}
+                  alt={player.nickname || player.name}
+                  width={190}
+                  height={190}
+                  normalizeVisibleSize
+                  priority
+                />
+              </div>
+              <PokemonStatus pokemon={player} hpOverride={playerHp} />
             </div>
           </div>
 
-          <div className="battle-combatant battle-combatant--player">
-            <div className="battle-combatant__sprite">
-              <SpriteProvider
-                speciesId={player.speciesId}
-                variant={player.isShiny ? "back_shiny" : "back"}
-                alt={player.nickname || player.name}
-                width={190}
-                height={190}
-                normalizeVisibleSize
-                priority
-              />
-            </div>
-            <PokemonStatus pokemon={player} />
-          </div>
-        </div>
-
-        <aside className="battle-command" aria-label="Commandes de combat">
-          <div className="battle-log" aria-live="polite" aria-atomic="true">
-            <strong>Journal du combat</strong>
-            <p>
-              {events.at(-1) ||
-                initialBattle.trainer.introCatchline ||
-                "Le combat commence."}
-            </p>
-          </div>
-
-          {error && (
-            <p className="battle-feedback is-error" role="alert">
-              {error}
-            </p>
-          )}
-          {pending && (
-            <p className="battle-feedback" role="status">
-              <RefreshCw aria-hidden="true" size={16} /> Résolution du tour…
-            </p>
-          )}
-
-          <div className="battle-command__heading">
-            <div>
-              <span>{switchRequired ? "Remplacement requis" : "À vous de jouer"}</span>
+          {/* Panneau de commandes et journal rétro */}
+          <aside className="battle-command" aria-label="Commandes de combat">
+            <div className="battle-log" aria-live="polite" aria-atomic="true">
               <strong>
-                {switchRequired
-                  ? "Choisissez un Pokémon apte"
-                  : `Que doit faire ${player.nickname || player.name} ?`}
+                <span>Journal de combat</span>
+                {isAnimating && <span className="battle-log__indicator">▼</span>}
               </strong>
+              <p>{currentMessage}</p>
             </div>
-            <span>
-              {state.p1.team.filter((pokemon) => !pokemon.isFainted).length}/
-              {state.p1.team.length} disponibles
-            </span>
-          </div>
 
-          {!showTeam && !switchRequired ? (
-            <div className="battle-moves">
-              {player.moves.map((move, index) => (
-                <button
-                  key={`${move.id}-${index}`}
-                  type="button"
-                  data-type={move.type}
-                  disabled={pending || move.disabled || move.pp === 0}
-                  onClick={() => void submitAction({ type: "move", moveIndex: index })}
-                >
-                  <strong>{move.name}</strong>
-                  <span>
-                    {move.type} · {move.pp}/{move.maxPp} PP
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="battle-switches">
-              {state.p1.team.map((pokemon, index) => (
-                <button
-                  key={pokemon.id}
-                  type="button"
-                  disabled={pending || pokemon.isActive || pokemon.isFainted}
-                  onClick={() =>
-                    void submitAction({ type: "switch", targetPokemonIndex: index })
-                  }
-                >
-                  <SpriteProvider
-                    speciesId={pokemon.speciesId}
-                    variant={pokemon.isShiny ? "front_shiny" : "front"}
-                    alt=""
-                    width={42}
-                    height={42}
-                  />
-                  <span>
-                    <strong>{pokemon.nickname || pokemon.name}</strong>
-                    <small>
-                      {pokemon.isFainted
-                        ? "K.O."
-                        : pokemon.isActive
-                          ? "Au combat"
-                          : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
-                    </small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+            {error && (
+              <p className="battle-feedback is-error" role="alert">
+                {error}
+              </p>
+            )}
+            {pending && (
+              <p className="battle-feedback" role="status">
+                <RefreshCw aria-hidden="true" size={16} /> Résolution du tour…
+              </p>
+            )}
 
-          <div className="battle-command__actions">
-            {!switchRequired && (
+            <div className="battle-command__heading">
+              <div>
+                <span>{switchRequired ? "Remplacement requis" : "À vous de jouer"}</span>
+                <strong>
+                  {switchRequired
+                    ? "Choisissez un Pokémon apte"
+                    : `Que doit faire ${player.nickname || player.name} ?`}
+                </strong>
+              </div>
+              <span>
+                {state.p1.team.filter((pokemon) => !pokemon.isFainted).length}/
+                {state.p1.team.length} disponibles
+              </span>
+            </div>
+
+            {!showTeam && !switchRequired ? (
+              <div className="battle-moves">
+                {player.moves.map((move, index) => (
+                  <button
+                    key={`${move.id}-${index}`}
+                    type="button"
+                    data-type={move.type}
+                    disabled={controlsDisabled || move.disabled || move.pp === 0}
+                    onClick={() => void submitAction({ type: "move", moveIndex: index })}
+                  >
+                    <strong>{move.name}</strong>
+                    <span>
+                      {move.type} · {move.pp}/{move.maxPp} PP
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="battle-switches">
+                {state.p1.team.map((pokemon, index) => (
+                  <button
+                    key={pokemon.id}
+                    type="button"
+                    disabled={controlsDisabled || pokemon.isActive || pokemon.isFainted}
+                    onClick={() =>
+                      void submitAction({ type: "switch", targetPokemonIndex: index })
+                    }
+                  >
+                    <SpriteProvider
+                      speciesId={pokemon.speciesId}
+                      variant={pokemon.isShiny ? "front_shiny" : "front"}
+                      alt=""
+                      width={42}
+                      height={42}
+                    />
+                    <span>
+                      <strong>{pokemon.nickname || pokemon.name}</strong>
+                      <small>
+                        {pokemon.isFainted
+                          ? "K.O."
+                          : pokemon.isActive
+                            ? "Au combat"
+                            : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
+                      </small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="battle-command__actions">
+              {!switchRequired && (
+                <button
+                  type="button"
+                  className="battle-secondary-button"
+                  disabled={controlsDisabled || state.p1.team.length < 2}
+                  aria-expanded={showTeam}
+                  onClick={() => setShowTeam((visible) => !visible)}
+                >
+                  <UsersRound aria-hidden="true" size={17} />
+                  {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
+                </button>
+              )}
               <button
                 type="button"
-                className="battle-secondary-button"
-                disabled={pending || state.p1.team.length < 2}
-                aria-expanded={showTeam}
-                onClick={() => setShowTeam((visible) => !visible)}
+                className="battle-quiet-button"
+                disabled={controlsDisabled}
+                onClick={onReturn}
               >
-                <UsersRound aria-hidden="true" size={17} />
-                {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
+                <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
               </button>
-            )}
-            <button
-              type="button"
-              className="battle-quiet-button"
-              disabled={pending}
-              onClick={onReturn}
-            >
-              <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
-            </button>
-          </div>
-        </aside>
-      </div>
+            </div>
+          </aside>
+        </div>
       </section>
     </>
   );
+}
+
+function trainerVictoryCatchline(trainer: BattleStartPayload["trainer"]): string {
+  return trainer.victoryCatchline || `${trainer.name} remporte cette confrontation.`;
+}
+
+function trainerDefeatCatchline(trainer: BattleStartPayload["trainer"]): string {
+  return trainer.defeatCatchline || `${trainer.name} reconnaît votre victoire.`;
 }
