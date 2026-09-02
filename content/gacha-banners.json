@@ -3,9 +3,9 @@
   "banners": [
     {
       "id": "banner-standard",
-      "name": "Portail Standard",
+      "name": "Clairière des Compagnons",
       "description": "Une sélection généreuse de partenaires emblématiques pour agrandir votre équipe.",
-      "costPokedollars": 100,
+      "costPokedollars": 300,
       "rates": {
         "common": 0.72,
         "rare": 0.23,
@@ -198,7 +198,7 @@
       "id": "banner-mid",
       "name": "Étoiles de Sinnoh",
       "description": "Des Pokémon aguerris et des évolutions recherchées pour renforcer vos stratégies.",
-      "costPokedollars": 250,
+      "costPokedollars": 1500,
       "rates": {
         "common": 0.15,
         "rare": 0.6,
@@ -421,9 +421,9 @@
     },
     {
       "id": "banner-legendary",
-      "name": "Sanctuaire des Rares",
+      "name": "Sanctuaire des Légendes",
       "description": "Les créatures les plus puissantes, légendaires et mythiques des quatre premières générations.",
-      "costPokedollars": 1000,
+      "costPokedollars": 7500,
       "rates": {
         "common": 0.05,
         "rare": 0.2,

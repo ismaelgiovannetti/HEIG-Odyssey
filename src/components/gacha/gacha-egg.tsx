@@ -7,7 +7,7 @@ interface GachaEggProps {
   className?: string;
 }
 
-/** Œuf partagé par les cartes de bannière et la scène d'éclosion. */
+/** Œuf Pokémon original affiché pendant la scène d'éclosion. */
 export function GachaEgg({ className = "" }: Readonly<GachaEggProps>) {
   const gradientPrefix = useId().replaceAll(":", "");
   const shellGradientId = `${gradientPrefix}-egg-shell`;

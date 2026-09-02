@@ -15,7 +15,7 @@ async function main() {
       id: 'banner-standard-gen4',
       name: 'Portail de Recrutement Standard',
       description: 'Recrutez des créatures de la région de Sinnoh avec vos Pokédollars gagnés en jeu.',
-      costPokedollars: 100,
+      costPokedollars: 300,
       rates: {
         common: 0.70,
         rare: 0.25,

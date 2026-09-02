@@ -43,6 +43,9 @@ export class GachaSoundPlayer {
   private sources = new Set<AudioScheduledSourceNode>();
   private cryAudio: HTMLAudioElement | null = null;
   private cryRequest: AbortController | null = null;
+  private crySpeciesId: string | null = null;
+  private cryPreparation: Promise<void> | null = null;
+  private shouldPlayCry = false;
 
   private getReadyContext(): { context: AudioContext; volume: number } | null {
     const preferences = getSavedAudioPreferences();
@@ -64,6 +67,39 @@ export class GachaSoundPlayer {
   private remember(source: AudioScheduledSourceNode) {
     this.sources.add(source);
     source.addEventListener("ended", () => this.sources.delete(source), { once: true });
+  }
+
+  private stopScheduledSources() {
+    for (const source of this.sources) {
+      try {
+        source.stop();
+      } catch {
+        // Une source déjà terminée n'a plus besoin d'être arrêtée.
+      }
+    }
+    this.sources.clear();
+  }
+
+  private clearPreparedCry() {
+    this.cryRequest?.abort();
+    this.cryRequest = null;
+    this.cryPreparation = null;
+    this.crySpeciesId = null;
+    this.shouldPlayCry = false;
+    if (this.cryAudio) {
+      this.cryAudio.pause();
+      this.cryAudio.currentTime = 0;
+      this.cryAudio = null;
+    }
+  }
+
+  private playCryAudio(audio: HTMLAudioElement) {
+    if (this.cryAudio !== audio) return;
+    try {
+      void audio.play().catch(() => undefined);
+    } catch {
+      // Le son décoratif ne doit jamais bloquer l'affichage du résultat.
+    }
   }
 
   private scheduleTone(
@@ -174,91 +210,97 @@ export class GachaSoundPlayer {
     this.scheduleTone(context, master, 1318.51, now + 1.18, 0.76, 0.09, "sine");
   }
 
-  /** Charge le cri PokéAPI, le joue deux fois et replie vers sa version historique. */
-  async playPokemonCry(speciesId: string) {
-    this.stop();
-    const ready = this.getReadyContext();
-    if (!ready || !/^[a-z0-9-]+$/i.test(speciesId)) return;
+  /** Précharge le cri pendant l'éclosion sans déclencher sa lecture. */
+  async preparePokemonCry(speciesId: string) {
+    const preferences = getSavedAudioPreferences();
+    if (
+      preferences.isMuted ||
+      preferences.volume <= 0 ||
+      !/^[a-z0-9-]+$/i.test(speciesId)
+    ) return;
+
+    if (
+      this.crySpeciesId === speciesId &&
+      (this.cryAudio !== null || this.cryPreparation !== null)
+    ) {
+      await this.cryPreparation;
+      return;
+    }
+
+    this.clearPreparedCry();
+    this.crySpeciesId = speciesId;
 
     const request = new AbortController();
     this.cryRequest = request;
 
-    try {
-      const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(speciesId)}`,
-        { signal: request.signal },
-      );
-      if (!response.ok) return;
+    const preparation = (async () => {
+      try {
+        const response = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(speciesId)}`,
+          { signal: request.signal },
+        );
+        if (!response.ok) return;
 
-      const payload = (await response.json()) as PokeApiCryResponse;
-      const sources = [payload.cries?.latest, payload.cries?.legacy].filter(isAllowedCryUrl);
-      if (request.signal.aborted || sources.length === 0 || typeof Audio === "undefined") return;
+        const payload = (await response.json()) as PokeApiCryResponse;
+        const sources = [payload.cries?.latest, payload.cries?.legacy].filter(isAllowedCryUrl);
+        if (request.signal.aborted || sources.length === 0 || typeof Audio === "undefined") return;
 
-      const preferences = getSavedAudioPreferences();
-      if (preferences.isMuted || preferences.volume <= 0) return;
+        let sourceIndex = 0;
+        const audio = new Audio(sources[sourceIndex]);
+        audio.preload = "auto";
+        audio.volume = Math.min(1, preferences.volume * 0.85);
+        this.cryAudio = audio;
 
-      let sourceIndex = 0;
-      const audio = new Audio(sources[sourceIndex]);
-      audio.preload = "auto";
-      audio.volume = Math.min(1, preferences.volume * 0.85);
-      this.cryAudio = audio;
-      let remainingPlays = 2;
-
-      const play = () => {
-        if (this.cryAudio !== audio) return;
-        try {
-          void audio.play().catch(() => undefined);
-        } catch {
-          // Le son décoratif ne doit jamais bloquer l'affichage du résultat.
+        audio.addEventListener("error", () => {
+          sourceIndex += 1;
+          if (sourceIndex >= sources.length) {
+            if (this.cryAudio === audio) {
+              this.cryAudio = null;
+              this.crySpeciesId = null;
+            }
+            return;
+          }
+          audio.src = sources[sourceIndex];
+          if (typeof audio.load === "function") audio.load();
+          if (this.shouldPlayCry) this.playCryAudio(audio);
+        });
+        audio.addEventListener("ended", () => {
+          if (this.cryAudio === audio) {
+            this.cryAudio = null;
+            this.crySpeciesId = null;
+          }
+        });
+        if (typeof audio.load === "function") audio.load();
+      } catch (cause) {
+        if (!(cause instanceof DOMException && cause.name === "AbortError")) {
+          // PokéAPI est un enrichissement : son indisponibilité reste silencieuse.
         }
-      };
-
-      audio.addEventListener("error", () => {
-        sourceIndex += 1;
-        if (sourceIndex >= sources.length) {
-          if (this.cryAudio === audio) this.cryAudio = null;
-          return;
-        }
-        audio.src = sources[sourceIndex];
-        play();
-      });
-      audio.addEventListener("ended", () => {
-        if (this.cryAudio !== audio) return;
-        remainingPlays -= 1;
-        if (remainingPlays > 0) {
-          audio.currentTime = 0;
-          play();
-          return;
-        }
-        this.cryAudio = null;
-      });
-      play();
-    } catch (cause) {
-      if (!(cause instanceof DOMException && cause.name === "AbortError")) {
-        // PokéAPI est un enrichissement : son indisponibilité reste silencieuse.
+      } finally {
+        if (this.cryRequest === request) this.cryRequest = null;
       }
-    } finally {
-      if (this.cryRequest === request) this.cryRequest = null;
+    })();
+
+    this.cryPreparation = preparation;
+    await preparation;
+    if (this.cryPreparation === preparation) this.cryPreparation = null;
+    if (!this.cryAudio && this.crySpeciesId === speciesId) this.crySpeciesId = null;
+  }
+
+  /** Joue une seule fois le cri préchargé au moment de la révélation. */
+  async playPokemonCry(speciesId: string) {
+    this.stopScheduledSources();
+    const preparation = this.preparePokemonCry(speciesId);
+    this.shouldPlayCry = true;
+    await preparation;
+
+    if (this.crySpeciesId === speciesId && this.cryAudio) {
+      this.playCryAudio(this.cryAudio);
     }
   }
 
   stop() {
-    for (const source of this.sources) {
-      try {
-        source.stop();
-      } catch {
-        // Une source déjà terminée n'a plus besoin d'être arrêtée.
-      }
-    }
-    this.sources.clear();
-
-    this.cryRequest?.abort();
-    this.cryRequest = null;
-    if (this.cryAudio) {
-      this.cryAudio.pause();
-      this.cryAudio.currentTime = 0;
-      this.cryAudio = null;
-    }
+    this.stopScheduledSources();
+    this.clearPreparedCry();
   }
 
   destroy() {

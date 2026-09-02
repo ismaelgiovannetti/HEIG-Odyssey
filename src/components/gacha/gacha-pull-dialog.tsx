@@ -17,7 +17,6 @@ interface GachaPullDialogProps {
   canPullAgain: boolean;
   onClose: () => void;
   onPullAgain: () => void;
-  onSkip: () => void;
 }
 
 const RARITY_LABELS = {
@@ -37,9 +36,9 @@ export function GachaPullDialog({
   canPullAgain,
   onClose,
   onPullAgain,
-  onSkip,
-}: GachaPullDialogProps) {
+}: Readonly<GachaPullDialogProps>) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const primaryButtonRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -62,8 +61,9 @@ export function GachaPullDialog({
   }, []);
 
   useEffect(() => {
-    if (phase !== "requesting") primaryButtonRef.current?.focus();
-  }, [phase]);
+    if (phase !== "revealed") return;
+    (canPullAgain ? primaryButtonRef : closeButtonRef).current?.focus();
+  }, [canPullAgain, phase]);
 
   const isRevealed = phase === "revealed" && result;
 
@@ -79,7 +79,6 @@ export function GachaPullDialog({
       onCancel={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        if (phase === "hatching") onSkip();
         if (phase === "revealed") onClose();
       }}
       onKeyDown={(event) => event.stopPropagation()}
@@ -102,7 +101,7 @@ export function GachaPullDialog({
           </h2>
         </div>
         {isRevealed ? (
-          <button type="button" aria-label="Fermer le résultat" onClick={onClose}>
+          <button ref={closeButtonRef} type="button" aria-label="Fermer le résultat" onClick={onClose}>
             <X size={20} aria-hidden="true" />
           </button>
         ) : null}
@@ -132,7 +131,7 @@ export function GachaPullDialog({
           {phase === "requesting" ? (
             <>
               <LoaderCircle className={styles.spinner} size={24} aria-hidden="true" />
-              <p id={descriptionId}>Votre prochain partenaire traverse le portail…</p>
+              <p id={descriptionId}>Un nouveau partenaire Pokémon répond à votre appel…</p>
             </>
           ) : phase === "hatching" ? (
             <>
@@ -158,21 +157,13 @@ export function GachaPullDialog({
               <dl>
                 <div>
                   <dt>Nouveau solde</dt>
-                  <dd>{result.newBalance} ₱</dd>
+                  <dd>{result.newBalance} ₽</dd>
                 </div>
               </dl>
             </div>
           ) : null}
         </div>
       </div>
-
-      {phase === "hatching" ? (
-        <footer className={styles.dialogActions}>
-          <button ref={primaryButtonRef} type="button" className={styles.secondaryButton} onClick={onSkip}>
-            Passer l’animation
-          </button>
-        </footer>
-      ) : null}
 
       {isRevealed ? (
         <footer className={styles.dialogActions}>
