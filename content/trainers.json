@@ -8,8 +8,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Le premier principe des fondamentaux est simple : ne jamais sous-estimer ma méthode.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir tes bases autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -59,8 +59,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Deuxième démonstration des fondamentaux validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes des fondamentaux. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -132,8 +132,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; ma méthode a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que ma méthode n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -265,8 +265,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise des fondamentaux n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : tes bases étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -398,8 +398,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi ma méthode vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des fondamentaux.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -724,8 +724,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Le premier principe de la botanique est simple : ne jamais sous-estimer mes racines.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir ton écosystème autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -857,8 +857,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Deuxième démonstration de la botanique validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes de la botanique. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -990,8 +990,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; mes racines a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que mes racines n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1123,8 +1123,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la botanique n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : ton écosystème étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1256,8 +1256,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi mes racines vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la botanique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1389,8 +1389,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe de la botanique l'était davantage.",
+      "defeatCatchline": "Même mes racines n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1715,8 +1715,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Le premier principe des circuits est simple : ne jamais sous-estimer mon courant.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir ton câblage autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1848,8 +1848,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Deuxième démonstration des circuits validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes des circuits. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1981,8 +1981,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; mon courant a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que mon courant n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2114,8 +2114,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise des circuits n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : ton câblage étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2247,8 +2247,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi mon courant vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des circuits.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2380,8 +2380,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe des circuits l'était davantage.",
+      "defeatCatchline": "Même mon courant n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2513,8 +2513,8 @@
       "aiProfile": "random",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Sept échanges ont suffi pour que mon courant révèle la faille de ta stratégie.",
+      "defeatCatchline": "Sept ajustements impeccables : ton câblage ont tenu jusqu'au bout.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2839,8 +2839,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Le premier principe de la métallurgie est simple : ne jamais sous-estimer mon alliage.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir ta structure autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2972,8 +2972,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Deuxième démonstration de la métallurgie validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes de la métallurgie. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3072,8 +3072,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; mon alliage a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que mon alliage n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3205,8 +3205,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la métallurgie n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : ta structure étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3338,8 +3338,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi mon alliage vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la métallurgie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3498,8 +3498,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe de la métallurgie l'était davantage.",
+      "defeatCatchline": "Même mon alliage n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3691,8 +3691,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Sept échanges ont suffi pour que mon alliage révèle la faille de ta stratégie.",
+      "defeatCatchline": "Sept ajustements impeccables : ta structure ont tenu jusqu'au bout.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3884,8 +3884,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Huitième leçon de la métallurgie : la constance finit toujours par gagner.",
+      "defeatCatchline": "Cette huitième victoire prouve ta maîtrise de la métallurgie. Je m'incline.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4237,8 +4237,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Le premier principe de la cognition est simple : ne jamais sous-estimer mon analyse.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir ton raisonnement autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4397,8 +4397,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Deuxième démonstration de la cognition validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes de la cognition. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4590,8 +4590,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; mon analyse a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que mon analyse n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4783,8 +4783,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la cognition n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : ton raisonnement étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4976,8 +4976,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi mon analyse vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la cognition.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5169,8 +5169,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe de la cognition l'était davantage.",
+      "defeatCatchline": "Même mon analyse n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5329,8 +5329,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Sept échanges ont suffi pour que mon analyse révèle la faille de ta stratégie.",
+      "defeatCatchline": "Sept ajustements impeccables : ton raisonnement ont tenu jusqu'au bout.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5522,8 +5522,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Huitième leçon de la cognition : la constance finit toujours par gagner.",
+      "defeatCatchline": "Cette huitième victoire prouve ta maîtrise de la cognition. Je m'incline.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5682,8 +5682,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Tu as résisté longtemps, mais mon analyse gardait encore une neuvième surprise.",
+      "defeatCatchline": "Ta neuvième manœuvre a complètement neutralisé mon analyse.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6188,8 +6188,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Le premier principe des toxines et des ombres est simple : ne jamais sous-estimer mon protocole.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir tes défenses autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6381,8 +6381,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Deuxième démonstration des toxines et des ombres validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes des toxines et des ombres. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6574,8 +6574,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; mon protocole a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que mon protocole n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6767,8 +6767,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise des toxines et des ombres n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : tes défenses étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6960,8 +6960,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi mon protocole vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des toxines et des ombres.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7153,8 +7153,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe des toxines et des ombres l'était davantage.",
+      "defeatCatchline": "Même mon protocole n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7406,8 +7406,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Sept échanges ont suffi pour que mon protocole révèle la faille de ta stratégie.",
+      "defeatCatchline": "Sept ajustements impeccables : tes défenses ont tenu jusqu'au bout.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7659,8 +7659,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Huitième leçon des toxines et des ombres : la constance finit toujours par gagner.",
+      "defeatCatchline": "Cette huitième victoire prouve ta maîtrise des toxines et des ombres. Je m'incline.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7912,8 +7912,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Tu as résisté longtemps, mais mon protocole gardait encore une neuvième surprise.",
+      "defeatCatchline": "Ta neuvième manœuvre a complètement neutralisé mon protocole.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -8165,8 +8165,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Dix analyses des toxines et des ombres, dix réponses exactes : ce combat était sous contrôle.",
+      "defeatCatchline": "Dix décisions justes ont transformé tes défenses en véritable forteresse.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -8791,8 +8791,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Le premier principe de la cryogénie draconique est simple : ne jamais sous-estimer ma tempête.",
+      "defeatCatchline": "Tu as franchi la première défense ; je dois revoir ta résistance autant que les miens.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9044,8 +9044,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Deuxième démonstration de la cryogénie draconique validée : ton équipe manque encore de précision.",
+      "defeatCatchline": "Ta deuxième approche a renversé mes certitudes de la cryogénie draconique. Bien joué !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9297,8 +9297,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "J'avais prévu chacun de tes mouvements ; ma tempête a fait le reste.",
+      "defeatCatchline": "Tu as trouvé la faille que ma tempête n'avait pas anticipée.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9550,8 +9550,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la cryogénie draconique n'est pas théorique.",
+      "defeatCatchline": "Quatrième essai, conclusion limpide : ta résistance étaient mieux préparés que mon plan.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9803,8 +9803,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Cinq étapes d'avance : voilà pourquoi ma tempête vient de l'emporter.",
+      "defeatCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la cryogénie draconique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10056,8 +10056,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Ton plan était solide, mais mon sixième principe de la cryogénie draconique l'était davantage.",
+      "defeatCatchline": "Même ma tempête n'a rien pu faire contre cette sixième offensive. Respect !",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10309,8 +10309,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Sept échanges ont suffi pour que ma tempête révèle la faille de ta stratégie.",
+      "defeatCatchline": "Sept ajustements impeccables : ta résistance ont tenu jusqu'au bout.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10562,8 +10562,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Huitième leçon de la cryogénie draconique : la constance finit toujours par gagner.",
+      "defeatCatchline": "Cette huitième victoire prouve ta maîtrise de la cryogénie draconique. Je m'incline.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10815,8 +10815,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Tu as résisté longtemps, mais ma tempête gardait encore une neuvième surprise.",
+      "defeatCatchline": "Ta neuvième manœuvre a complètement neutralisé ma tempête.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -11068,8 +11068,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Dix analyses de la cryogénie draconique, dix réponses exactes : ce combat était sous contrôle.",
+      "defeatCatchline": "Dix décisions justes ont transformé ta résistance en véritable forteresse.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -11321,8 +11321,8 @@
       "aiProfile": "heuristic",
       "sprite": "/sprites/trainer-player-back.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Jusqu'au onzième défi, ma tempête reste impossible à dépasser aujourd'hui.",
+      "defeatCatchline": "Tu conclus ce onzième duel avec une remarquable maîtrise de la cryogénie draconique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
