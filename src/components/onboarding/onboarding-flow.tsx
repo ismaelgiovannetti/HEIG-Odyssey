@@ -30,6 +30,7 @@ import {
 
 import { SpriteProvider } from "@/components/SpriteProvider";
 import { StarterShowcase } from "@/components/onboarding/starter-showcase";
+import { playPokemonCry } from "@/lib/audio/pokemon-cry";
 
 type BaseStats = {
   hp: number;
@@ -285,10 +286,12 @@ export function OnboardingFlow() {
   function selectStarter(starter: StarterView) {
     setSelectedSpeciesId(starter.speciesId);
     setClaimError(null);
+    playPokemonCry(starter.speciesId, starter.dexNumber);
   }
 
   function openConfirmation() {
     if (!selectedStarter) return;
+    playPokemonCry(selectedStarter.speciesId, selectedStarter.dexNumber);
     setCandidate(selectedStarter);
     setNickname("");
     setClaimError(null);
@@ -661,7 +664,27 @@ export function OnboardingFlow() {
                 <aside className="starter-detail" aria-live="polite">
                   {selectedStarter ? (
                     <>
-                      <div className="starter-detail__portrait">
+                      <div
+                        className="starter-detail__portrait"
+                        onClick={() =>
+                          playPokemonCry(
+                            selectedStarter.speciesId,
+                            selectedStarter.dexNumber,
+                          )
+                        }
+                        style={{ cursor: "pointer" }}
+                        title={`Écouter le cri de ${selectedStarter.name}`}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            playPokemonCry(
+                              selectedStarter.speciesId,
+                              selectedStarter.dexNumber,
+                            );
+                          }
+                        }}
+                      >
                         <span>
                           #
                           {String(selectedStarter.dexNumber ?? 0).padStart(
