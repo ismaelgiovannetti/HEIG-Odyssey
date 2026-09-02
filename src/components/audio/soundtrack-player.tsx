@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSavedAudioPreferences, type AudioPreferences } from "@/lib/audio/audio-preferences";
+import {
+  getSavedAudioPreferences,
+  type AudioPreferenceScope,
+  type AudioPreferences,
+} from "@/lib/audio/audio-preferences";
 import { AudioControls } from "./audio-controls";
 
 export type SoundtrackPhase = "intro" | "turn" | "victory" | "defeat";
@@ -12,6 +16,7 @@ interface SoundtrackPlayerProps {
   autoPlay?: boolean;
   className?: string;
   showControls?: boolean;
+  preferenceScope?: AudioPreferenceScope;
 }
 
 function playAudio(audio: HTMLAudioElement) {
@@ -35,6 +40,7 @@ export function SoundtrackPlayer({
   autoPlay = true,
   className = "",
   showControls = true,
+  preferenceScope = "battle",
 }: Readonly<SoundtrackPlayerProps>) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
@@ -59,10 +65,10 @@ export function SoundtrackPlayer({
 
   // Initialisation des préférences
   useEffect(() => {
-    const prefs = getSavedAudioPreferences();
+    const prefs = getSavedAudioPreferences(preferenceScope);
     setPreferences(prefs);
     setPreferencesLoaded(true);
-  }, []);
+  }, [preferenceScope]);
 
   // Applique le volume indépendamment de la piste pour ne pas la redémarrer
   // lorsque le joueur ajuste simplement ses préférences.
@@ -108,7 +114,10 @@ export function SoundtrackPlayer({
     <div className={`soundtrack-player flex items-center gap-3 ${className}`}>
       <audio ref={audioRef} preload="auto" />
       {showControls && (
-        <AudioControls onPreferencesChange={handlePreferencesChange} />
+        <AudioControls
+          preferenceScope={preferenceScope}
+          onPreferencesChange={handlePreferencesChange}
+        />
       )}
     </div>
   );

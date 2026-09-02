@@ -5,11 +5,13 @@ import { Volume2, VolumeX } from "lucide-react";
 import {
   getSavedAudioPreferences,
   saveAudioPreferences,
+  type AudioPreferenceScope,
   type AudioPreferences,
 } from "@/lib/audio/audio-preferences";
 
 interface AudioControlsProps {
   className?: string;
+  preferenceScope?: AudioPreferenceScope;
   onPreferencesChange?: (prefs: AudioPreferences) => void;
 }
 
@@ -18,6 +20,7 @@ interface AudioControlsProps {
  */
 export function AudioControls({
   className = "",
+  preferenceScope = "app",
   onPreferencesChange,
 }: Readonly<AudioControlsProps>) {
   const [preferences, setPreferences] = useState<AudioPreferences>({
@@ -27,21 +30,24 @@ export function AudioControls({
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const saved = getSavedAudioPreferences();
+    const saved = getSavedAudioPreferences(preferenceScope);
     setPreferences(saved);
     setIsHydrated(true);
     onPreferencesChange?.(saved);
-  }, [onPreferencesChange]);
+  }, [onPreferencesChange, preferenceScope]);
 
   const toggleMute = () => {
     const nextMuted = !preferences.isMuted;
-    const updated = saveAudioPreferences({ isMuted: nextMuted });
+    const updated = saveAudioPreferences({ isMuted: nextMuted }, preferenceScope);
     setPreferences(updated);
     onPreferencesChange?.(updated);
   };
 
   const handleVolumeChange = (newVolume: number) => {
-    const updated = saveAudioPreferences({ volume: newVolume, isMuted: newVolume === 0 });
+    const updated = saveAudioPreferences(
+      { volume: newVolume, isMuted: newVolume === 0 },
+      preferenceScope,
+    );
     setPreferences(updated);
     onPreferencesChange?.(updated);
   };
@@ -79,7 +85,7 @@ export function AudioControls({
         step="0.05"
         value={preferences.isMuted ? 0 : preferences.volume}
         onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-        aria-label="Volume audio principal"
+        aria-label={preferenceScope === "battle" ? "Volume des combats" : "Volume audio principal"}
         className="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
       />
     </div>
