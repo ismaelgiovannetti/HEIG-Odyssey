@@ -227,14 +227,16 @@ export function TeamManager({ playerName }: { playerName: string }) {
       return;
     }
     setAnnouncement("");
-    const saved = await collection.saveChange(result.draft);
-    if (saved) {
+    // Le callback s'exécute dans le même tick que la mise à jour de pending :
+    // appeler router.refresh() après un await séparé laisserait une fenêtre
+    // où l'ordre de traitement React entre les deux n'est pas garanti.
+    await collection.saveChange(result.draft, () => {
       setAnnouncement(
         `${byId.get(id)?.name} déplacé : ${describeCell(destination)}.${occupant ? ` Échange avec ${byId.get(occupant)?.name}.` : ""}`,
       );
       // Le shell et l'accueil relisent eux aussi les données confirmées.
       router.refresh();
-    }
+    });
   }
 
   function activate(cell: TeamCell) {
