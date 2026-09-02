@@ -1240,3 +1240,459 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Gestion des Capacités & Évolutions
+   ========================================================================== */
+
+.editMovesBtn,
+.evolveActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 2px solid var(--color-outline);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  cursor: pointer;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  transition: transform 0.1s, background 0.1s;
+}
+
+.editMovesBtn:hover,
+.evolveActionBtn:hover {
+  background: var(--color-input-hover);
+  transform: translate(-1px, -1px);
+}
+
+.evolveActionBtn {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #78350f;
+  box-shadow: 2px 2px 0 #78350f;
+}
+
+.evolveActionBtn:hover {
+  background: #d97706;
+}
+
+.evolveActionBtn.notReady {
+  background: #94a3b8;
+  border-color: #475569;
+  box-shadow: 2px 2px 0 #475569;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.summaryHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.movesSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.movesSectionHeader h3 {
+  margin: 0;
+}
+
+/* Dialogue d'édition des capacités */
+.movesEditorDialog {
+  width: min(780px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-outline);
+  padding: 0;
+}
+
+.movesEditorBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.editorAlert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 2px solid #ef4444;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sectionHeading {
+  margin-bottom: 10px;
+}
+
+.sectionHeading h3 {
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  color: var(--color-text);
+}
+
+.sectionHeading small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.equippedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.equippedCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  min-height: 72px;
+}
+
+.equippedCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.equippedCardTop strong {
+  font-size: 12px;
+}
+
+.removeMoveBtn {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.removeMoveBtn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.removeMoveBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.equippedCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.emptySlotCard {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border: 2px dashed var(--color-border);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  min-height: 72px;
+}
+
+.learnableList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.learnableCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.learnableCard.isEquipped {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-alt));
+}
+
+.learnableCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.learnableCardTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.learnableCardTitle strong {
+  font-size: 12px;
+}
+
+.levelBadge {
+  display: inline-flex;
+  padding: 2px 6px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-outline);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.categoryBadge {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.learnableCardStats {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.moveDescription {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+.equipActionBtn,
+.equippedActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 2px solid var(--color-outline);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.equipActionBtn {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.equipActionBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.equipActionBtn:disabled {
+  background: #cbd5e1;
+  border-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.equippedActionBtn {
+  background: var(--color-success);
+  color: #fff;
+  border-color: #14532d;
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.cancelBtn,
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 3px solid var(--color-outline);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--color-input-hover);
+}
+
+.saveBtn {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Dialogue d'évolution */
+.evolutionDialog {
+  width: min(540px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-outline);
+  padding: 0;
+}
+
+.evolutionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px;
+}
+
+.evolutionStages {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 10px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg-alt);
+}
+
+.evolutionStageCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.evolutionStageCard strong {
+  font-size: 13px;
+}
+
+.evolutionStageCard span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.levelReady {
+  color: #15803d !important;
+  font-weight: 700;
+}
+
+.levelNeeded {
+  color: #b91c1c !important;
+  font-weight: 700;
+}
+
+.evolutionArrow {
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  animation: pulseArrow 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseArrow {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.evolutionNotice {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.02);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.evolutionNotice p {
+  margin: 0;
+}
+
+.evolutionSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.evolutionCelebration {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+}
+
+.celebrationSparkle {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  color: #f59e0b;
+  animation: spinSparkle 2s linear infinite;
+}
+
+@keyframes spinSparkle {
+  from { transform: rotate(0deg) scale(0.9); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  to { transform: rotate(360deg) scale(0.9); }
+}
+
+.loadingSpinner {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
