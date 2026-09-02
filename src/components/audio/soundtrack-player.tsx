@@ -14,6 +14,17 @@ interface SoundtrackPlayerProps {
   showControls?: boolean;
 }
 
+function playAudio(audio: HTMLAudioElement) {
+  try {
+    const playback = audio.play();
+    void playback?.catch(() => {
+      // Ignorer les blocages d'autoplay du navigateur avant interaction.
+    });
+  } catch {
+    // Certains environnements sans moteur audio ne prennent pas en charge play().
+  }
+}
+
 /**
  * Lecteur de musique de combat avec boucle audio (loop) et transition de victoire (T-US08-03).
  * En cas de défaite, la musique du dresseur continue de jouer fidèlement aux jeux Pokémon originaux.
@@ -26,6 +37,7 @@ export function SoundtrackPlayer({
   showControls = true,
 }: Readonly<SoundtrackPlayerProps>) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const [preferences, setPreferences] = useState<AudioPreferences>({
     isMuted: false,
     volume: 0.7,
@@ -49,24 +61,37 @@ export function SoundtrackPlayer({
   useEffect(() => {
     const prefs = getSavedAudioPreferences();
     setPreferences(prefs);
+    setPreferencesLoaded(true);
   }, []);
 
-  // Gestion de la lecture et du changement de piste/phase
+  // Applique le volume indépendamment de la piste pour ne pas la redémarrer
+  // lorsque le joueur ajuste simplement ses préférences.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.src = currentSrc;
-    audio.loop = isLooping;
     audio.muted = preferences.isMuted;
     audio.volume = preferences.volume;
+  }, [preferences.isMuted, preferences.volume]);
+
+  // Gestion de la lecture et du changement de piste/phase.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !preferencesLoaded) return;
+
+    audio.src = currentSrc;
+    audio.loop = isLooping;
 
     if (autoPlay && !preferences.isMuted) {
-      audio.play().catch(() => {
-        // Ignorer les blocages d'autoplay du navigateur avant interaction
-      });
+      playAudio(audio);
     }
-  }, [currentSrc, isLooping, autoPlay, preferences.isMuted, preferences.volume]);
+
+    return () => {
+      // Arrête l'ancienne piste lors d'un changement de combat ou en quittant
+      // complètement l'arène.
+      audio.pause();
+    };
+  }, [currentSrc, isLooping, autoPlay, preferences.isMuted, preferencesLoaded]);
 
   const handlePreferencesChange = useCallback((newPrefs: AudioPreferences) => {
     setPreferences(newPrefs);
@@ -74,7 +99,7 @@ export function SoundtrackPlayer({
       audioRef.current.muted = newPrefs.isMuted;
       audioRef.current.volume = newPrefs.volume;
       if (!newPrefs.isMuted && audioRef.current.paused && autoPlay) {
-        audioRef.current.play().catch(() => {});
+        playAudio(audioRef.current);
       }
     }
   }, [autoPlay]);

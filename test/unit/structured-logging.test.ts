@@ -3,6 +3,7 @@ import {
   logger,
   sanitizeLogData,
   createStructuredLog,
+  getRequestId,
 } from "@/lib/logger";
 
 describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
@@ -36,6 +37,18 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
     expect(entry.data?.eventId).toBeUndefined();
   });
 
+  it("reprend uniquement un requestId amont sûr", () => {
+    const forwarded = new Request("http://localhost/api/health", {
+      headers: { "x-request-id": "req_proxy-123" },
+    });
+    const invalid = new Request("http://localhost/api/health", {
+      headers: { "x-request-id": "identifiant avec espaces" },
+    });
+
+    expect(getRequestId(forwarded)).toBe("req_proxy-123");
+    expect(getRequestId(invalid)).toMatch(/^req_[0-9a-f-]{36}$/);
+  });
+
   describe("Filtrage et masquage des secrets (Redaction)", () => {
     it("masque automatiquement les mots de passe, tokens et clés d'API", () => {
       const sensitiveContext = {
@@ -62,12 +75,15 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
     it("masque les tokens Bearer et chaînes de connexion PostgreSQL dans les strings", () => {
       const headerString = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xyz";
       const dbUrlString = "postgresql://postgres:mysecretpassword@localhost:5432/heig_odyssey";
+      const redisUrlString = "redis://worker:redispassword@redis:6379";
 
       const sanitizedHeader = sanitizeLogData(headerString);
       const sanitizedDbUrl = sanitizeLogData(dbUrlString);
+      const sanitizedRedisUrl = sanitizeLogData(redisUrlString);
 
       expect(sanitizedHeader).toBe("Bearer [REDACTED]");
       expect(sanitizedDbUrl).toBe("postgresql://postgres:[REDACTED]@localhost:5432/heig_odyssey");
+      expect(sanitizedRedisUrl).toBe("redis://worker:[REDACTED]@redis:6379");
     });
 
     it("masque récursivement les objets imbriqués sans altérer les autres données", () => {
@@ -108,6 +124,20 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
       expect(log.error).toBeDefined();
       expect(log.error?.name).toBe("RedisConnectionError");
       expect(log.error?.message).toBe("Connexion Redis interrompue");
+    });
+
+    it("masque les secrets contenus dans le message et la stack d'une erreur", () => {
+      const error = new Error(
+        "Connexion refusée pour postgresql://admin:super-secret@db:5432/app",
+      );
+      error.stack = "Authorization: Bearer abc.def.ghi";
+
+      const log = createStructuredLog("error", "Échec", undefined, error);
+      const serialized = JSON.stringify(log);
+
+      expect(serialized).not.toContain("super-secret");
+      expect(serialized).not.toContain("abc.def.ghi");
+      expect(log.error?.message).toContain("[REDACTED]");
     });
   });
 });

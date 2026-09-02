@@ -5,6 +5,7 @@ import {
 } from "@/lib/events/contracts";
 import { dispatchDomainEvent } from "./event-dispatcher";
 import { EVENTS_STREAM_KEY } from "@/lib/events/publisher";
+import { logger } from "@/lib/logger";
 
 export const DEFAULT_GROUP_NAME = "quest-workers";
 
@@ -38,7 +39,11 @@ export function parseStreamEnvelope(
   try {
     const fields = parseStreamFields(rawFields);
     if (!fields.eventId || !fields.eventType || !fields.payload) {
-      console.warn(`[QuestWorker] Message ${messageId} ignoré car champs obligatoires manquants.`);
+      logger.warn("Message Redis incomplet ignoré", {
+        eventId: logger.generateEventId(),
+        action: "quest-worker.parse",
+        messageId,
+      });
       return null;
     }
 
@@ -55,13 +60,22 @@ export function parseStreamEnvelope(
     });
 
     if (!parsed.success) {
-      console.error(`[QuestWorker] Schéma d'événement invalide pour message ${messageId}:`, parsed.error.issues);
+      logger.error("Schéma d'événement Redis invalide", {
+        eventId: fields.eventId,
+        action: "quest-worker.validate",
+        messageId,
+        issues: parsed.error.issues,
+      });
       return null;
     }
 
     return parsed.data as DomainEventEnvelope;
   } catch (err) {
-    console.error(`[QuestWorker] Erreur lors du parsing du message ${messageId}:`, err);
+    logger.error("Impossible de désérialiser un événement Redis", {
+      eventId: logger.generateEventId(),
+      action: "quest-worker.parse",
+      messageId,
+    }, err);
     return null;
   }
 }
@@ -113,7 +127,12 @@ export async function processAndAckStreamMessage(
     return true;
   } else {
     // En cas d'erreur de traitement, le message reste non acquitté dans le PEL (Pending Entry List)
-    console.error(`[QuestWorker] Échec du dispatch pour l'événement ${envelope.eventId} (messageId: ${messageId})`);
+    logger.error("Échec du dispatch d'un événement Redis", {
+      eventId: envelope.eventId,
+      action: "quest-worker.dispatch",
+      eventType: envelope.eventType,
+      messageId,
+    });
     return false;
   }
 }
@@ -157,7 +176,13 @@ export async function claimAndProcessStaleMessages(
       }
     }
   } catch (err) {
-    console.error("[QuestWorker] Erreur lors du XAUTOCLAIM des messages abandonnés :", err);
+    logger.error("Échec de récupération des événements Redis abandonnés", {
+      eventId: logger.generateEventId(),
+      action: "quest-worker.claim-stale",
+      streamKey,
+      groupName,
+      consumerName,
+    }, err);
   }
 
   return processedCount;
@@ -194,7 +219,12 @@ export class QuestWorker {
     this.isRunning = true;
     this.shouldStop = false;
 
-    console.log(`[QuestWorker] Démarrage du worker '${this.consumerName}' sur le groupe '${this.groupName}'`);
+    logger.info("Démarrage du worker de quêtes", {
+      eventId: logger.generateEventId(),
+      action: "quest-worker.start",
+      consumerName: this.consumerName,
+      groupName: this.groupName,
+    });
 
     await initConsumerGroup(this.redis, this.streamKey, this.groupName);
 
@@ -245,14 +275,24 @@ export class QuestWorker {
         }
       } catch (error: any) {
         if (!this.shouldStop) {
-          console.error("[QuestWorker] Erreur dans la boucle de consommation :", error);
+          logger.error("Erreur dans la boucle du worker de quêtes", {
+            eventId: logger.generateEventId(),
+            action: "quest-worker.consume",
+            consumerName: this.consumerName,
+            groupName: this.groupName,
+          }, error);
           await new Promise((res) => setTimeout(res, this.pollIntervalMs));
         }
       }
     }
 
     this.isRunning = false;
-    console.log(`[QuestWorker] Worker '${this.consumerName}' arrêté proprement.`);
+    logger.info("Arrêt du worker de quêtes", {
+      eventId: logger.generateEventId(),
+      action: "quest-worker.stop",
+      consumerName: this.consumerName,
+      groupName: this.groupName,
+    });
   }
 
   public stop(): void {

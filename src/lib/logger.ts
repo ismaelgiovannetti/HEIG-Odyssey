@@ -25,6 +25,9 @@ export interface StructuredLogEntry {
   };
 }
 
+const REQUEST_ID_HEADER = "x-request-id";
+const SAFE_CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
+
 // Clés sensibles à masquer automatiquement dans les logs (T-US20-06)
 const SENSITIVE_KEYS = new Set([
   "password",
@@ -55,13 +58,19 @@ export function sanitizeLogData(obj: unknown, depth = 0): unknown {
 
   if (typeof obj === "string") {
     // Détection de patterns sensibles dans les chaînes
-    if (/bearer\s+[a-zA-Z0-9_\-\.]+/i.test(obj)) {
-      return obj.replace(/bearer\s+[a-zA-Z0-9_\-\.]+/gi, "Bearer [REDACTED]");
+    if (/bearer\s+[a-zA-Z0-9._~+\/-]+=*/i.test(obj)) {
+      return obj.replace(/bearer\s+[a-zA-Z0-9._~+\/-]+=*/gi, "Bearer [REDACTED]");
     }
-    if (/postgres(ql)?:\/\/[^:]+:[^@]+@/i.test(obj)) {
-      return obj.replace(/postgres(ql)?:\/\/([^:]+):([^@]+)@/gi, "postgresql://$2:[REDACTED]@");
+    if (/[a-z][a-z0-9+.-]*:\/\/[^:\s/@]+:[^@\s]+@/i.test(obj)) {
+      return obj.replace(
+        /([a-z][a-z0-9+.-]*:\/\/)([^:\s/@]+):([^@\s]+)@/gi,
+        "$1$2:[REDACTED]@",
+      );
     }
-    return obj;
+    return obj.replace(
+      /\b(password|secret|token|api[_-]?key|authorization)\s*[=:]\s*[^\s,;]+/gi,
+      "$1=[REDACTED]",
+    );
   }
 
   if (typeof obj !== "object") return obj;
@@ -81,6 +90,18 @@ export function sanitizeLogData(obj: unknown, depth = 0): unknown {
   }
 
   return sanitized;
+}
+
+function sanitizeText(value: string): string {
+  return String(sanitizeLogData(value));
+}
+
+/** Réutilise un identifiant amont sûr ou crée la corrélation de la requête. */
+export function getRequestId(request?: Pick<Request, "headers">): string {
+  const forwarded = request?.headers.get(REQUEST_ID_HEADER)?.trim();
+  return forwarded && SAFE_CORRELATION_ID.test(forwarded)
+    ? forwarded
+    : `req_${randomUUID()}`;
 }
 
 /**
@@ -108,9 +129,16 @@ export function createStructuredLog(
 
   if (err instanceof Error) {
     entry.error = {
-      name: err.name,
-      message: err.message,
-      ...(process.env.NODE_ENV !== "production" ? { stack: err.stack } : {}),
+      name: sanitizeText(err.name),
+      message: sanitizeText(err.message),
+      ...(process.env.NODE_ENV !== "production" && err.stack
+        ? { stack: sanitizeText(err.stack) }
+        : {}),
+    };
+  } else if (err !== undefined) {
+    entry.error = {
+      name: "UnknownError",
+      message: sanitizeText(String(err)),
     };
   }
 
@@ -147,5 +175,9 @@ export const logger = {
 
   generateRequestId(): string {
     return `req_${randomUUID()}`;
+  },
+
+  generateEventId(): string {
+    return `evt_${randomUUID()}`;
   },
 };

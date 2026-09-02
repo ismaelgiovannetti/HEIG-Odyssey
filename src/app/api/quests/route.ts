@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserQuests } from "@/lib/quests/quest-progress-service";
+import { getRequestId, logger } from "@/lib/logger";
 
 // La progression est propre au joueur connecté et ne doit jamais être mise en cache.
 function json(body: unknown, status = 200) {
@@ -11,6 +12,7 @@ function json(body: unknown, status = 200) {
 }
 
 export async function GET(req: Request) {
+  const requestId = getRequestId(req);
   try {
     const session = await auth.api.getSession({ headers: req.headers });
 
@@ -28,7 +30,7 @@ export async function GET(req: Request) {
       data: questsState,
     });
   } catch (error) {
-    console.error("[API /api/quests] Erreur lors de la récupération des quêtes :", error);
+    logger.error("Échec de la récupération des quêtes", { requestId, action: "quests.list" }, error);
     return json(
       { success: false, error: "Impossible de récupérer les quêtes." },
       500,

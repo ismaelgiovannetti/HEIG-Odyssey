@@ -12,6 +12,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import { SpriteProvider } from "@/components/SpriteProvider";
+import { SoundtrackPlayer, type SoundtrackPhase } from "@/components/audio/soundtrack-player";
+import { BattleCatchlines } from "@/components/combat/battle-catchlines";
 import {
   BattleRequestError,
   BattleStateConflictError,
@@ -116,9 +118,7 @@ function BattleResult({
     : mode === "training"
       ? "Entraînement terminé"
       : "Combat terminé";
-  // Les catchlines sont écrites du point de vue du dresseur adverse : sa
-  // défaite correspond donc à la victoire du joueur, et inversement.
-  const catchline = won ? trainer.defeatCatchline : trainer.victoryCatchline;
+  const resultPhase = won ? "victory" : "defeat";
 
   return (
     <section
@@ -134,12 +134,15 @@ function BattleResult({
           {won ? "Combat remporté" : "Défaite enregistrée"}
         </p>
         <h1 id="battle-result-title">{title}</h1>
-        <p>
-          {catchline ||
-            (won
-              ? `${trainer.name} reconnaît votre victoire.`
-              : `${trainer.name} remporte cette confrontation.`)}
-        </p>
+        <BattleCatchlines
+          trainerName={trainer.name}
+          trainerTitle={trainer.title}
+          trainerSprite={trainer.sprite}
+          introCatchline={trainer.introCatchline || "Le combat commence."}
+          victoryCatchline={trainer.victoryCatchline || `${trainer.name} remporte cette confrontation.`}
+          defeatCatchline={trainer.defeatCatchline || `${trainer.name} reconnaît votre victoire.`}
+          currentPhase={resultPhase}
+        />
       </div>
 
       <div className="battle-result__rewards">
@@ -221,6 +224,20 @@ export function BattleArena({
   const opponent = activePokemon(state.p2);
   const finished = state.phase === "finished";
   const switchRequired = state.phase === "switch_required";
+  const soundtrackPhase: SoundtrackPhase = finished
+    ? state.winner === "p1"
+      ? "victory"
+      : "defeat"
+    : state.turn === 0
+      ? "intro"
+      : "turn";
+  const soundtrack = (
+    <SoundtrackPlayer
+      trackId={initialBattle.trainer.musicTrack || "battle-theme-1"}
+      phase={soundtrackPhase}
+      className="battle-soundtrack"
+    />
+  );
 
   useEffect(() => {
     if (finished) resultRef.current?.focus();
@@ -296,20 +313,25 @@ export function BattleArena({
 
   if (finished) {
     return (
-      <div ref={resultRef} tabIndex={-1} aria-live="polite">
-        <BattleResult
-          state={state}
-          rewards={rewards}
-          trainer={initialBattle.trainer}
-          mode={mode}
-          onReturn={onReturn}
-        />
-      </div>
+      <>
+        {soundtrack}
+        <div ref={resultRef} tabIndex={-1} aria-live="polite">
+          <BattleResult
+            state={state}
+            rewards={rewards}
+            trainer={initialBattle.trainer}
+            mode={mode}
+            onReturn={onReturn}
+          />
+        </div>
+      </>
     );
   }
 
   return (
-    <section className="battle-interface" aria-labelledby="battle-title">
+    <>
+      {soundtrack}
+      <section className="battle-interface" aria-labelledby="battle-title">
       <header className="battle-interface__header">
         <div>
           <p className="application-eyebrow">
@@ -324,6 +346,16 @@ export function BattleArena({
           <strong>{state.turn}</strong>
         </div>
       </header>
+
+      <BattleCatchlines
+        trainerName={initialBattle.trainer.name}
+        trainerTitle={initialBattle.trainer.title}
+        trainerSprite={initialBattle.trainer.sprite}
+        introCatchline={initialBattle.trainer.introCatchline || "Le combat commence."}
+        victoryCatchline={initialBattle.trainer.victoryCatchline || `${initialBattle.trainer.name} remporte cette confrontation.`}
+        defeatCatchline={initialBattle.trainer.defeatCatchline || `${initialBattle.trainer.name} reconnaît votre victoire.`}
+        currentPhase={soundtrackPhase}
+      />
 
       <div className="battle-interface__body">
         <div className="battle-scene" aria-label="Arène de combat">
@@ -468,6 +500,7 @@ export function BattleArena({
           </div>
         </aside>
       </div>
-    </section>
+      </section>
+    </>
   );
 }

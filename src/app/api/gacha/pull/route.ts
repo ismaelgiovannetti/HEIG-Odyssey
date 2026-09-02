@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { getRequestId, logger } from "@/lib/logger";
 import {
   executeGachaPull,
   BannerNotFoundError,
@@ -15,6 +16,7 @@ const GachaPullBodySchema = z
   .strict();
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   try {
     const session = await auth.api.getSession({ headers: req.headers });
 
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.error("[API /api/gacha/pull] Erreur :", error);
+    logger.error("Échec du tirage gacha", { requestId, action: "gacha.pull" }, error);
     return NextResponse.json(
       { success: false, error: "Échec du tirage gacha." },
       { status: 500 }

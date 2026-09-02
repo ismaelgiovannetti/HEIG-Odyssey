@@ -1,4 +1,5 @@
 import type { DomainEventEnvelope, DomainEventType } from "@/lib/events/contracts";
+import { logger } from "@/lib/logger";
 
 export type EventHandler<T = any> = (event: DomainEventEnvelope<T>) => Promise<void>;
 
@@ -50,10 +51,11 @@ export async function dispatchDomainEvent(event: DomainEventEnvelope): Promise<{
       await handler(event);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.error(
-        `[EventDispatcher] Erreur lors du traitement de l'événement ${event.eventType} (${event.eventId}):`,
-        error
-      );
+      logger.error("Échec du traitement d'un événement", {
+        eventId: event.eventId,
+        action: "event.dispatch",
+        eventType: event.eventType,
+      }, error);
       errors.push(error);
     }
   }

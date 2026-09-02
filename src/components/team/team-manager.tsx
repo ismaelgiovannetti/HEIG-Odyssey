@@ -83,7 +83,15 @@ export function TeamManager({ playerName }: { playerName: string }) {
   const dragSource = useRef<string | undefined>(undefined);
   const boxTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingFocus = useRef<TeamCell | null>(null);
+  const leaveGuard = useRef({ active: false, saving: false });
   const frozen = pending !== null || Boolean(error?.needsReload);
+  // Les effets passifs peuvent être nettoyés après le rendu suivant. La
+  // référence empêche alors un ancien écouteur de bloquer la navigation avec
+  // un état de sauvegarde devenu obsolète.
+  leaveGuard.current = {
+    active: dirty || pending === "save" || pending === "release",
+    saving: pending === "save" || pending === "release",
+  };
   const byId = useMemo(
     () => new Map(snapshot?.pokemon.map((p) => [p.id, p]) ?? []),
     [snapshot],
@@ -141,10 +149,12 @@ export function TeamManager({ playerName }: { playerName: string }) {
   useEffect(() => {
     if (!dirty && pending !== "save" && pending !== "release") return;
     const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!leaveGuard.current.active) return;
       event.preventDefault();
       event.returnValue = "";
     };
     const leave = (event: MouseEvent) => {
+      if (!leaveGuard.current.active) return;
       if (
         event.defaultPrevented ||
         event.button !== 0 ||
@@ -173,7 +183,7 @@ export function TeamManager({ playerName }: { playerName: string }) {
         return;
       if (
         !window.confirm(
-          pending === "save" || pending === "release"
+          leaveGuard.current.saving
             ? "Une modification de la collection est en cours. Quitter cette page malgré tout ?"
             : "Quitter cette page et abandonner les modifications non enregistrées ?",
         )

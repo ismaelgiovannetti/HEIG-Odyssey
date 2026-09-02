@@ -80,7 +80,7 @@ export function BattleCatchlines({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white text-base truncate">{trainerName}</h3>
+              <p className="font-bold text-white text-base truncate">{trainerName}</p>
               {trainerTitle && (
                 <span className="text-xs text-slate-400 font-medium">({trainerTitle})</span>
               )}

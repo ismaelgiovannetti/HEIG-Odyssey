@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
+import { getRequestId, logger } from "@/lib/logger";
 import { selectStarter } from "@/lib/starter/starter-service";
 
 // L'identité du joueur vient uniquement de la session. Le navigateur ne peut
@@ -18,6 +19,7 @@ const STARTER_SELECTION_FAILED_MESSAGE =
   "Impossible de sélectionner le starter pour le moment.";
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   try {
     // Better Auth vérifie le cookie de session reçu avec la requête.
     const session = await auth.api.getSession({
@@ -86,7 +88,7 @@ export async function POST(req: Request) {
     }
 
     // Les détails des erreurs internes ne sont jamais renvoyés au navigateur.
-    console.error("Échec de la sélection du starter.");
+    logger.error("Échec de la sélection du starter", { requestId, action: "starter.choose" }, error);
 
     return NextResponse.json(
       {
