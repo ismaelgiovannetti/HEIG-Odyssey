@@ -1,0 +1,113 @@
+import { describe, it, expect } from "vitest";
+import {
+  logger,
+  sanitizeLogData,
+  createStructuredLog,
+} from "@/lib/logger";
+
+describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
+  it("génère une structure JSON valide avec timestamp, niveau et message", () => {
+    const entry = logger.info("Combat d'entraînement démarré", {
+      action: "battle.start",
+      difficulty: "hard",
+    });
+
+    expect(entry).toHaveProperty("timestamp");
+    expect(entry.level).toBe("info");
+    expect(entry.message).toBe("Combat d'entraînement démarré");
+    expect(entry.data?.action).toBe("battle.start");
+    expect(entry.data?.difficulty).toBe("hard");
+  });
+
+  it("corrèle correctement les événements avec requestId et eventId", () => {
+    const entry = logger.info("Événement Outbox publié dans Redis", {
+      requestId: "req_abc123",
+      eventId: "evt_998877",
+      userId: "usr_42",
+      stream: "heig-odyssey:events",
+    });
+
+    expect(entry.requestId).toBe("req_abc123");
+    expect(entry.eventId).toBe("evt_998877");
+    expect(entry.userId).toBe("usr_42");
+    expect(entry.data?.stream).toBe("heig-odyssey:events");
+    // requestId et eventId ne doivent pas être dupliqués dans data
+    expect(entry.data?.requestId).toBeUndefined();
+    expect(entry.data?.eventId).toBeUndefined();
+  });
+
+  describe("Filtrage et masquage des secrets (Redaction)", () => {
+    it("masque automatiquement les mots de passe, tokens et clés d'API", () => {
+      const sensitiveContext = {
+        username: "joueur_test",
+        password: "SuperSecretPassword123!",
+        confirmPassword: "SuperSecretPassword123!",
+        token: "jwt_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        sessionToken: "session_token_value",
+        apiKey: "re_test_key_12345",
+        resend_api_key: "re_secret_live",
+      };
+
+      const sanitized = sanitizeLogData(sensitiveContext) as Record<string, unknown>;
+
+      expect(sanitized.username).toBe("joueur_test");
+      expect(sanitized.password).toBe("[REDACTED]");
+      expect(sanitized.confirmPassword).toBe("[REDACTED]");
+      expect(sanitized.token).toBe("[REDACTED]");
+      expect(sanitized.sessionToken).toBe("[REDACTED]");
+      expect(sanitized.apiKey).toBe("[REDACTED]");
+      expect(sanitized.resend_api_key).toBe("[REDACTED]");
+    });
+
+    it("masque les tokens Bearer et chaînes de connexion PostgreSQL dans les strings", () => {
+      const headerString = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xyz";
+      const dbUrlString = "postgresql://postgres:mysecretpassword@localhost:5432/heig_odyssey";
+
+      const sanitizedHeader = sanitizeLogData(headerString);
+      const sanitizedDbUrl = sanitizeLogData(dbUrlString);
+
+      expect(sanitizedHeader).toBe("Bearer [REDACTED]");
+      expect(sanitizedDbUrl).toBe("postgresql://postgres:[REDACTED]@localhost:5432/heig_odyssey");
+    });
+
+    it("masque récursivement les objets imbriqués sans altérer les autres données", () => {
+      const nested = {
+        user: {
+          id: "usr_1",
+          email: "test@example.com",
+          credentials: {
+            passwordHash: "bcrypt_hash_123456",
+            recoveryToken: "rec_token_789",
+          },
+        },
+        payload: {
+          speciesId: "garchomp",
+          level: 50,
+        },
+      };
+
+      const sanitized = sanitizeLogData(nested) as any;
+
+      expect(sanitized.user.id).toBe("usr_1");
+      expect(sanitized.user.email).toBe("test@example.com");
+      expect(sanitized.user.credentials.passwordHash).toBe("[REDACTED]");
+      expect(sanitized.user.credentials.recoveryToken).toBe("[REDACTED]");
+      expect(sanitized.payload.speciesId).toBe("garchomp");
+      expect(sanitized.payload.level).toBe(50);
+    });
+  });
+
+  describe("Capture des erreurs", () => {
+    it("inclut le nom et le message de l'erreur de façon structurée", () => {
+      const testError = new Error("Connexion Redis interrompue");
+      testError.name = "RedisConnectionError";
+
+      const log = createStructuredLog("error", "Échec d'envoi", { requestId: "req_err" }, testError);
+
+      expect(log.level).toBe("error");
+      expect(log.error).toBeDefined();
+      expect(log.error?.name).toBe("RedisConnectionError");
+      expect(log.error?.message).toBe("Connexion Redis interrompue");
+    });
+  });
+});
