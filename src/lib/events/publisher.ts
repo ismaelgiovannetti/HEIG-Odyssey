@@ -3,6 +3,7 @@ import { getRedisClient } from "./redis-client";
 import { OutboxStatus } from "@prisma/client";
 import type Redis from "ioredis";
 import type { DomainEventEnvelope } from "./contracts";
+import { logger, sanitizeLogData } from "../logger";
 
 export const EVENTS_STREAM_KEY = "heig-odyssey:events";
 
@@ -39,6 +40,14 @@ export async function publishDomainEvent(
     "payload",
     JSON.stringify(event.payload)
   );
+
+  logger.info("Événement publié dans Redis Streams", {
+    eventId: event.eventId,
+    action: "event.publish",
+    eventType: event.eventType,
+    aggregateType: event.aggregateType,
+    messageId,
+  });
 
   return messageId as string;
 }
@@ -95,8 +104,18 @@ export async function publishPendingOutboxEvents(options: {
       publishedCount++;
     } catch (error) {
       failedCount++;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = String(sanitizeLogData(
+        error instanceof Error ? error.message : String(error),
+      ));
       const isLastRetry = outboxItem.retryCount + 1 >= maxRetries;
+
+      logger.error("Échec de publication d'un événement Outbox", {
+        eventId: outboxItem.eventId,
+        action: "event.publish.retry",
+        eventType: outboxItem.eventType,
+        retryCount: outboxItem.retryCount + 1,
+        terminal: isLastRetry,
+      }, error);
 
       await prisma.outboxEvent.update({
         where: { id: outboxItem.id },
@@ -119,7 +138,10 @@ export function triggerOutboxFlush(): void {
   // Exécution asynchrone sans bloquer la requête HTTP
   setImmediate(() => {
     publishPendingOutboxEvents().catch((err) => {
-      console.error("[Outbox Publisher] Échec du vidage en arrière-plan :", err);
+      logger.error("Échec du vidage de l'Outbox en arrière-plan", {
+        eventId: logger.generateEventId(),
+        action: "outbox.flush",
+      }, err);
     });
   });
 }

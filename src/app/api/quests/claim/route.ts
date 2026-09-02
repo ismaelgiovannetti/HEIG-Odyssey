@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { getApplicationOrigin } from "@/lib/auth/environment";
+import { getRequestId, logger } from "@/lib/logger";
 import {
   claimQuestReward,
   QuestNotFoundError,
@@ -22,6 +23,7 @@ function json(body: unknown, status = 200) {
 }
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   try {
     const session = await auth.api.getSession({ headers: req.headers });
 
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.error("[API /api/quests/claim] Erreur inattendue :", error);
+    logger.error("Échec de la réclamation d'une quête", { requestId, action: "quests.claim" }, error);
     return json(
       { success: false, error: "Impossible de réclamer la récompense." },
       500,

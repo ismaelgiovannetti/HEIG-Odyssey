@@ -19,7 +19,9 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
 
   describe("GET /api/gacha/banners", () => {
     it("renvoie la liste des bannières actives avec code 200", async () => {
-      const res = await getBannersRoute();
+      const res = await getBannersRoute(
+        new Request("http://localhost:3000/api/gacha/banners"),
+      );
       expect(res.status).toBe(200);
 
       const json = await res.json();

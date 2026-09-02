@@ -20,6 +20,7 @@ import { getApplicationOrigin, getBetterAuthSecret } from "@/lib/auth/environmen
 import { deliverPasswordResetEmail } from "@/lib/email/password-reset-email";
 import { deliverVerificationEmail } from "@/lib/email/verification-email";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // Ce fichier centralise la configuration serveur de Better Auth.
 // Il ne doit jamais être importé dans un composant client.
@@ -56,8 +57,10 @@ export const auth = betterAuth({
         resetUrl: url,
       }).catch((error: unknown) => {
         // Le journal ne contient ni adresse, ni URL, ni jeton de récupération.
-        const errorCode = error instanceof Error ? error.message : "UNKNOWN_EMAIL_DELIVERY_ERROR";
-        console.error("Échec de l'envoi de l'e-mail de récupération.", { errorCode });
+        logger.error("Échec de l'envoi de l'e-mail de récupération", {
+          eventId: logger.generateEventId(),
+          action: "auth.password-reset-email",
+        }, error);
       });
     },
   },
@@ -75,8 +78,10 @@ export const auth = betterAuth({
         verificationUrl: url,
       }).catch((error: unknown) => {
         // Seul un code contrôlé est journalisé : ni adresse, ni jeton, ni clé API.
-        const errorCode = error instanceof Error ? error.message : "UNKNOWN_EMAIL_DELIVERY_ERROR";
-        console.error("Échec de l'envoi de l'e-mail de vérification.", { errorCode });
+        logger.error("Échec de l'envoi de l'e-mail de vérification", {
+          eventId: logger.generateEventId(),
+          action: "auth.verification-email",
+        }, error);
       });
     },
   },

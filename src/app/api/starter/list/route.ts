@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { loadStarters, getSpecies } from "@/lib/content/loader";
+import { getRequestId, logger } from "@/lib/logger";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const requestId = getRequestId(req);
   try {
     const starters = loadStarters();
 
@@ -26,10 +28,11 @@ export async function GET() {
       starters: formatted,
     });
   } catch (error) {
+    logger.error("Échec du chargement des starters", { requestId, action: "starter.list" }, error);
     return NextResponse.json(
       {
         success: false,
-        error: (error as Error).message,
+        error: "Impossible de récupérer les starters.",
       },
       { status: 500 }
     );

@@ -17,6 +17,7 @@ import {
   type TrainingDifficulty,
 } from "@/lib/combat/training-generator";
 import type { Trainer } from "@/lib/content/schemas";
+import { getRequestId, logger } from "@/lib/logger";
 
 const BattleTargetIdSchema = z.string().trim().min(1).max(100);
 
@@ -61,6 +62,7 @@ const AUTHENTICATION_REQUIRED_MESSAGE = "Authentification requise.";
 const BATTLE_START_FAILED_MESSAGE = "Impossible de démarrer le combat.";
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   try {
     // La session serveur est l'unique source de vérité pour l'identité du joueur.
     const session = await auth.api.getSession({ headers: req.headers });
@@ -194,9 +196,9 @@ export async function POST(req: Request) {
       },
       state: initialState,
     });
-  } catch {
+  } catch (error) {
     // Aucun détail technique ni identifiant interne n'est renvoyé au navigateur.
-    console.error("Échec du démarrage du combat.");
+    logger.error("Échec du démarrage du combat", { requestId, action: "battle.start" }, error);
     return NextResponse.json(
       { success: false, error: BATTLE_START_FAILED_MESSAGE },
       { status: 500 }

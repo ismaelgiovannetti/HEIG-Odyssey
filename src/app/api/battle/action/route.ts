@@ -6,6 +6,7 @@ import {
   BattleSessionUnavailableError,
   processBattleTurn,
 } from "@/lib/combat/battle-session-store";
+import { getRequestId, logger } from "@/lib/logger";
 
 const BattleActionBodySchema = z.object({
   battleId: z.string().trim().min(1).max(100),
@@ -28,6 +29,7 @@ const BATTLE_UNAVAILABLE_MESSAGE = "Combat introuvable ou expiré.";
 const BATTLE_ACTION_FAILED_MESSAGE = "Impossible de traiter l'action de combat.";
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   try {
     // Better Auth valide le cookie avant toute lecture ou mutation du combat.
     const session = await auth.api.getSession({ headers: req.headers });
@@ -86,7 +88,7 @@ export async function POST(req: Request) {
     }
 
     // Les erreurs inattendues restent côté serveur sans exposer leur message.
-    console.error("Échec du traitement d'une action de combat.");
+    logger.error("Échec du traitement d'une action de combat", { requestId, action: "battle.action" }, error);
     return NextResponse.json(
       { success: false, error: BATTLE_ACTION_FAILED_MESSAGE },
       { status: 500 },

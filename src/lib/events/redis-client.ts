@@ -1,4 +1,5 @@
 import Redis, { type RedisOptions } from "ioredis";
+import { logger } from "@/lib/logger";
 
 let redisClientInstance: Redis | null = null;
 
@@ -21,9 +22,10 @@ export function createRedisClient(customOptions?: RedisOptions): Redis {
 
   // Évite les Unhandled error events lorsque Redis est injoignable hors connexion
   client.on("error", (err: Error) => {
-    if (process.env.NODE_ENV !== "test") {
-      console.warn("[Redis Client] Notification d'erreur :", err.message || err);
-    }
+    logger.warn("Erreur de connexion Redis", {
+      eventId: logger.generateEventId(),
+      action: "redis.connection",
+    }, err);
   });
 
   return client;
