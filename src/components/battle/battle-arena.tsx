@@ -313,7 +313,8 @@ export function BattleArena({
 
       // Déroulement séquentiel et immersif des événements du tour
       if (next.events && next.events.length > 0) {
-        for (const event of next.events) {
+        for (let i = 0; i < next.events.length; i++) {
+          const event = next.events[i];
           if (event.message) {
             setCurrentMessage(event.message);
           }
@@ -330,13 +331,24 @@ export function BattleArena({
               setOpponentAnim("is-attacking-opponent");
               setTimeout(() => setOpponentAnim(""), 420);
             }
-            await sleep(850);
+            await sleep(1200);
           } else if (event.type === "damage") {
             const isPlayerTarget =
               event.side === "p1" ||
               (!event.side && event.message?.includes(player.nickname || player.name));
 
-            playBattleSfx("hit");
+            // Déterminer le SFX précis lié à cet impact (super efficace, peu efficace, coup critique, ou normal)
+            const nextEvent = next.events[i + 1];
+            if (nextEvent?.type === "effectiveness" && nextEvent.multiplier && nextEvent.multiplier > 1) {
+              playBattleSfx("super_effective");
+            } else if (nextEvent?.type === "effectiveness" && nextEvent.multiplier && nextEvent.multiplier < 1 && nextEvent.multiplier > 0) {
+              playBattleSfx("resisted");
+            } else if (nextEvent?.type === "critical_hit") {
+              playBattleSfx("critical");
+            } else {
+              playBattleSfx("hit");
+            }
+
             if (isPlayerTarget) {
               setPlayerAnim("is-taking-damage");
               setTimeout(() => setPlayerAnim(""), 460);
@@ -358,23 +370,18 @@ export function BattleArena({
                 });
               }
             }
-            await sleep(900);
+            await sleep(1300);
           } else if (event.type === "effectiveness") {
-            if (event.multiplier && event.multiplier > 1) {
-              playBattleSfx("super_effective");
-            } else if (event.multiplier && event.multiplier < 1 && event.multiplier > 0) {
-              playBattleSfx("resisted");
-            }
-            await sleep(750);
+            // Le message reste affiché suffisamment longtemps
+            await sleep(1150);
           } else if (event.type === "critical_hit") {
-            playBattleSfx("critical");
-            await sleep(750);
+            await sleep(1150);
           } else if (event.type === "status_inflicted") {
             if (event.status === "par") playBattleSfx("status_par");
             else if (event.status === "slp") playBattleSfx("status_slp");
             else if (event.status === "brn") playBattleSfx("status_brn");
             else if (event.status === "psn" || event.status === "tox") playBattleSfx("status_psn");
-            await sleep(850);
+            await sleep(1300);
           } else if (event.type === "faint") {
             const isPlayerFaint =
               event.side === "p1" ||
@@ -386,15 +393,15 @@ export function BattleArena({
             } else {
               setOpponentAnim("is-fainting");
             }
-            await sleep(950);
+            await sleep(1400);
           } else if (event.type === "switch") {
             playBattleSfx("switch");
-            await sleep(800);
+            await sleep(1200);
           } else if (event.type === "miss") {
             playBattleSfx("miss");
-            await sleep(750);
+            await sleep(1100);
           } else {
-            await sleep(650);
+            await sleep(950);
           }
         }
       }

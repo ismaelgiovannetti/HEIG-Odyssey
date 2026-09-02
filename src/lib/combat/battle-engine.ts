@@ -226,7 +226,7 @@ export class BattleEngine {
             currentHp: currHp,
             maxHp: maxHp,
             hpPercent: percent,
-            message: `${this.formatName(targetStr)} subit des dégâts (${percent}% PV restants).`,
+            message: `${this.formatName(targetStr)} subit des dégâts !`,
           });
           break;
         }
