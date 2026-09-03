@@ -1,27 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BrainCircuit, Compass, LogIn, Sparkles, Swords, UserPlus } from "lucide-react";
-
-const STARTERS = [
-  {
-    name: "Tortipouss",
-    type: "Plante",
-    sprite: "/sprites/pokemon/front/turtwig.png",
-    className: "home-starter home-starter--left",
-  },
-  {
-    name: "Ouisticram",
-    type: "Feu",
-    sprite: "/sprites/pokemon/front/chimchar.png",
-    className: "home-starter home-starter--center",
-  },
-  {
-    name: "Tiplouf",
-    type: "Eau",
-    sprite: "/sprites/pokemon/front/piplup.png",
-    className: "home-starter home-starter--right",
-  },
-] as const;
+import { StarterShowcase } from "@/components/onboarding/starter-showcase";
 
 const GAME_PILLARS = [
   {
@@ -57,24 +37,6 @@ export default function HomePage() {
       <a className="skip-link" href="#home-actions">
         Aller aux actions
       </a>
-
-      {/* Les Pokémon latéraux donnent de la profondeur sans ajouter de contenu lu. */}
-      <Image
-        className="home-floating-sprite home-floating-sprite--left"
-        src="/sprites/pokemon/front/eevee.png"
-        alt=""
-        width={96}
-        height={96}
-        aria-hidden="true"
-      />
-      <Image
-        className="home-floating-sprite home-floating-sprite--right"
-        src="/sprites/pokemon/front/lucario.png"
-        alt=""
-        width={110}
-        height={110}
-        aria-hidden="true"
-      />
 
       <section className="home-window" aria-labelledby="home-title">
         <div className="home-window__topbar" aria-hidden="true">
@@ -123,7 +85,7 @@ export default function HomePage() {
             </div>
 
             <p className="home-reassurance">
-              <span aria-hidden="true">●</span> Jeu solo · progression persistante · aucun achat réel
+              <span aria-hidden="true">●</span> Jeu solo · progression persistante
             </p>
           </div>
 
@@ -133,26 +95,7 @@ export default function HomePage() {
               <strong>Recrutement offert</strong>
             </div>
 
-            <div className="home-showcase__scene">
-              <div className="home-showcase__grid" aria-hidden="true" />
-
-              {STARTERS.map((starter) => (
-                <figure className={starter.className} key={starter.name}>
-                  <div className="home-starter__sprite">
-                    <Image
-                      src={starter.sprite}
-                      alt={starter.name}
-                      width={128}
-                      height={128}
-                    />
-                  </div>
-                  <figcaption>
-                    <strong>{starter.name}</strong>
-                    <span>{starter.type}</span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+            <StarterShowcase />
 
             <div className="home-showcase__message">
               <span aria-hidden="true">▶</span>
