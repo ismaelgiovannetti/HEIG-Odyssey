@@ -270,7 +270,9 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
                     ) : affordable ? (
                       <><Egg size={18} aria-hidden="true" /><span className={styles.actionLabel}>Invoquer pour {banner.costPokedollars} ₽</span></>
                     ) : (
-                      <span className={styles.actionLabel}>Solde insuffisant</span>
+                      <span className={styles.actionLabel}>
+                        Solde insuffisant - ₽ {banner.costPokedollars}
+                      </span>
                     )}
                   </button>
                 </span>

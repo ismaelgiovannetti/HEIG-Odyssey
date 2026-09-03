@@ -3,14 +3,14 @@
   "worlds": [
     {
       "id": "bachelor-1",
-      "name": "Les Fondations du Type Normal",
+      "name": "Bachelor - Année 1",
       "degree": "BACHELOR",
       "description": "Apprenez les bases tactiques face au type Normal.",
       "stages": [
         {
           "id": "bachelor-1-stage-1",
           "stageNumber": 1,
-          "name": "Mathématiques 1 — Premiers repères",
+          "name": "MAT1 - Premiers repères",
           "description": "Mobilisez logique, ensembles et calcul élémentaire face aux premiers Pokémon Normal.",
           "recommendedLevel": 6,
           "trainerId": "trainer-b1-stage-1",
@@ -21,7 +21,7 @@
         {
           "id": "bachelor-1-stage-2",
           "stageNumber": 2,
-          "name": "Mathématiques 2 — Suites tactiques",
+          "name": "MAT2 - Suites tactiques",
           "description": "Enchaînez les actions dans le bon ordre pour maîtriser une équipe rapide et polyvalente.",
           "recommendedLevel": 8,
           "trainerId": "trainer-b1-stage-2",
@@ -32,7 +32,7 @@
         {
           "id": "bachelor-1-stage-3",
           "stageNumber": 3,
-          "name": "Programmation 1 — Premier duel",
+          "name": "PRG1 - Premier duel",
           "description": "Construisez une stratégie simple, instruction après instruction, contre un jeune programmeur.",
           "recommendedLevel": 10,
           "trainerId": "trainer-b1-stage-3",
@@ -43,7 +43,7 @@
         {
           "id": "bachelor-1-stage-4",
           "stageNumber": 4,
-          "name": "Systèmes d'information — Données de terrain",
+          "name": "SIN - Données de terrain",
           "description": "Organisez les informations du combat pour anticiper les changements de Pokémon adverses.",
           "recommendedLevel": 12,
           "trainerId": "trainer-b1-stage-4",
@@ -54,7 +54,7 @@
         {
           "id": "bachelor-1-stage-5",
           "stageNumber": 5,
-          "name": "Algorithmique et structures de données — Parcours Normal",
+          "name": "ASD - Parcours Normal",
           "description": "Choisissez la bonne structure tactique pour franchir la dernière épreuve préparatoire.",
           "recommendedLevel": 14,
           "trainerId": "trainer-b1-stage-5",
@@ -65,7 +65,7 @@
         {
           "id": "bachelor-1-stage-6",
           "stageNumber": 6,
-          "name": "Examen des fondamentaux — Professeur Fouad",
+          "name": "Fondamentaux",
           "description": "Validez les bases du Bachelor contre Fouad et son équipe Normal aussi stable qu'imprévisible.",
           "recommendedLevel": 16,
           "trainerId": "boss-fouad",
@@ -77,14 +77,14 @@
     },
     {
       "id": "bachelor-2",
-      "name": "La Serre des Sciences Vivantes",
+      "name": "Bachelor - Année 2",
       "degree": "BACHELOR",
       "description": "Maîtrisez les statuts, les soins et le type Plante.",
       "stages": [
         {
           "id": "bachelor-2-stage-1",
           "stageNumber": 1,
-          "name": "Mathématiques 3 — Croissance exponentielle",
+          "name": "MAT3 - Croissance exponentielle",
           "description": "Contrôlez une végétation qui gagne en puissance à chaque tour grâce aux fonctions avancées.",
           "recommendedLevel": 17,
           "trainerId": "trainer-b2-stage-1",
@@ -95,7 +95,7 @@
         {
           "id": "bachelor-2-stage-2",
           "stageNumber": 2,
-          "name": "Mathématiques 4 — Racines complexes",
+          "name": "MAT4 - Racines complexes",
           "description": "Résolvez les ramifications d'un affrontement où chaque choix fait pousser une nouvelle menace.",
           "recommendedLevel": 18,
           "trainerId": "trainer-b2-stage-2",
@@ -106,7 +106,7 @@
         {
           "id": "bachelor-2-stage-3",
           "stageNumber": 3,
-          "name": "Physique appliquée — Photosynthèse",
+          "name": "PHY - Photosynthèse",
           "description": "Exploitez énergie, lumière et transferts pour résister aux Pokémon de la serre expérimentale.",
           "recommendedLevel": 19,
           "trainerId": "trainer-b2-stage-3",
@@ -117,7 +117,7 @@
         {
           "id": "bachelor-2-stage-4",
           "stageNumber": 4,
-          "name": "Probabilités et statistiques — Pollen aléatoire",
+          "name": "PST - Pollen aléatoire",
           "description": "Évaluez les risques de spores, de sommeil et de paralysie avant de lancer chaque attaque.",
           "recommendedLevel": 20,
           "trainerId": "trainer-b2-stage-4",
@@ -128,7 +128,7 @@
         {
           "id": "bachelor-2-stage-5",
           "stageNumber": 5,
-          "name": "Méthodes numériques — Irrigation optimisée",
+          "name": "MNU - Irrigation optimisée",
           "description": "Ajustez progressivement votre stratégie pour assécher les ressources de l'équipe adverse.",
           "recommendedLevel": 21,
           "trainerId": "trainer-b2-stage-5",
@@ -139,7 +139,7 @@
         {
           "id": "bachelor-2-stage-6",
           "stageNumber": 6,
-          "name": "Projet interdisciplinaire — Écosystème autonome",
+          "name": "PIN - Écosystème autonome",
           "description": "Combinez calcul, observation et gestion des statuts dans une serre devenue entièrement autonome.",
           "recommendedLevel": 22,
           "trainerId": "trainer-b2-stage-6",
@@ -150,7 +150,7 @@
         {
           "id": "bachelor-2-stage-7",
           "stageNumber": 7,
-          "name": "Soutenance botanique — Professeure Nastaran",
+          "name": "Soutenance botanique",
           "description": "Présentez votre maîtrise des sciences vivantes face à Nastaran et son jury de type Plante.",
           "recommendedLevel": 26,
           "trainerId": "boss-nastaran",
@@ -162,14 +162,14 @@
     },
     {
       "id": "bachelor-3",
-      "name": "Le Réseau Haute Tension",
+      "name": "Bachelor - Année 3",
       "degree": "BACHELOR",
       "description": "Surmontez vitesse, attaques spéciales et paralysie.",
       "stages": [
         {
           "id": "bachelor-3-stage-1",
           "stageNumber": 1,
-          "name": "Électricité — Mise sous tension",
+          "name": "ELC - Mise sous tension",
           "description": "Fermez le circuit et encaissez les premières décharges d'une équipe Électrik réactive.",
           "recommendedLevel": 27,
           "trainerId": "trainer-b3-stage-1",
@@ -180,7 +180,7 @@
         {
           "id": "bachelor-3-stage-2",
           "stageNumber": 2,
-          "name": "Électronique — Composants sous pression",
+          "name": "ELE - Composants sous pression",
           "description": "Identifiez le composant faible avant qu'une surcharge ne paralyse toute votre équipe.",
           "recommendedLevel": 28,
           "trainerId": "trainer-b3-stage-2",
@@ -191,7 +191,7 @@
         {
           "id": "bachelor-3-stage-3",
           "stageNumber": 3,
-          "name": "Signaux et systèmes — Onde de choc",
+          "name": "SYS - Onde de choc",
           "description": "Analysez fréquence et amplitude pour traverser un duel rythmé par des impulsions fulgurantes.",
           "recommendedLevel": 29,
           "trainerId": "trainer-b3-stage-3",
@@ -202,7 +202,7 @@
         {
           "id": "bachelor-3-stage-4",
           "stageNumber": 4,
-          "name": "Architecture des ordinateurs — Bus de puissance",
+          "name": "ARO - Bus de puissance",
           "description": "Synchronisez vos actions comme les composants d'une machine soumise à une forte charge.",
           "recommendedLevel": 30,
           "trainerId": "trainer-b3-stage-4",
@@ -213,7 +213,7 @@
         {
           "id": "bachelor-3-stage-5",
           "stageNumber": 5,
-          "name": "Réseaux informatiques — Paquets de foudre",
+          "name": "RES - Paquets de foudre",
           "description": "Acheminez vos attaques sans perte malgré les interférences et les changements de route adverses.",
           "recommendedLevel": 31,
           "trainerId": "trainer-b3-stage-5",
@@ -224,7 +224,7 @@
         {
           "id": "bachelor-3-stage-6",
           "stageNumber": 6,
-          "name": "Télécommunications — Liaison orageuse",
+          "name": "TLC - Liaison orageuse",
           "description": "Maintenez une connexion tactique fiable au cœur d'un champ électromagnétique instable.",
           "recommendedLevel": 32,
           "trainerId": "trainer-b3-stage-6",
@@ -235,7 +235,7 @@
         {
           "id": "bachelor-3-stage-7",
           "stageNumber": 7,
-          "name": "Systèmes embarqués — Réaction temps réel",
+          "name": "SYE - Réaction temps réel",
           "description": "Répondez sans délai aux accélérations d'une escouade conçue pour agir avant vous.",
           "recommendedLevel": 33,
           "trainerId": "trainer-b3-stage-7",
@@ -246,7 +246,7 @@
         {
           "id": "bachelor-3-stage-8",
           "stageNumber": 8,
-          "name": "Certification haute tension — Professeur Mosqueron",
+          "name": "Certification haute tension",
           "description": "Affrontez Mosqueron pour prouver que votre stratégie résiste à la puissance maximale du réseau.",
           "recommendedLevel": 36,
           "trainerId": "boss-mosqueron",
@@ -258,14 +258,14 @@
     },
     {
       "id": "bachelor-4",
-      "name": "La Citadelle des Alliages",
+      "name": "Bachelor - Année 4",
       "degree": "BACHELOR",
       "description": "Brisez défenses, immunités et résistances.",
       "stages": [
         {
           "id": "bachelor-4-stage-1",
           "stageNumber": 1,
-          "name": "Conception orientée objet — Armure modulaire",
+          "name": "COO - Armure modulaire",
           "description": "Assemblez responsabilités et capacités pour fissurer une première défense de type Acier.",
           "recommendedLevel": 37,
           "trainerId": "trainer-b4-stage-1",
@@ -276,7 +276,7 @@
         {
           "id": "bachelor-4-stage-2",
           "stageNumber": 2,
-          "name": "Bases de données — Coffre blindé",
+          "name": "BD - Coffre blindé",
           "description": "Interrogez les bonnes informations avant que les verrous métalliques ne se referment.",
           "recommendedLevel": 38,
           "trainerId": "trainer-b4-stage-2",
@@ -287,7 +287,7 @@
         {
           "id": "bachelor-4-stage-3",
           "stageNumber": 3,
-          "name": "Développement web — Interface de contrôle",
+          "name": "WEB - Interface de contrôle",
           "description": "Pilotez le duel depuis une console industrielle protégée par plusieurs couches défensives.",
           "recommendedLevel": 39,
           "trainerId": "trainer-b4-stage-3",
@@ -298,7 +298,7 @@
         {
           "id": "bachelor-4-stage-4",
           "stageNumber": 4,
-          "name": "Génie logiciel — Chaîne d'assemblage",
+          "name": "GLO - Chaîne d'assemblage",
           "description": "Coordonnez chaque membre de l'équipe comme une pièce essentielle d'un mécanisme fiable.",
           "recommendedLevel": 40,
           "trainerId": "trainer-b4-stage-4",
@@ -309,7 +309,7 @@
         {
           "id": "bachelor-4-stage-5",
           "stageNumber": 5,
-          "name": "Tests et qualité — Banc de résistance",
+          "name": "TST - Banc de résistance",
           "description": "Soumettez votre composition aux chocs, aux pressions et aux contre-attaques de la fonderie.",
           "recommendedLevel": 41,
           "trainerId": "trainer-b4-stage-5",
@@ -320,7 +320,7 @@
         {
           "id": "bachelor-4-stage-6",
           "stageNumber": 6,
-          "name": "DevOps — Forge continue",
+          "name": "SRX - Forge continue",
           "description": "Adaptez et redéployez votre stratégie sans interrompre le rythme brûlant de la production.",
           "recommendedLevel": 42,
           "trainerId": "trainer-b4-stage-6",
@@ -331,7 +331,7 @@
         {
           "id": "bachelor-4-stage-7",
           "stageNumber": 7,
-          "name": "Sécurité informatique — Périmètre renforcé",
+          "name": "SEC - Périmètre renforcé",
           "description": "Trouvez l'unique ouverture dans une enceinte conçue pour repousser toutes les intrusions.",
           "recommendedLevel": 43,
           "trainerId": "trainer-b4-stage-7",
@@ -342,7 +342,7 @@
         {
           "id": "bachelor-4-stage-8",
           "stageNumber": 8,
-          "name": "Cloud Computing — Fonderie distribuée",
+          "name": "CLD - Fonderie distribuée",
           "description": "Répartissez vos ressources pour dépasser une infrastructure métallique devenue gigantesque.",
           "recommendedLevel": 44,
           "trainerId": "trainer-b4-stage-8",
@@ -353,7 +353,7 @@
         {
           "id": "bachelor-4-stage-9",
           "stageNumber": 9,
-          "name": "Homologation des matériaux — Professeur Augier",
+          "name": "Homologation des matériaux",
           "description": "Faites certifier votre équipe face à Augier et à ses spécialistes des alliages de combat.",
           "recommendedLevel": 46,
           "trainerId": "boss-augier",
@@ -365,14 +365,14 @@
     },
     {
       "id": "bachelor-5",
-      "name": "L'Institut des Esprits Connectés",
+      "name": "Bachelor - Année 5",
       "degree": "BACHELOR",
       "description": "Dominez le type Psy pour décrocher votre Bachelor.",
       "stages": [
         {
           "id": "bachelor-5-stage-1",
           "stageNumber": 1,
-          "name": "Intelligence artificielle — Premier modèle",
+          "name": "IA - Premier modèle",
           "description": "Déjouez un adversaire qui apprend de vos décisions et ajuste progressivement ses priorités.",
           "recommendedLevel": 47,
           "trainerId": "trainer-b5-stage-1",
@@ -383,7 +383,7 @@
         {
           "id": "bachelor-5-stage-2",
           "stageNumber": 2,
-          "name": "Apprentissage automatique — Données mentales",
+          "name": "ML - Données mentales",
           "description": "Repérez les biais du modèle adverse avant qu'il ne prédise chacune de vos attaques.",
           "recommendedLevel": 48,
           "trainerId": "trainer-b5-stage-2",
@@ -394,7 +394,7 @@
         {
           "id": "bachelor-5-stage-3",
           "stageNumber": 3,
-          "name": "Traitement d'images — Vision extrasensorielle",
+          "name": "TIM - Vision extrasensorielle",
           "description": "Distinguez les signaux utiles parmi les illusions projetées sur le champ de bataille.",
           "recommendedLevel": 49,
           "trainerId": "trainer-b5-stage-3",
@@ -405,7 +405,7 @@
         {
           "id": "bachelor-5-stage-4",
           "stageNumber": 4,
-          "name": "Interaction humain-machine — Interface empathique",
+          "name": "IHM - Interface empathique",
           "description": "Lisez les réactions du dresseur pour choisir une réponse claire, rapide et adaptée.",
           "recommendedLevel": 50,
           "trainerId": "trainer-b5-stage-4",
@@ -416,7 +416,7 @@
         {
           "id": "bachelor-5-stage-5",
           "stageNumber": 5,
-          "name": "Optimisation — Esprit sous contrainte",
+          "name": "OPT - Esprit sous contrainte",
           "description": "Trouvez la meilleure action possible malgré des ressources limitées et des menaces multiples.",
           "recommendedLevel": 51,
           "trainerId": "trainer-b5-stage-5",
@@ -427,7 +427,7 @@
         {
           "id": "bachelor-5-stage-6",
           "stageNumber": 6,
-          "name": "Calcul scientifique — Simulation psychique",
+          "name": "CSN - Simulation psychique",
           "description": "Simulez plusieurs futurs pour éviter le scénario où l'équipe adverse prend le contrôle.",
           "recommendedLevel": 52,
           "trainerId": "trainer-b5-stage-6",
@@ -438,7 +438,7 @@
         {
           "id": "bachelor-5-stage-7",
           "stageNumber": 7,
-          "name": "Science des données — Mémoire collective",
+          "name": "DS - Mémoire collective",
           "description": "Transformez l'historique des combats en indices décisifs pour votre prochaine offensive.",
           "recommendedLevel": 53,
           "trainerId": "trainer-b5-stage-7",
@@ -449,7 +449,7 @@
         {
           "id": "bachelor-5-stage-8",
           "stageNumber": 8,
-          "name": "Éthique du numérique — Choix de conscience",
+          "name": "ETH - Choix de conscience",
           "description": "Remportez l'épreuve sans sacrifier l'équilibre entre puissance, responsabilité et maîtrise.",
           "recommendedLevel": 54,
           "trainerId": "trainer-b5-stage-8",
@@ -460,7 +460,7 @@
         {
           "id": "bachelor-5-stage-9",
           "stageNumber": 9,
-          "name": "Projet Bachelor — Prototype télépathique",
+          "name": "PDB - Prototype télépathique",
           "description": "Intégrez toutes vos compétences dans un prototype tactique capable de résister aux pouvoirs Psy.",
           "recommendedLevel": 55,
           "trainerId": "trainer-b5-stage-9",
@@ -471,7 +471,7 @@
         {
           "id": "bachelor-5-stage-10",
           "stageNumber": 10,
-          "name": "Diplôme Bachelor — Professeur Tori",
+          "name": "Défi télépathique",
           "description": "Défendez votre projet final face à Tori et obtenez votre diplôme d'ingénierie Pokémon.",
           "recommendedLevel": 56,
           "trainerId": "boss-tori",
@@ -483,14 +483,14 @@
     },
     {
       "id": "master-1",
-      "name": "Le Campus des Ombres Toxiques",
+      "name": "Master - Année 1",
       "degree": "MASTER",
       "description": "Déjouez les tactiques Poison et Ténèbres.",
       "stages": [
         {
           "id": "master-1-stage-1",
           "stageNumber": 1,
-          "name": "Cryptographie appliquée — Antidote chiffré",
+          "name": "CRY - Antidote chiffré",
           "description": "Décodez une stratégie empoisonnée dont les intentions restent cachées jusqu'au dernier instant.",
           "recommendedLevel": 57,
           "trainerId": "trainer-m1-stage-1",
@@ -501,7 +501,7 @@
         {
           "id": "master-1-stage-2",
           "stageNumber": 2,
-          "name": "Sécurité des réseaux — Trafic nocturne",
+          "name": "SER - Trafic nocturne",
           "description": "Filtrez les attaques malveillantes qui circulent silencieusement entre les ombres du campus.",
           "recommendedLevel": 58,
           "trainerId": "trainer-m1-stage-2",
@@ -512,7 +512,7 @@
         {
           "id": "master-1-stage-3",
           "stageNumber": 3,
-          "name": "Programmation sécurisée — Injection toxique",
+          "name": "ASM - Injection toxique",
           "description": "Corrigez votre plan de combat avant qu'une faille ne contamine toutes vos défenses.",
           "recommendedLevel": 59,
           "trainerId": "trainer-m1-stage-3",
@@ -523,7 +523,7 @@
         {
           "id": "master-1-stage-4",
           "stageNumber": 4,
-          "name": "Analyse de malwares — Souche inconnue",
+          "name": "MAL - Souche inconnue",
           "description": "Isolez un comportement hostile qui évolue à chaque tour et se dissimule dans votre équipe.",
           "recommendedLevel": 60,
           "trainerId": "trainer-m1-stage-4",
@@ -534,7 +534,7 @@
         {
           "id": "master-1-stage-5",
           "stageNumber": 5,
-          "name": "Tests d'intrusion — Passage clandestin",
+          "name": "PEN - Passage clandestin",
           "description": "Retournez contre l'adversaire les ouvertures laissées dans son périmètre obscur.",
           "recommendedLevel": 61,
           "trainerId": "trainer-m1-stage-5",
@@ -545,7 +545,7 @@
         {
           "id": "master-1-stage-6",
           "stageNumber": 6,
-          "name": "Gestion des identités — Masques et accès",
+          "name": "IAM - Masques et accès",
           "description": "Démasquez le véritable attaquant parmi les leurres avant d'accorder le moindre avantage.",
           "recommendedLevel": 62,
           "trainerId": "trainer-m1-stage-6",
@@ -556,7 +556,7 @@
         {
           "id": "master-1-stage-7",
           "stageNumber": 7,
-          "name": "Modélisation des menaces — Prédateur invisible",
+          "name": "TMD - Prédateur invisible",
           "description": "Classez les risques et protégez en priorité les ressources que l'ennemi cherche à neutraliser.",
           "recommendedLevel": 63,
           "trainerId": "trainer-m1-stage-7",
@@ -567,7 +567,7 @@
         {
           "id": "master-1-stage-8",
           "stageNumber": 8,
-          "name": "Sécurité du cloud — Brume corrosive",
+          "name": "CNM - Brume corrosive",
           "description": "Défendez une infrastructure dispersée pendant qu'un nuage toxique réduit progressivement sa disponibilité.",
           "recommendedLevel": 64,
           "trainerId": "trainer-m1-stage-8",
@@ -578,7 +578,7 @@
         {
           "id": "master-1-stage-9",
           "stageNumber": 9,
-          "name": "Forensique numérique — Traces dans l'ombre",
+          "name": "FOR - Traces dans l'ombre",
           "description": "Reconstituez l'offensive adverse à partir d'indices laissés sur le terrain après chaque échange.",
           "recommendedLevel": 65,
           "trainerId": "trainer-m1-stage-9",
@@ -589,7 +589,7 @@
         {
           "id": "master-1-stage-10",
           "stageNumber": 10,
-          "name": "Réponse aux incidents — Confinement d'urgence",
+          "name": "IR - Confinement d'urgence",
           "description": "Contenez une contamination critique et restaurez votre stratégie avant l'effondrement complet.",
           "recommendedLevel": 66,
           "trainerId": "trainer-m1-stage-10",
@@ -600,7 +600,7 @@
         {
           "id": "master-1-stage-11",
           "stageNumber": 11,
-          "name": "Audit de sécurité — Doyen Gamba",
+          "name": "Audit de sécurité",
           "description": "Passez l'audit final de Gamba contre une équipe experte en poison, ruse et attaques imprévisibles.",
           "recommendedLevel": 70,
           "trainerId": "boss-gamba",
@@ -612,14 +612,14 @@
     },
     {
       "id": "master-2",
-      "name": "Le Sommet Cryo-Draconique",
+      "name": "Master - Année 2",
       "degree": "MASTER",
       "description": "Affrontez la puissance des Dragons et de la Glace.",
       "stages": [
         {
           "id": "master-2-stage-1",
           "stageNumber": 1,
-          "name": "Systèmes distribués — Colonie des sommets",
+          "name": "SD - Colonie des sommets",
           "description": "Coordonnez plusieurs fronts isolés sans perdre la cohérence de votre stratégie globale.",
           "recommendedLevel": 71,
           "trainerId": "trainer-m2-stage-1",
@@ -630,7 +630,7 @@
         {
           "id": "master-2-stage-2",
           "stageNumber": 2,
-          "name": "Architectures cloud — Citadelle de givre",
+          "name": "ARC - Citadelle de givre",
           "description": "Dimensionnez vos ressources avant que la tempête ne surcharge les défenses du refuge.",
           "recommendedLevel": 72,
           "trainerId": "trainer-m2-stage-2",
@@ -641,7 +641,7 @@
         {
           "id": "master-2-stage-3",
           "stageNumber": 3,
-          "name": "Calcul haute performance — Souffle massif",
+          "name": "HPC - Souffle massif",
           "description": "Accélérez vos décisions pour absorber une puissance draconique impossible à traiter séquentiellement.",
           "recommendedLevel": 73,
           "trainerId": "trainer-m2-stage-3",
@@ -652,7 +652,7 @@
         {
           "id": "master-2-stage-4",
           "stageNumber": 4,
-          "name": "Conteneurs et orchestration — Cordée autonome",
+          "name": "CTO - Cordée autonome",
           "description": "Déployez chaque combattant au bon endroit tandis que le terrain change sous vos pieds.",
           "recommendedLevel": 74,
           "trainerId": "trainer-m2-stage-4",
@@ -663,7 +663,7 @@
         {
           "id": "master-2-stage-5",
           "stageNumber": 5,
-          "name": "Fiabilité des systèmes — Zéro absolu",
+          "name": "FIA - Zéro absolu",
           "description": "Maintenez le service malgré le gel, les pannes en cascade et la pression constante des dragons.",
           "recommendedLevel": 75,
           "trainerId": "trainer-m2-stage-5",
@@ -674,7 +674,7 @@
         {
           "id": "master-2-stage-6",
           "stageNumber": 6,
-          "name": "Traitement de données massives — Avalanche",
+          "name": "BDP - Avalanche",
           "description": "Analysez un flot d'informations brutal avant qu'il n'ensevelisse vos capacités de réaction.",
           "recommendedLevel": 76,
           "trainerId": "trainer-m2-stage-6",
@@ -685,7 +685,7 @@
         {
           "id": "master-2-stage-7",
           "stageNumber": 7,
-          "name": "Edge Computing — Avant-poste polaire",
+          "name": "SOS - Avant-poste polaire",
           "description": "Prenez vos décisions au plus près du danger sans attendre les instructions du camp principal.",
           "recommendedLevel": 77,
           "trainerId": "trainer-m2-stage-7",
@@ -696,7 +696,7 @@
         {
           "id": "master-2-stage-8",
           "stageNumber": 8,
-          "name": "Réseaux avancés — Liaison des crêtes",
+          "name": "GML - Liaison des crêtes",
           "description": "Préservez les communications entre les pics malgré les rafales et les perturbations glaciales.",
           "recommendedLevel": 78,
           "trainerId": "trainer-m2-stage-8",
@@ -707,7 +707,7 @@
         {
           "id": "master-2-stage-9",
           "stageNumber": 9,
-          "name": "Ingénierie de la résilience — Écailles éternelles",
+          "name": "PDG - Écailles éternelles",
           "description": "Concevez une équipe capable de plier sous les impacts sans jamais rompre.",
           "recommendedLevel": 79,
           "trainerId": "trainer-m2-stage-9",
@@ -718,7 +718,7 @@
         {
           "id": "master-2-stage-10",
           "stageNumber": 10,
-          "name": "Méthodologie de recherche — Archives du glacier",
+          "name": "MDR - Archives du glacier",
           "description": "Formulez puis vérifiez une hypothèse tactique à partir des traces conservées dans la glace.",
           "recommendedLevel": 80,
           "trainerId": "trainer-m2-stage-10",
@@ -729,7 +729,7 @@
         {
           "id": "master-2-stage-11",
           "stageNumber": 11,
-          "name": "Projet Master — Prototype draconique",
+          "name": "PDM - Prototype draconique",
           "description": "Présentez une architecture complète capable de canaliser simultanément le blizzard et la puissance des dragons.",
           "recommendedLevel": 81,
           "trainerId": "trainer-m2-stage-11",
@@ -740,7 +740,7 @@
         {
           "id": "master-2-stage-12",
           "stageNumber": 12,
-          "name": "Diplôme Master — Doyen Auberson",
+          "name": "Ascension cryo-draconique",
           "description": "Soutenez votre projet face à Auberson et à l'alliance ultime des dragons et des glaces.",
           "recommendedLevel": 84,
           "trainerId": "boss-auberson",
@@ -752,14 +752,14 @@
     },
     {
       "id": "doctorat",
-      "name": "La Convergence des Mondes",
+      "name": "Doctorat",
       "degree": "DOCTORAT",
       "description": "Affrontez les créateurs de HEIG Odyssey.",
       "stages": [
         {
           "id": "doctorat-stage-1",
           "stageNumber": 1,
-          "name": "Architectures célestes — Tiago",
+          "name": "Architectures célestes",
           "description": "Traversez les courants de Tiago et démontrez que votre architecture tient jusque dans les airs.",
           "recommendedLevel": 90,
           "trainerId": "boss-doc-tiago",
@@ -770,7 +770,7 @@
         {
           "id": "doctorat-stage-2",
           "stageNumber": 2,
-          "name": "Intelligence temporelle — Mo",
+          "name": "Intelligence temporelle",
           "description": "Dépassez les prédictions de Mo avant que Dialga ne verrouille le futur du combat.",
           "recommendedLevel": 93,
           "trainerId": "boss-doc-mo",
@@ -781,7 +781,7 @@
         {
           "id": "doctorat-stage-3",
           "stageNumber": 3,
-          "name": "Résilience dimensionnelle — Ismael",
+          "name": "Résilience dimensionnelle",
           "description": "Maintenez votre équipe disponible lorsque Palkia déforme l'espace et sépare vos lignes de défense.",
           "recommendedLevel": 94,
           "trainerId": "boss-doc-ismael",
@@ -792,7 +792,7 @@
         {
           "id": "doctorat-stage-4",
           "stageNumber": 4,
-          "name": "Cryptographie des abysses — Evan",
+          "name": "Cryptographie des abysses",
           "description": "Brisez les protections d'Evan pour atteindre Lugia derrière son blindage cryptographique.",
           "recommendedLevel": 96,
           "trainerId": "boss-doc-evan",
@@ -803,7 +803,7 @@
         {
           "id": "doctorat-stage-5",
           "stageNumber": 5,
-          "name": "Soutenance du Monde Distorsion — Professeur Hêche",
+          "name": "Soutenance du Monde Distorsion",
           "description": "Défendez votre thèse au milieu des anomalies de Giratina et des titans du jury doctoral.",
           "recommendedLevel": 98,
           "trainerId": "boss-doc-heche",
@@ -814,7 +814,7 @@
         {
           "id": "doctorat-stage-6",
           "stageNumber": 6,
-          "name": "Grand oral de la Convergence — Directeur Donini",
+          "name": "Grand oral de la Convergence",
           "description": "Réunissez tout votre savoir pour l'affrontement final contre Donini, Arceus et les icônes du parcours.",
           "recommendedLevel": 100,
           "trainerId": "boss-doc-donini",

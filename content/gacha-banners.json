@@ -3,7 +3,7 @@
   "banners": [
     {
       "id": "banner-standard",
-      "name": "Clairière des Compagnons",
+      "name": "Pré des Compagnons",
       "description": "Une sélection généreuse de partenaires emblématiques pour agrandir votre équipe.",
       "costPokedollars": 300,
       "rates": {
@@ -421,7 +421,7 @@
     },
     {
       "id": "banner-legendary",
-      "name": "Sanctuaire des Légendes",
+      "name": "Antre des Légendes",
       "description": "Les créatures les plus puissantes, légendaires et mythiques des quatre premières générations.",
       "costPokedollars": 7500,
       "rates": {
