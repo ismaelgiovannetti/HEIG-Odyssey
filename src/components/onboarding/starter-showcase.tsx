@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
 import { SpriteProvider, type SpriteVariant } from "@/components/SpriteProvider";
 
 export interface ShowcaseStarterItem {
@@ -34,6 +33,7 @@ const DEFAULT_STARTERS: ShowcaseStarterItem[] = [
   { speciesId: "riolu", name: "Riolu" },
   { speciesId: "shinx", name: "Lixy" },
 ];
+const EMPTY_CATALOG: ShowcaseStarterItem[] = [];
 
 // Taux de Shiny à 1% pour une rareté authentique
 const SHINY_RATE = 0.01;
@@ -53,7 +53,7 @@ function getRandomStarters(
 }
 
 export function StarterShowcase({
-  catalog = [],
+  catalog = EMPTY_CATALOG,
 }: {
   catalog?: ShowcaseStarterItem[];
 }) {
@@ -62,11 +62,13 @@ export function StarterShowcase({
   poolRef.current = activePool;
 
   const [spots, setSpots] = useState<StarterSpot[]>(() => {
-    const initial = getRandomStarters(DEFAULT_STARTERS, 3);
+    // Conserver le même premier rendu côté serveur et côté navigateur évite
+    // qu'une sélection aléatoire ne provoque une erreur d'hydratation.
+    const initial = DEFAULT_STARTERS.slice(0, 3);
     return initial.map((starter) => ({
       speciesId: starter.speciesId,
       name: starter.name,
-      isShiny: Math.random() < SHINY_RATE,
+      isShiny: false,
       isExiting: false,
     }));
   });
@@ -74,19 +76,17 @@ export function StarterShowcase({
   const spotsRef = useRef(spots);
   spotsRef.current = spots;
 
-  // Lorsque le catalogue complet de 210 starters est reçu
+  // Randomiser après le montage, puis utiliser le catalogue complet dès sa réception.
   useEffect(() => {
-    if (catalog.length > 0) {
-      const fresh = getRandomStarters(catalog, 3);
-      setSpots(
-        fresh.map((starter) => ({
-          speciesId: starter.speciesId,
-          name: starter.name,
-          isShiny: Math.random() < SHINY_RATE,
-          isExiting: false,
-        })),
-      );
-    }
+    const fresh = getRandomStarters(catalog.length > 0 ? catalog : DEFAULT_STARTERS, 3);
+    setSpots(
+      fresh.map((starter) => ({
+        speciesId: starter.speciesId,
+        name: starter.name,
+        isShiny: Math.random() < SHINY_RATE,
+        isExiting: false,
+      })),
+    );
   }, [catalog]);
 
   useEffect(() => {
@@ -139,7 +139,6 @@ export function StarterShowcase({
     >
       <div className="onboarding-showcase__header">
         <span className="onboarding-showcase__badge">
-          <Sparkles aria-hidden="true" size={10} />
           Partenaires disponibles
         </span>
         <span className="onboarding-showcase__hint">
