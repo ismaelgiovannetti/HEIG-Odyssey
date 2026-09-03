@@ -63,7 +63,7 @@
 
 .portalCard {
   --portal-accent: #62b786;
-  --portal-visual-end: 42%;
+  --portal-visual-height: clamp(180px, 32vh, 315px);
   --card-gap: clamp(12px, 1.6vh, 18px);
   --card-padding: clamp(15px, 1.35vw, 21px);
   container-type: inline-size;
@@ -71,8 +71,9 @@
   display: grid;
   min-width: 0;
   min-height: 0;
-  /* L'illustration reste sous la moitié de la carte pour préserver les actions. */
-  grid-template-rows: minmax(100px, var(--portal-visual-end)) auto minmax(min-content, 1fr) auto;
+  /* Une piste fixe commune empêche le contenu textuel de modifier la hauteur
+     de l'illustration d'une carte à l'autre. */
+  grid-template-rows: var(--portal-visual-height) auto minmax(min-content, 1fr) auto;
   gap: 0;
   overflow: hidden;
   padding: 0;
@@ -985,7 +986,7 @@
   .shop { gap: 18px; }
   .headingLine h1 { font-size: 44px; }
   .portalCard {
-    --portal-visual-end: 40%;
+    --portal-visual-height: clamp(150px, 30vh, 230px);
     --card-gap: 9px;
   }
   .portalVisual { min-height: 82px; }

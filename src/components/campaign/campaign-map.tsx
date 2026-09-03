@@ -192,7 +192,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
               >
                 <span className={styles.worldIdentity}>
                   <span>{shortName(world)}</span>
-                  <strong>{theme(world)}</strong>
+                  {world.degree !== "DOCTORAT" && <strong>{theme(world)}</strong>}
                 </span>
                 <span className={styles.worldProgressCopy}>
                   <span>

@@ -119,9 +119,13 @@ describe("interface des portails gacha", () => {
     render(<GachaShop banners={banners} initialBalance={120} previewSpecies={previewSpecies} />);
 
     expect(screen.getByRole("heading", { name: "Invocations Pokémon" })).toBeTruthy();
-    const unavailableButtons = screen.getAllByRole("button", { name: "Solde insuffisant" });
+    const unavailableButtons = screen.getAllByRole("button", {
+      name: /Solde insuffisant - ₽ (250|1000)/,
+    });
     expect(unavailableButtons).toHaveLength(2);
     expect(unavailableButtons.every((button) => (button as HTMLButtonElement).disabled)).toBe(true);
+    expect(screen.getByRole("button", { name: "Solde insuffisant - ₽ 250" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Solde insuffisant - ₽ 1000" })).toBeTruthy();
     expect(screen.getByText("Clairière des Compagnons").closest("article")?.dataset.theme).toBe("standard");
     expect(screen.getByText("Étoiles de Sinnoh").closest("article")?.dataset.theme).toBe("mid");
     expect(screen.getByText("Sanctuaire des Légendes").closest("article")?.dataset.theme).toBe("legendary");
