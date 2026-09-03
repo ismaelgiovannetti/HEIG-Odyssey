@@ -1,4 +1,4 @@
-# Valide ensemble les trois images exactes qui seront publiées dans GHCR.
+# Valide ensemble les quatre images exactes qui seront publiées dans GHCR.
 services:
   app:
     image: ${APP_IMAGE:?APP_IMAGE is required}
@@ -23,6 +23,28 @@ services:
       - heig-odyssey-ci-network
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  worker:
+    image: ${WORKER_IMAGE:?WORKER_IMAGE is required}
+    init: true
+    stop_grace_period: 10s
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD", "node", "scripts/worker-healthcheck.mjs"]
       interval: 5s
       timeout: 3s
       retries: 10

@@ -24,6 +24,7 @@ import {
   type BattleStatePayload,
 } from "@/lib/combat/battle-client";
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
+import { publishQuestProgressInvalidated } from "@/lib/quests/quest-progress-events";
 import { formatGameInteger } from "@/lib/format-number";
 import { playBattleSfx } from "@/lib/audio/battle-sfx";
 import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
@@ -346,11 +347,18 @@ export function BattleArena({
   // Quitter l'arène sans conclure le combat doit libérer la session serveur,
   // sinon l'équipe / les attaques restent verrouillées comme « en combat ».
   const battleConcludedRef = useRef(false);
+  const questRefreshPublishedBattleIdRef = useRef<string | null>(null);
   const realMountRef = useRef(false);
 
   useEffect(() => {
-    if (state.phase === "finished") battleConcludedRef.current = true;
-  }, [state.phase]);
+    if (state.phase !== "finished") return;
+
+    battleConcludedRef.current = true;
+    if (questRefreshPublishedBattleIdRef.current !== state.battleId) {
+      questRefreshPublishedBattleIdRef.current = state.battleId;
+      publishQuestProgressInvalidated(state.battleId);
+    }
+  }, [state.battleId, state.phase]);
 
   useEffect(() => {
     // Le cycle simulé de React.StrictMode (montage → démontage immédiat →

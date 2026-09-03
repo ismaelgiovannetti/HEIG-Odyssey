@@ -3,16 +3,19 @@
 import {
   CalendarRange,
   Clock3,
-  Coins,
   Diamond,
   RefreshCw,
-  Sparkles,
   Sunrise,
   Trophy,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { publishPlayerBalance } from "@/lib/player/player-balance-events";
+import {
+  QUEST_PROGRESS_INVALIDATED_EVENT,
+  type QuestProgressInvalidatedEventDetail,
+} from "@/lib/quests/quest-progress-events";
 
 interface QuestItem {
   rotationId: string;
@@ -38,6 +41,19 @@ interface QuestsResponse {
   success: boolean;
   data?: QuestsState;
   error?: string;
+  syncPending?: boolean;
+}
+
+interface QuestLoadResult {
+  syncPending: boolean;
+}
+
+interface ClaimQuestResponse {
+  success: boolean;
+  data?: {
+    newBalance: number;
+  };
+  error?: string;
 }
 
 interface QuestGroupProps {
@@ -54,6 +70,37 @@ const GENERIC_LOAD_ERROR =
   "Impossible de charger les missions pour le moment. Réessayez dans quelques instants.";
 const GENERIC_CLAIM_ERROR =
   "La récompense n’a pas pu être récupérée. Votre progression reste enregistrée.";
+// Le worker consomme normalement l'événement presque immédiatement. Cette
+// fenêtre bornée absorbe les courts retards Redis sans créer de polling infini.
+const QUEST_SYNC_ATTEMPT_DELAYS_MS = [
+  0,
+  250,
+  500,
+  1_000,
+  2_000,
+  4_000,
+  8_000,
+  16_000,
+] as const;
+
+/** Attend le prochain essai tout en permettant une annulation immédiate. */
+function waitForRetry(delayMs: number, signal: AbortSignal): Promise<boolean> {
+  if (signal.aborted) return Promise.resolve(false);
+  if (delayMs === 0) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => finish(true), delayMs);
+    const handleAbort = () => finish(false);
+
+    function finish(completed: boolean) {
+      window.clearTimeout(timer);
+      signal.removeEventListener("abort", handleAbort);
+      resolve(completed);
+    }
+
+    signal.addEventListener("abort", handleAbort, { once: true });
+  });
+}
 
 /** Transforme la date de fin de rotation en durée courte côté navigateur. */
 function formatTimeRemaining(endDate: string, now: number): string {
@@ -125,13 +172,13 @@ function QuestCard({
 
       <div className="quest-card__footer">
         <div className="quest-card__rewards" aria-label="Récompenses">
-          <span title="Pokédollars">
-            <Coins aria-hidden="true" size={14} />
-            {quest.rewardPokedollars} ₽
+          <span className="quest-card__reward quest-card__reward--money" title="Pokédollars">
+            <span className="quest-card__currency-mark" aria-hidden="true">₽</span>
+            <strong>{quest.rewardPokedollars}</strong>
           </span>
-          <span title="Expérience">
-            <Sparkles aria-hidden="true" size={14} />
-            {quest.rewardXp} XP
+          <span className="quest-card__reward quest-card__reward--xp" title="Expérience">
+            <Zap aria-hidden="true" size={17} strokeWidth={2.5} />
+            <strong>+{quest.rewardXp} XP</strong>
           </span>
         </div>
 
@@ -178,13 +225,15 @@ function QuestGroup({
   return (
     <section className="quest-group" aria-labelledby={id}>
       <header className="quest-group__header">
-        <span className="quest-group__icon" aria-hidden="true"><Icon size={22} /></span>
-        <div>
-          <h3 id={id}>{title}</h3>
-          <p className={remainingClassName}>
-            <Clock3 aria-hidden="true" size={13} />
-            {endDate ? formatTimeRemaining(endDate, now) : "Aucune rotation active"}
-          </p>
+        <div className="quest-group__identity">
+          <span className="quest-group__icon" aria-hidden="true"><Icon size={22} /></span>
+          <div>
+            <h3 id={id}>{title}</h3>
+            <p className={remainingClassName}>
+              <Clock3 aria-hidden="true" size={13} />
+              {endDate ? formatTimeRemaining(endDate, now) : "Aucune rotation active"}
+            </p>
+          </div>
         </div>
         <span className="quest-group__summary">{completedCount}/{quests.length}</span>
       </header>
@@ -210,12 +259,13 @@ function QuestGroup({
  * jeu. Un rechargement sans cache garantit les rotations du compte courant.
  */
 export function QuestPanel() {
-  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const requestRef = useRef<AbortController | null>(null);
+  const syncRefreshRef = useRef<AbortController | null>(null);
+  const pendingBattleIdRef = useRef<string | null>(null);
   const claimInFlightRef = useRef(false);
-  const loadedAtRef = useRef(0);
+  const pointerInsideRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [quests, setQuests] = useState<QuestsState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -232,7 +282,9 @@ export function QuestPanel() {
     };
   }, [quests]);
 
-  const loadQuests = useCallback(async () => {
+  const loadQuests = useCallback(async (
+    afterBattleId?: string,
+  ): Promise<QuestLoadResult | null> => {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
@@ -240,7 +292,10 @@ export function QuestPanel() {
     setError(null);
 
     try {
-      const response = await fetch("/api/quests", {
+      const endpoint = afterBattleId
+        ? `/api/quests?${new URLSearchParams({ afterBattleId }).toString()}`
+        : "/api/quests";
+      const response = await fetch(endpoint, {
         cache: "no-store",
         credentials: "same-origin",
         headers: { Accept: "application/json" },
@@ -253,25 +308,98 @@ export function QuestPanel() {
       }
 
       setQuests(payload.data);
-      loadedAtRef.current = Date.now();
+      return { syncPending: payload.syncPending === true };
     } catch (cause) {
-      if (cause instanceof DOMException && cause.name === "AbortError") return;
+      if (controller.signal.aborted) return null;
       setError(cause instanceof Error ? cause.message : GENERIC_LOAD_ERROR);
+      return null;
     } finally {
-      if (!controller.signal.aborted) setIsLoading(false);
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
     }
   }, []);
+
+  const refreshUntilSynchronized = useCallback(async (battleId: string) => {
+    syncRefreshRef.current?.abort();
+    requestRef.current?.abort();
+
+    const controller = new AbortController();
+    syncRefreshRef.current = controller;
+    pendingBattleIdRef.current = battleId;
+
+    try {
+      for (const delayMs of QUEST_SYNC_ATTEMPT_DELAYS_MS) {
+        const canContinue = await waitForRetry(delayMs, controller.signal);
+        if (!canContinue) return;
+
+        const result = await loadQuests(battleId);
+        if (controller.signal.aborted) return;
+
+        if (result && !result.syncPending) {
+          if (pendingBattleIdRef.current === battleId) {
+            pendingBattleIdRef.current = null;
+          }
+          setAnnouncement("Progression des missions actualisée.");
+          return;
+        }
+      }
+    } finally {
+      if (syncRefreshRef.current === controller) {
+        syncRefreshRef.current = null;
+      }
+    }
+  }, [loadQuests]);
+
+  const refreshLatestQuests = useCallback(() => {
+    const pendingBattleId = pendingBattleIdRef.current;
+    if (pendingBattleId) {
+      void refreshUntilSynchronized(pendingBattleId);
+      return;
+    }
+
+    syncRefreshRef.current?.abort();
+    syncRefreshRef.current = null;
+    requestRef.current?.abort();
+    void loadQuests();
+  }, [loadQuests, refreshUntilSynchronized]);
 
   // Le premier chargement alimente le compteur compact avant l'ouverture.
   useEffect(() => {
     void loadQuests();
-    return () => requestRef.current?.abort();
+    return () => {
+      syncRefreshRef.current?.abort();
+      requestRef.current?.abort();
+    };
   }, [loadQuests]);
+
+  // Le signal reste écouté lorsque le panneau est fermé : son compteur peut
+  // ainsi se mettre à jour pendant que le résultat du combat est affiché.
+  useEffect(() => {
+    function handleQuestProgressInvalidated(event: Event) {
+      const detail = (event as CustomEvent<QuestProgressInvalidatedEventDetail>).detail;
+      const battleId = detail?.battleId?.trim();
+      if (!battleId || battleId.length > 128) return;
+
+      setAnnouncement("");
+      void refreshUntilSynchronized(battleId);
+    }
+
+    window.addEventListener(
+      QUEST_PROGRESS_INVALIDATED_EVENT,
+      handleQuestProgressInvalidated,
+    );
+    return () => window.removeEventListener(
+      QUEST_PROGRESS_INVALIDATED_EVENT,
+      handleQuestProgressInvalidated,
+    );
+  }, [refreshUntilSynchronized]);
 
   useEffect(() => {
     if (!isOpen) return;
     setNow(Date.now());
-    if (Date.now() - loadedAtRef.current > 30_000) void loadQuests();
+    refreshLatestQuests();
 
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);
 
@@ -286,7 +414,7 @@ export function QuestPanel() {
       window.clearInterval(timer);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, loadQuests]);
+  }, [isOpen, refreshLatestQuests]);
 
   async function claimReward(rotationId: string) {
     // La référence verrouille immédiatement l'action, avant le prochain rendu React.
@@ -304,15 +432,25 @@ export function QuestPanel() {
         headers: { Accept: "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({ rotationId }),
       });
-      const payload = (await response.json().catch(() => null)) as
-        | { success: boolean; error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as ClaimQuestResponse | null;
+      const newBalance = payload?.data?.newBalance;
 
-      if (!response.ok || !payload?.success) {
+      if (
+        !response.ok ||
+        !payload?.success ||
+        typeof newBalance !== "number" ||
+        !Number.isSafeInteger(newBalance) ||
+        newBalance < 0
+      ) {
         throw new Error(payload?.error || GENERIC_CLAIM_ERROR);
       }
 
-      // Mise à jour immédiate de la carte puis synchronisation du solde serveur.
+      // Le bouton va disparaître : replacer le focus sur le déclencheur évite
+      // qu'un blur transitoire ferme le panneau pour les utilisateurs clavier.
+      triggerRef.current?.focus({ preventScroll: true });
+      setIsOpen(true);
+
+      // Mise à jour immédiate de la carte et du solde, sans rafraîchir le shell.
       setQuests((current) => {
         if (!current) return current;
         const markAsClaimed = (quest: QuestItem) =>
@@ -322,8 +460,8 @@ export function QuestPanel() {
           weeklyQuests: current.weeklyQuests.map(markAsClaimed),
         };
       });
+      publishPlayerBalance(newBalance);
       setAnnouncement("Récompense récupérée. Votre solde a été mis à jour.");
-      router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : GENERIC_CLAIM_ERROR);
     } finally {
@@ -341,12 +479,25 @@ export function QuestPanel() {
       className={isOpen ? "quest-menu is-open" : "quest-menu"}
       ref={containerRef}
       // La souris pilote le survol ; le focus conserve un accès équivalent au clavier.
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => {
+        pointerInsideRef.current = true;
+        setIsOpen(true);
+      }}
+      onMouseLeave={(event) => {
+        pointerInsideRef.current = false;
+        if (!event.currentTarget.contains(document.activeElement)) {
+          setIsOpen(false);
+        }
+      }}
       onFocus={() => setIsOpen(true)}
       onBlur={(event) => {
         const nextFocusedElement = event.relatedTarget as Node | null;
-        if (!event.currentTarget.contains(nextFocusedElement)) setIsOpen(false);
+        if (
+          !pointerInsideRef.current &&
+          !event.currentTarget.contains(nextFocusedElement)
+        ) {
+          setIsOpen(false);
+        }
       }}
     >
       <button
@@ -367,6 +518,8 @@ export function QuestPanel() {
         <strong>{counterText}</strong>
       </button>
 
+      <p className="visually-hidden" aria-live="polite">{announcement}</p>
+
       {isOpen ? (
         <div
           className="quest-panel"
@@ -374,12 +527,10 @@ export function QuestPanel() {
           role="region"
           aria-label="Missions quotidiennes et hebdomadaires"
         >
-          <p className="visually-hidden" aria-live="polite">{announcement}</p>
-
           {error ? (
             <div className="quest-panel__error" role="alert">
               <span>{error}</span>
-              <button type="button" onClick={() => void loadQuests()}>
+              <button type="button" onClick={refreshLatestQuests}>
                 <RefreshCw aria-hidden="true" size={14} />
                 Réessayer
               </button>

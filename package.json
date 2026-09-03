@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -19,6 +20,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "preworker": "prisma generate",
     "worker": "tsx src/worker/index.ts",
     "sprites:import": "tsx scripts/import-sprites.ts"
   },
@@ -66,4 +68,3 @@
     "deepmerge-ts": "^8.0.0"
   }
 }
-

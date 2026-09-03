@@ -173,4 +173,44 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
       },
     });
   });
+
+  it("reprend durablement les événements ayant épuisé les essais courts", async () => {
+    const failedEvent = {
+      id: "outbox-failed",
+      eventId: "evt_failed",
+      eventType: "battle.completed",
+      aggregateType: "BATTLE",
+      aggregateId: "btl_failed",
+      payload: { userId: "usr_1" },
+      status: OutboxStatus.FAILED,
+      retryCount: 5,
+      createdAt: new Date("2026-09-01T10:00:00Z"),
+    };
+    (prisma.outboxEvent.findMany as any).mockResolvedValue([failedEvent]);
+    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    const mockRedis = {
+      xadd: vi.fn().mockRejectedValue(new Error("Redis unavailable")),
+    };
+
+    await publishPendingOutboxEvents({
+      client: mockRedis as any,
+      continuousRecovery: true,
+    });
+
+    expect(prisma.outboxEvent.findMany).toHaveBeenCalledWith({
+      where: {
+        status: { in: [OutboxStatus.PENDING, OutboxStatus.FAILED] },
+      },
+      take: 50,
+      orderBy: { createdAt: "asc" },
+    });
+    expect(prisma.outboxEvent.update).toHaveBeenCalledWith({
+      where: { id: "outbox-failed" },
+      data: {
+        retryCount: { increment: 1 },
+        lastError: "Redis unavailable",
+        status: OutboxStatus.PENDING,
+      },
+    });
+  });
 });

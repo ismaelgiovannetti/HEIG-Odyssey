@@ -63,6 +63,34 @@ services:
       retries: 5
       start_period: 15s
 
+  worker:
+    image: ${WORKER_IMAGE:?WORKER_IMAGE is required}
+    container_name: heig-odyssey-worker
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/heig_odyssey?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "scripts/worker-healthcheck.mjs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   landing-page:
     image: ${LANDING_IMAGE:?LANDING_IMAGE is required}
     container_name: landing-page

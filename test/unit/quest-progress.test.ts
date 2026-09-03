@@ -4,6 +4,7 @@ import {
   claimQuestReward,
   handleBattleCompletedEventForQuests,
   getUserQuests,
+  isQuestProgressPendingForBattle,
   QuestNotFoundError,
   QuestNotCompletedError,
   QuestRewardAlreadyClaimedError,
@@ -34,6 +35,64 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
     it("incrémente COMPLETE_TURNS selon le nombre de tours disputés", () => {
       const payload: any = { winner: "p2", turnsCount: 8, battleType: "CAMPAIGN" };
       expect(calculateQuestIncrement("COMPLETE_TURNS", payload)).toBe(8);
+    });
+  });
+
+  describe("battle quest synchronization", () => {
+    it("reste en attente tant que le reçu du combat du joueur n'existe pas", async () => {
+      const mockPrisma = {
+        battleRecord: {
+          findFirst: vi.fn().mockResolvedValue({ id: "record-1" }),
+        },
+        processedDomainEvent: {
+          findUnique: vi.fn().mockResolvedValue(null),
+        },
+      };
+
+      await expect(isQuestProgressPendingForBattle(
+        "user-1",
+        "battle-1",
+        mockPrisma as any,
+      )).resolves.toBe(true);
+      expect(mockPrisma.battleRecord.findFirst).toHaveBeenCalledWith({
+        where: { idempotencyKey: "battle-1", userId: "user-1" },
+        select: { id: true },
+      });
+    });
+
+    it("ne consulte aucun reçu pour un combat inconnu ou d'un autre joueur", async () => {
+      const mockPrisma = {
+        battleRecord: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
+        processedDomainEvent: {
+          findUnique: vi.fn(),
+        },
+      };
+
+      await expect(isQuestProgressPendingForBattle(
+        "user-1",
+        "battle-of-user-2",
+        mockPrisma as any,
+      )).resolves.toBe(false);
+      expect(mockPrisma.processedDomainEvent.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("confirme la synchronisation lorsque le reçu transactionnel existe", async () => {
+      const mockPrisma = {
+        battleRecord: {
+          findFirst: vi.fn().mockResolvedValue({ id: "record-1" }),
+        },
+        processedDomainEvent: {
+          findUnique: vi.fn().mockResolvedValue({ id: "receipt-1" }),
+        },
+      };
+
+      await expect(isQuestProgressPendingForBattle(
+        "user-1",
+        "battle-1",
+        mockPrisma as any,
+      )).resolves.toBe(false);
     });
   });
 
@@ -247,6 +306,65 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
           mockPrisma as any,
         ),
       ).rejects.toThrow("QUEST_EVENT_BATTLE_MISMATCH");
+      expect(mockTx.userQuestProgress.upsert).not.toHaveBeenCalled();
+    });
+
+    it("attribue un événement rattrapé à la rotation de fin du combat", async () => {
+      const completedAt = new Date("2026-08-20T18:30:00.000Z");
+      const mockTx = {
+        processedDomainEvent: {
+          createMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        battleRecord: {
+          findUnique: vi.fn().mockResolvedValue({
+            userId: "user-1",
+            battleType: "TRAINING",
+            opponentId: "training-easy",
+            result: "VICTORY",
+            turnsCount: 2,
+            xpGained: 10,
+            moneyGained: 5,
+            completedAt,
+          }),
+        },
+        questRotation: {
+          findMany: vi.fn().mockImplementation(({ where }) => Promise.resolve([
+            {
+              id: `rotation-${where.type}`,
+              type: where.type,
+              quest: { targetType: "NOOP", targetCount: 1 },
+            },
+          ])),
+        },
+        userQuestProgress: {
+          upsert: vi.fn(),
+        },
+      };
+      const mockPrisma = {
+        $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
+      };
+
+      await handleBattleCompletedEventForQuests(
+        "evt-historical",
+        {
+          userId: "user-1",
+          battleId: "battle-historical",
+          battleType: "TRAINING",
+          opponentId: "training-easy",
+          result: "VICTORY",
+          winner: "p1",
+          turnsCount: 2,
+          xpGained: 10,
+          moneyGained: 5,
+          playerPokemonIds: ["pokemon-1"],
+        },
+        mockPrisma as any,
+      );
+
+      expect(mockTx.questRotation.findMany).toHaveBeenCalledWith({
+        where: { periodKey: "2026-08-20", type: "DAILY" },
+        include: { quest: true },
+      });
       expect(mockTx.userQuestProgress.upsert).not.toHaveBeenCalled();
     });
   });

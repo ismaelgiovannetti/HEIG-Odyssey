@@ -73,6 +73,60 @@ describe("Quest API Routes (T-US13-03)", () => {
       const data = await res.json();
       expect(data.success).toBe(true);
       expect(data.data.dailyPeriodKey).toBe("2026-09-01");
+      expect(data.syncPending).toBe(false);
+    });
+
+    it("indique que le worker traite encore le combat du joueur", async () => {
+      (auth.api.getSession as any).mockResolvedValue({
+        user: { id: "user-123" },
+      });
+      const pendingSpy = vi
+        .spyOn(questService, "isQuestProgressPendingForBattle")
+        .mockResolvedValue(true);
+      const questsSpy = vi.spyOn(questService, "getUserQuests").mockResolvedValue({
+        dailyPeriodKey: "2026-09-01",
+        weeklyPeriodKey: "2026-W36",
+        dailyQuests: [],
+        weeklyQuests: [],
+        allQuests: [],
+      });
+
+      const req = new Request(
+        "http://localhost:3000/api/quests?afterBattleId=battle-training-42",
+      );
+      const res = await getQuestsRoute(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.syncPending).toBe(true);
+      expect(pendingSpy).toHaveBeenCalledWith(
+        "user-123",
+        "battle-training-42",
+      );
+      expect(pendingSpy.mock.invocationCallOrder[0]).toBeLessThan(
+        questsSpy.mock.invocationCallOrder[0],
+      );
+    });
+
+    it("refuse un identifiant de combat trop long avant tout accès métier", async () => {
+      (auth.api.getSession as any).mockResolvedValue({
+        user: { id: "user-123" },
+      });
+      const pendingSpy = vi.spyOn(
+        questService,
+        "isQuestProgressPendingForBattle",
+      );
+      const questsSpy = vi.spyOn(questService, "getUserQuests");
+      const invalidId = "x".repeat(129);
+
+      const req = new Request(
+        `${APPLICATION_ORIGIN}/api/quests?afterBattleId=${invalidId}`,
+      );
+      const res = await getQuestsRoute(req);
+
+      expect(res.status).toBe(400);
+      expect(pendingSpy).not.toHaveBeenCalled();
+      expect(questsSpy).not.toHaveBeenCalled();
     });
   });
 
