@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BrainCircuit,
-  Coins,
   Dices,
   Home,
   LogOut,
@@ -11,13 +10,13 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { AudioControls } from "@/components/audio/audio-controls";
+import { UiSoundEffects } from "@/components/audio/ui-sound-effects";
+import { PlayerBalance } from "@/components/application/player-balance";
+import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
-  | "home"
-  | "campaign"
-  | "training"
-  | "team"
-  | "gacha";
+  "home" | "campaign" | "training" | "team" | "gacha";
 
 interface NavigationItem {
   section: ApplicationSection;
@@ -49,8 +48,8 @@ interface ApplicationShellProps {
 }
 
 /**
- * Cadre commun des pages de jeu. Le même en-tête conserve les repères du
- * joueur entre les modes et expose les informations de session utiles.
+ * Cadre commun des pages de jeu. La navigation et le pied de page restent
+ * hors du panneau pixel afin que le contenu dispose de tout l'espace central.
  */
 export function ApplicationShell({
   activeSection,
@@ -58,16 +57,9 @@ export function ApplicationShell({
   pokedollars,
   children,
 }: Readonly<ApplicationShellProps>) {
-  // Le format suisse ajoute les séparateurs de milliers sans modifier la
-  // valeur entière conservée dans PostgreSQL.
-  const formattedBalance = new Intl.NumberFormat("fr-CH").format(pokedollars);
-
   return (
-    <main className="application-page">
-      <a className="skip-link" href="#application-content">
-        Aller au contenu principal
-      </a>
-
+    <div className="application-page">
+      <UiSoundEffects />
       <div
         className="application-background-mark application-background-mark--one"
         aria-hidden="true"
@@ -77,13 +69,8 @@ export function ApplicationShell({
         aria-hidden="true"
       />
 
-      <section className="application-shell" aria-label="HEIG Odyssey">
-        <div className="application-shell__topbar" aria-hidden="true">
-          <span>HEIG-ODYSSEY</span>
-          <span>PDG</span>
-        </div>
-
-        <header className="application-header">
+      <header className="application-site-header">
+        <div className="application-navbar">
           <Link
             className="application-brand"
             href="/dashboard"
@@ -123,15 +110,11 @@ export function ApplicationShell({
           </nav>
 
           <div className="application-player">
-            <span
-              className="application-player__balance"
-              title="Solde de Pokédollars"
-              aria-label={`${formattedBalance} Pokédollars`}
-            >
-              <Coins aria-hidden="true" size={18} />
-              <strong>{formattedBalance}</strong>
-              <span aria-hidden="true">₽</span>
-            </span>
+            {/* Les informations dynamiques restent groupées à droite, dans le
+                même ordre sur chacune des pages authentifiées. */}
+            <QuestPanel />
+            <PlayerBalance initialBalance={pokedollars} />
+            <AudioControls className="application-player__audio" />
             <span className="application-player__name">{playerName}</span>
             <Link
               className="application-player__logout"
@@ -141,20 +124,32 @@ export function ApplicationShell({
               <LogOut aria-hidden="true" size={18} />
             </Link>
           </div>
-        </header>
-
-        <div
-          className="application-shell__content"
-          id="application-content"
-          tabIndex={-1}
-        >
-          {children}
         </div>
+      </header>
 
-        <footer className="application-shell__footer">
-          <span>Votre aventure tactique, votre équipe, vos choix.</span>
-        </footer>
-      </section>
-    </main>
+      <main className="application-stage">
+        <section className="application-shell" aria-label="HEIG Odyssey">
+          <div className="application-shell__topbar" aria-hidden="true">
+            <span>HEIG-ODYSSEY</span>
+            <span>PDG 2026</span>
+          </div>
+
+          <div className="application-shell__content">
+            {/* Cette surface virtuelle se réduit avec la hauteur disponible :
+                aucune commande ne doit être coupée par le cadre du jeu. */}
+            <div className="application-shell__viewport">{children}</div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="application-footer">
+        <div className="application-footer__inner">
+          <span className="application-footer__copyright">
+            © 2026 HEIG Odyssey - Sprites Pokémon via PokeAPI © Nintendo /
+            Creatures Inc. / GAME FREAK inc.
+          </span>
+        </div>
+      </footer>
+    </div>
   );
 }

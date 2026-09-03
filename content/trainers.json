@@ -3,13 +3,13 @@
   "trainers": [
     {
       "id": "trainer-b1-stage-1",
-      "name": "Étudiant Normal 1",
+      "name": "Léo",
       "title": "Étudiant Bachelor - Semestre 1",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-normal-front.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir tes bases autant que les miens.",
+      "defeatCatchline": "Le premier principe des fondamentaux est simple : ne jamais sous-estimer ma méthode.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -54,13 +54,13 @@
     },
     {
       "id": "trainer-b1-stage-2",
-      "name": "Étudiant Normal 2",
+      "name": "Mia",
       "title": "Étudiant Bachelor - Semestre 1",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-normal-front.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes des fondamentaux. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration des fondamentaux validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -127,13 +127,13 @@
     },
     {
       "id": "trainer-b1-stage-3",
-      "name": "Étudiant Normal 3",
+      "name": "Noé",
       "title": "Étudiant Bachelor - Semestre 1",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-normal-front.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Tu as trouvé la faille que ma méthode n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; ma méthode a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -260,13 +260,13 @@
     },
     {
       "id": "trainer-b1-stage-4",
-      "name": "Étudiant Normal 4",
+      "name": "Zoé",
       "title": "Étudiant Bachelor - Semestre 1",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-normal-front.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : tes bases étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise des fondamentaux n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -393,13 +393,13 @@
     },
     {
       "id": "trainer-b1-stage-5",
-      "name": "Étudiant Normal 5",
+      "name": "Hugo",
       "title": "Étudiant Bachelor - Semestre 1",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-normal-front.png",
       "introCatchline": "Bienvenue en Bachelor ! Découvrons la puissance du Type Normal.",
-      "victoryCatchline": "Bien joué, ton équipe a du potentiel !",
-      "defeatCatchline": "Reviens quand tu seras mieux préparé !",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des fondamentaux.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi ma méthode vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -527,13 +527,13 @@
     {
       "id": "boss-fouad",
       "name": "Fouad",
-      "title": "Professeur & Maître du Type Normal",
+      "title": "Maître du Type Normal",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-fouad-front.png",
       "introCatchline": "Je suis Fouad ! Montrez-moi si vous avez bien assimilé la structure des données et du type Normal !",
       "victoryCatchline": "Excellent travail ! Vous validez officiellement le premier module Bachelor.",
       "defeatCatchline": "Il va falloir réviser vos fondamentaux avant le rattrapage !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "gym-leader-hgss",
       "team": [
         {
           "speciesId": "vigoroth",
@@ -719,13 +719,13 @@
     },
     {
       "id": "trainer-b2-stage-1",
-      "name": "Herboriste HEIG 1",
+      "name": "Lina",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir ton écosystème autant que les miens.",
+      "defeatCatchline": "Le premier principe de la botanique est simple : ne jamais sous-estimer mes racines.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -852,13 +852,13 @@
     },
     {
       "id": "trainer-b2-stage-2",
-      "name": "Herboriste HEIG 2",
+      "name": "Tom",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes de la botanique. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration de la botanique validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -985,13 +985,13 @@
     },
     {
       "id": "trainer-b2-stage-3",
-      "name": "Herboriste HEIG 3",
+      "name": "Eva",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Tu as trouvé la faille que mes racines n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; mes racines a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1118,13 +1118,13 @@
     },
     {
       "id": "trainer-b2-stage-4",
-      "name": "Herboriste HEIG 4",
+      "name": "Nino",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : ton écosystème étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la botanique n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1251,13 +1251,13 @@
     },
     {
       "id": "trainer-b2-stage-5",
-      "name": "Herboriste HEIG 5",
+      "name": "Jade",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la botanique.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi mes racines vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1384,13 +1384,13 @@
     },
     {
       "id": "trainer-b2-stage-6",
-      "name": "Herboriste HEIG 6",
+      "name": "Sacha",
       "title": "Étudiant Bachelor - Semestre 2",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-grass-front.png",
       "introCatchline": "Les plantes de la HEIG puisent leur force dans la photosynthèse et la stratégie !",
-      "victoryCatchline": "Tes flammes ou tes attaques volantes ont eu raison de mes feuilles...",
-      "defeatCatchline": "La nature triomphe toujours !",
+      "victoryCatchline": "Même mes racines n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe de la botanique l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1518,13 +1518,13 @@
     {
       "id": "boss-nastaran",
       "name": "Nastaran",
-      "title": "Professeure & Maîtresse du Type Plante",
+      "title": "Maîtresse du Type Plante",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-nastaran-front.png",
       "introCatchline": "Bienvenue dans mon laboratoire végétal. Mes plantes sont prêtes pour l'évaluation !",
       "victoryCatchline": "Magnifique floraison tactique ! Vous méritez amplement ce certificat.",
       "defeatCatchline": "Prenez racine et recommencez avec une stratégie plus affûtée !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "gym-leader-rse",
       "team": [
         {
           "speciesId": "carnivine",
@@ -1710,13 +1710,13 @@
     },
     {
       "id": "trainer-b3-stage-1",
-      "name": "Électricien TIC 1",
+      "name": "Iris",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir ton câblage autant que les miens.",
+      "defeatCatchline": "Le premier principe des circuits est simple : ne jamais sous-estimer mon courant.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1843,13 +1843,13 @@
     },
     {
       "id": "trainer-b3-stage-2",
-      "name": "Électricien TIC 2",
+      "name": "Liam",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes des circuits. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration des circuits validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -1976,13 +1976,13 @@
     },
     {
       "id": "trainer-b3-stage-3",
-      "name": "Électricien TIC 3",
+      "name": "Léa",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Tu as trouvé la faille que mon courant n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; mon courant a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2109,13 +2109,13 @@
     },
     {
       "id": "trainer-b3-stage-4",
-      "name": "Électricien TIC 4",
+      "name": "Milo",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : ton câblage étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise des circuits n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2242,13 +2242,13 @@
     },
     {
       "id": "trainer-b3-stage-5",
-      "name": "Électricien TIC 5",
+      "name": "Nina",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des circuits.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi mon courant vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2375,13 +2375,13 @@
     },
     {
       "id": "trainer-b3-stage-6",
-      "name": "Électricien TIC 6",
+      "name": "Axel",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Même mon courant n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe des circuits l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2508,13 +2508,13 @@
     },
     {
       "id": "trainer-b3-stage-7",
-      "name": "Électricien TIC 7",
+      "name": "Lou",
       "title": "Étudiant Bachelor - Semestre 3",
       "aiProfile": "random",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-electric-front.png",
       "introCatchline": "Attention haute tension ! Nos circuits ne laissent rien au hasard.",
-      "victoryCatchline": "Court-circuit dans ma stratégie... Bien joué !",
-      "defeatCatchline": "Tu as été paralysé par notre vitesse !",
+      "victoryCatchline": "Sept ajustements impeccables : ton câblage ont tenu jusqu'au bout.",
+      "defeatCatchline": "Sept échanges ont suffi pour que mon courant révèle la faille de ta stratégie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2642,13 +2642,13 @@
     {
       "id": "boss-mosqueron",
       "name": "Mosqueron",
-      "title": "Professeur & Maître du Type Électrik",
+      "title": "Maître du Type Électrik",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-mosqueron-front.png",
       "introCatchline": "Le courant alternatif n'a aucun secret pour moi. Préparez-vous à recevoir 100 000 Volts !",
       "victoryCatchline": "Votre résistance électrique est remarquable. Vous êtes un ingénieur de haut calibre !",
       "defeatCatchline": "Surcharge de puissance ! Revenez après avoir isolé vos faiblesses.",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "gym-leader-dpp",
       "team": [
         {
           "speciesId": "luxio",
@@ -2834,13 +2834,13 @@
     },
     {
       "id": "trainer-b4-stage-1",
-      "name": "Métallurgiste HEIG 1",
+      "name": "Enzo",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir ta structure autant que les miens.",
+      "defeatCatchline": "Le premier principe de la métallurgie est simple : ne jamais sous-estimer mon alliage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -2967,13 +2967,13 @@
     },
     {
       "id": "trainer-b4-stage-2",
-      "name": "Métallurgiste HEIG 2",
+      "name": "Ana",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes de la métallurgie. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration de la métallurgie validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3067,13 +3067,13 @@
     },
     {
       "id": "trainer-b4-stage-3",
-      "name": "Métallurgiste HEIG 3",
+      "name": "Lucie",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Tu as trouvé la faille que mon alliage n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; mon alliage a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3200,13 +3200,13 @@
     },
     {
       "id": "trainer-b4-stage-4",
-      "name": "Métallurgiste HEIG 4",
+      "name": "Maël",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : ta structure étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la métallurgie n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3333,13 +3333,13 @@
     },
     {
       "id": "trainer-b4-stage-5",
-      "name": "Métallurgiste HEIG 5",
+      "name": "Inès",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la métallurgie.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi mon alliage vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3493,13 +3493,13 @@
     },
     {
       "id": "trainer-b4-stage-6",
-      "name": "Métallurgiste HEIG 6",
+      "name": "Robin",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Même mon alliage n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe de la métallurgie l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3686,13 +3686,13 @@
     },
     {
       "id": "trainer-b4-stage-7",
-      "name": "Métallurgiste HEIG 7",
+      "name": "Elsa",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Sept ajustements impeccables : ta structure ont tenu jusqu'au bout.",
+      "defeatCatchline": "Sept échanges ont suffi pour que mon alliage révèle la faille de ta stratégie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -3879,13 +3879,13 @@
     },
     {
       "id": "trainer-b4-stage-8",
-      "name": "Métallurgiste HEIG 8",
+      "name": "Théo",
       "title": "Étudiant Bachelor - Semestre 4",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-steel-front.png",
       "introCatchline": "L'acier est l'alliage le plus résistant de l'institut. Peux-tu percer notre blindage ?",
-      "victoryCatchline": "Une faille thermique dans mon armure... Belle frappe !",
-      "defeatCatchline": "Solide comme le titane, impénétrable comme le diamant !",
+      "victoryCatchline": "Cette huitième victoire prouve ta maîtrise de la métallurgie. Je m'incline.",
+      "defeatCatchline": "Huitième leçon de la métallurgie : la constance finit toujours par gagner.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4040,13 +4040,13 @@
     {
       "id": "boss-augier",
       "name": "Augier",
-      "title": "Professeur & Maître du Type Acier",
+      "title": "Maître du Type Acier",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-augier-front.png",
       "introCatchline": "La rigueur scientifique est dure comme l'acier trempé. Prouvez votre solidité conceptuelle !",
       "victoryCatchline": "Votre analyse est tranchante comme une lame de Cizayox. Validation accordée !",
       "defeatCatchline": "Votre approche manque de trempe. Recommencez la modélisation !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "zinnia-battle-oras",
       "team": [
         {
           "speciesId": "bastiodon",
@@ -4232,13 +4232,13 @@
     },
     {
       "id": "trainer-b5-stage-1",
-      "name": "Psychologue Cognitif 1",
+      "name": "Yuna",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir ton raisonnement autant que les miens.",
+      "defeatCatchline": "Le premier principe de la cognition est simple : ne jamais sous-estimer mon analyse.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4392,13 +4392,13 @@
     },
     {
       "id": "trainer-b5-stage-2",
-      "name": "Psychologue Cognitif 2",
+      "name": "Max",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes de la cognition. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration de la cognition validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4585,13 +4585,13 @@
     },
     {
       "id": "trainer-b5-stage-3",
-      "name": "Psychologue Cognitif 3",
+      "name": "Alice",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Tu as trouvé la faille que mon analyse n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; mon analyse a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4778,13 +4778,13 @@
     },
     {
       "id": "trainer-b5-stage-4",
-      "name": "Psychologue Cognitif 4",
+      "name": "Sami",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : ton raisonnement étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la cognition n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -4971,13 +4971,13 @@
     },
     {
       "id": "trainer-b5-stage-5",
-      "name": "Psychologue Cognitif 5",
+      "name": "Nora",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la cognition.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi mon analyse vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5164,13 +5164,13 @@
     },
     {
       "id": "trainer-b5-stage-6",
-      "name": "Psychologue Cognitif 6",
+      "name": "Eli",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Même mon analyse n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe de la cognition l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5324,13 +5324,13 @@
     },
     {
       "id": "trainer-b5-stage-7",
-      "name": "Psychologue Cognitif 7",
+      "name": "Chloé",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Sept ajustements impeccables : ton raisonnement ont tenu jusqu'au bout.",
+      "defeatCatchline": "Sept échanges ont suffi pour que mon analyse révèle la faille de ta stratégie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5517,13 +5517,13 @@
     },
     {
       "id": "trainer-b5-stage-8",
-      "name": "Psychologue Cognitif 8",
+      "name": "Yan",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Cette huitième victoire prouve ta maîtrise de la cognition. Je m'incline.",
+      "defeatCatchline": "Huitième leçon de la cognition : la constance finit toujours par gagner.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5677,13 +5677,13 @@
     },
     {
       "id": "trainer-b5-stage-9",
-      "name": "Psychologue Cognitif 9",
+      "name": "Lila",
       "title": "Étudiant Bachelor - Semestre 5 & 6",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-psychic-front.png",
       "introCatchline": "J'ai déjà lu dans tes pensées. Ton prochain coup est voué à l'échec !",
-      "victoryCatchline": "Ton esprit tactique est trop complexe à anticiper...",
-      "defeatCatchline": "La télékinésie et les ondes mentales ont eu raison de toi.",
+      "victoryCatchline": "Ta neuvième manœuvre a complètement neutralisé mon analyse.",
+      "defeatCatchline": "Tu as résisté longtemps, mais mon analyse gardait encore une neuvième surprise.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -5871,13 +5871,13 @@
     {
       "id": "boss-tori",
       "name": "Tori",
-      "title": "Professeur & Maître du Type Psy (Doyen Bachelor)",
+      "title": "Maître du Type Psy (Doyen Bachelor)",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-tori-front.png",
       "introCatchline": "Le Bachelor touche à sa fin. Affrontez la puissance pure de la cognition et de la télépathie !",
       "victoryCatchline": "Brillantissime ! Vous obtenez votre Diplôme de Bachelor en Ingénierie Pokémon !",
       "defeatCatchline": "Votre esprit vacille sous la pression. Méditez et revenez plus fort !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "boss-lysandre-xy",
       "team": [
         {
           "speciesId": "slowbro",
@@ -6183,13 +6183,13 @@
     },
     {
       "id": "trainer-m1-stage-1",
-      "name": "Chercheur en Toxicologie & Ombre 1",
+      "name": "Marc",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir tes défenses autant que les miens.",
+      "defeatCatchline": "Le premier principe des toxines et des ombres est simple : ne jamais sous-estimer mon protocole.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6376,13 +6376,13 @@
     },
     {
       "id": "trainer-m1-stage-2",
-      "name": "Chercheur en Toxicologie & Ombre 2",
+      "name": "Aya",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes des toxines et des ombres. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration des toxines et des ombres validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6569,13 +6569,13 @@
     },
     {
       "id": "trainer-m1-stage-3",
-      "name": "Chercheur en Toxicologie & Ombre 3",
+      "name": "Paul",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Tu as trouvé la faille que mon protocole n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; mon protocole a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6762,13 +6762,13 @@
     },
     {
       "id": "trainer-m1-stage-4",
-      "name": "Chercheur en Toxicologie & Ombre 4",
+      "name": "Tess",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : tes défenses étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise des toxines et des ombres n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -6955,13 +6955,13 @@
     },
     {
       "id": "trainer-m1-stage-5",
-      "name": "Chercheur en Toxicologie & Ombre 5",
+      "name": "Amir",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine des toxines et des ombres.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi mon protocole vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7148,13 +7148,13 @@
     },
     {
       "id": "trainer-m1-stage-6",
-      "name": "Chercheur en Toxicologie & Ombre 6",
+      "name": "Lola",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Même mon protocole n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe des toxines et des ombres l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7401,13 +7401,13 @@
     },
     {
       "id": "trainer-m1-stage-7",
-      "name": "Chercheur en Toxicologie & Ombre 7",
+      "name": "Ilyes",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Sept ajustements impeccables : tes défenses ont tenu jusqu'au bout.",
+      "defeatCatchline": "Sept échanges ont suffi pour que mon protocole révèle la faille de ta stratégie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7654,13 +7654,13 @@
     },
     {
       "id": "trainer-m1-stage-8",
-      "name": "Chercheur en Toxicologie & Ombre 8",
+      "name": "Romy",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Cette huitième victoire prouve ta maîtrise des toxines et des ombres. Je m'incline.",
+      "defeatCatchline": "Huitième leçon des toxines et des ombres : la constance finit toujours par gagner.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -7907,13 +7907,13 @@
     },
     {
       "id": "trainer-m1-stage-9",
-      "name": "Chercheur en Toxicologie & Ombre 9",
+      "name": "Oscar",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Ta neuvième manœuvre a complètement neutralisé mon protocole.",
+      "defeatCatchline": "Tu as résisté longtemps, mais mon protocole gardait encore une neuvième surprise.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -8160,13 +8160,13 @@
     },
     {
       "id": "trainer-m1-stage-10",
-      "name": "Chercheur en Toxicologie & Ombre 10",
+      "name": "Maya",
       "title": "Étudiant Master - Sécurité & Dark Systems",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-poison-dark-front.png",
       "introCatchline": "Le Master ne tolère aucune vulnérabilité. Le poison et les ombres vont tester tes défenses !",
-      "victoryCatchline": "Tu as su dissiper les ténèbres... Chapeau !",
-      "defeatCatchline": "Tu as succombé au poison et aux coups sournois.",
+      "victoryCatchline": "Dix décisions justes ont transformé tes défenses en véritable forteresse.",
+      "defeatCatchline": "Dix analyses des toxines et des ombres, dix réponses exactes : ce combat était sous contrôle.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -8414,13 +8414,13 @@
     {
       "id": "boss-gamba",
       "name": "Gamba",
-      "title": "Doyen Master - Maître Poison / Ténèbres",
+      "title": "Maître des Types Poison et Ténèbres",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-gamba-front.png",
       "introCatchline": "Le monde réel est impitoyable, empli de poisons subtils et d'embuscades dans l'ombre. Survivrez-vous à mon escouade ?",
       "victoryCatchline": "Une résilience hors norme ! Vous purifiez le venin et maîtrisez les ombres.",
       "defeatCatchline": "L'ombre vous a englouti. Préparez un antidote et revenez !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "boss-giovanni-usum",
       "team": [
         {
           "speciesId": "drapion",
@@ -8786,13 +8786,13 @@
     },
     {
       "id": "trainer-m2-stage-1",
-      "name": "Chercheur Cryo-Draconique 1",
+      "name": "Émile",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Tu as franchi la première défense ; je dois revoir ta résistance autant que les miens.",
+      "defeatCatchline": "Le premier principe de la cryogénie draconique est simple : ne jamais sous-estimer ma tempête.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9039,13 +9039,13 @@
     },
     {
       "id": "trainer-m2-stage-2",
-      "name": "Chercheur Cryo-Draconique 2",
+      "name": "Anna",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Ta deuxième approche a renversé mes certitudes de la cryogénie draconique. Bien joué !",
+      "defeatCatchline": "Deuxième démonstration de la cryogénie draconique validée : ton équipe manque encore de précision.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9292,13 +9292,13 @@
     },
     {
       "id": "trainer-m2-stage-3",
-      "name": "Chercheur Cryo-Draconique 3",
+      "name": "Jules",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Tu as trouvé la faille que ma tempête n'avait pas anticipée.",
+      "defeatCatchline": "J'avais prévu chacun de tes mouvements ; ma tempête a fait le reste.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9545,13 +9545,13 @@
     },
     {
       "id": "trainer-m2-stage-4",
-      "name": "Chercheur Cryo-Draconique 4",
+      "name": "Sarah",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Quatrième essai, conclusion limpide : ta résistance étaient mieux préparés que mon plan.",
+      "defeatCatchline": "Cette quatrième épreuve confirme que ma maîtrise de la cryogénie draconique n'est pas théorique.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -9798,13 +9798,13 @@
     },
     {
       "id": "trainer-m2-stage-5",
-      "name": "Chercheur Cryo-Draconique 5",
+      "name": "Naël",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Ta cinquième combinaison apporte une réponse brillante dans le domaine de la cryogénie draconique.",
+      "defeatCatchline": "Cinq étapes d'avance : voilà pourquoi ma tempête vient de l'emporter.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10051,13 +10051,13 @@
     },
     {
       "id": "trainer-m2-stage-6",
-      "name": "Chercheur Cryo-Draconique 6",
+      "name": "Célia",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Même ma tempête n'a rien pu faire contre cette sixième offensive. Respect !",
+      "defeatCatchline": "Ton plan était solide, mais mon sixième principe de la cryogénie draconique l'était davantage.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10304,13 +10304,13 @@
     },
     {
       "id": "trainer-m2-stage-7",
-      "name": "Chercheur Cryo-Draconique 7",
+      "name": "Adam",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Sept ajustements impeccables : ta résistance ont tenu jusqu'au bout.",
+      "defeatCatchline": "Sept échanges ont suffi pour que ma tempête révèle la faille de ta stratégie.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10557,13 +10557,13 @@
     },
     {
       "id": "trainer-m2-stage-8",
-      "name": "Chercheur Cryo-Draconique 8",
+      "name": "Lisa",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Cette huitième victoire prouve ta maîtrise de la cryogénie draconique. Je m'incline.",
+      "defeatCatchline": "Huitième leçon de la cryogénie draconique : la constance finit toujours par gagner.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -10810,13 +10810,13 @@
     },
     {
       "id": "trainer-m2-stage-9",
-      "name": "Chercheur Cryo-Draconique 9",
+      "name": "Gabin",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Ta neuvième manœuvre a complètement neutralisé ma tempête.",
+      "defeatCatchline": "Tu as résisté longtemps, mais ma tempête gardait encore une neuvième surprise.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -11063,13 +11063,13 @@
     },
     {
       "id": "trainer-m2-stage-10",
-      "name": "Chercheur Cryo-Draconique 10",
+      "name": "Rose",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Dix décisions justes ont transformé ta résistance en véritable forteresse.",
+      "defeatCatchline": "Dix analyses de la cryogénie draconique, dix réponses exactes : ce combat était sous contrôle.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -11316,13 +11316,13 @@
     },
     {
       "id": "trainer-m2-stage-11",
-      "name": "Chercheur Cryo-Draconique 11",
+      "name": "Loan",
       "title": "Étudiant Master 2 - Recherche de Pointe",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-player-back.png",
+      "sprite": "/sprites/trainer-student-dragon-ice-front.png",
       "introCatchline": "Le zéro absolu rencontre le feu des dragons ancestraux. Es-tu prêt pour l'impact ?",
-      "victoryCatchline": "Une chaleur et une détermination qui brisent la glace... Impressionnant !",
-      "defeatCatchline": "Tu as gelé sur place face à nos écailles draconiques !",
+      "victoryCatchline": "Tu conclus ce onzième duel avec une remarquable maîtrise de la cryogénie draconique.",
+      "defeatCatchline": "Jusqu'au onzième défi, ma tempête reste impossible à dépasser aujourd'hui.",
       "musicTrack": "battle-theme-1",
       "team": [
         {
@@ -11570,13 +11570,13 @@
     {
       "id": "boss-auberson",
       "name": "Auberson",
-      "title": "Doyen Master - Maître Dragon / Glace",
+      "title": "Maître des Types Dragon et Glace",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-auberson-front.png",
       "introCatchline": "Le blizzard et la fureur draconique forgent les plus grands scientifiques. Prouvez votre maîtrise finale du Master !",
       "victoryCatchline": "Magistral ! Vous obtenez votre Diplôme de Master of Science avec les félicitations du jury !",
       "defeatCatchline": "La tempête polaire a éteint votre élan. Rallumez votre flamme !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "giratina-battle-pla",
       "team": [
         {
           "speciesId": "mamoswine",
@@ -11910,13 +11910,13 @@
     {
       "id": "boss-doc-tiago",
       "name": "Tiago",
-      "title": "Doctorant en Architectures Avancées",
+      "title": "Maître du Type Vol",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-tiago-front.png",
       "introCatchline": "Mon escouade aérienne domine les cieux avec Ho-Oh et mon Bekipan chromatique. Prépare-toi au décollage !",
       "victoryCatchline": "Tu as su percer mes rafales de vent ! Quel combat époustouflant !",
       "defeatCatchline": "Reprends de la hauteur et réessaye !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "champion-diantha-xy",
       "team": [
         {
           "speciesId": "hooh",
@@ -12283,13 +12283,13 @@
     {
       "id": "boss-doc-mo",
       "name": "Mo",
-      "title": "Doctorant en Intelligence Artificielle",
+      "title": "Maître du Temps",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-mo-front.png",
       "introCatchline": "Mon IA prédit tous vos mouvements dans l'espace-temps avec Dialga et Simiabraz. L'algorithme parfait existe !",
       "victoryCatchline": "Impressionnant, vous avez dépassé les calculs de mes réseaux de neurones !",
       "defeatCatchline": "La puissance temporelle de Dialga était inarrêtable !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "champion-alder-bw",
       "team": [
         {
           "speciesId": "infernape",
@@ -12656,13 +12656,13 @@
     {
       "id": "boss-doc-ismael",
       "name": "Ismael",
-      "title": "Doctorant en Systèmes Distribués & Résilience",
+      "title": "Maître de l’Espace",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-ismael-front.png",
       "introCatchline": "Mon infrastructure est bâtie pour encaisser n'importe quelle charge, avec Palkia pour distordre les dimensions !",
       "victoryCatchline": "Tu as trouvé la faille dans mon architecture haute disponibilité ! Chapeau bas !",
       "defeatCatchline": "Le système est resté 100% résilient face à tes attaques !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "champion-cynthia-dpp",
       "team": [
         {
           "speciesId": "breloom",
@@ -13029,13 +13029,13 @@
     {
       "id": "boss-doc-evan",
       "name": "Evan",
-      "title": "Doctorant en Sécurité & Cryptographie",
+      "title": "Maître des Abysses",
       "aiProfile": "heuristic",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-evan-front.png",
       "introCatchline": "Mon blindage cryptographique est impénétrable avec Métalosse chromatique et Lugia le gardien des abysses !",
       "victoryCatchline": "Tu as déchiffré mes défenses les plus inviolables. Respect !",
       "defeatCatchline": "Chiffrement intact. Tes attaques ont été rejetées !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "chairman-rose-swsh",
       "team": [
         {
           "speciesId": "mismagius",
@@ -13402,13 +13402,13 @@
     {
       "id": "boss-doc-heche",
       "name": "Professeur Hêche",
-      "title": "Doyen de l'École Doctorale",
+      "title": "Maître du Monde Distorsion",
       "aiProfile": "expectiminimax",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-heche-front.png",
       "introCatchline": "Vous entrez dans le Monde Distorsion. Giratina et mes titans antiques vont juger votre thèse finale !",
       "victoryCatchline": "Une soutenance héroïque et magistrale ! Votre thèse est acceptée avec la plus haute mention !",
       "defeatCatchline": "La distorsion temporelle a anéanti votre équipe. Préparez une nouvelle soutenance !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "n-final-battle-bw",
       "team": [
         {
           "speciesId": "giratina",
@@ -13775,13 +13775,13 @@
     {
       "id": "boss-doc-donini",
       "name": "Directeur Donini",
-      "title": "Directeur Général de la HEIG-VD & Maître Suprême",
+      "title": "Maître Suprême",
       "aiProfile": "expectiminimax",
-      "sprite": "/sprites/trainer-champion-front.png",
+      "sprite": "/sprites/trainer-boss-donini-front.png",
       "introCatchline": "Bienvenue à l'ultime frontière du savoir. Arceus le créateur et les légendes de la HEIG vous défient au sommet !",
       "victoryCatchline": "LÉGENDAIRE ! Vous devenez le Grand Maître et Docteur Suprême de HEIG Odyssey !",
       "defeatCatchline": "La puissance créatrice d'Arceus est infinie. Continuez d'apprendre et de vous surpasser !",
-      "musicTrack": "battle-theme-1",
+      "musicTrack": "hooh-battle-hgss",
       "team": [
         {
           "speciesId": "pikachu",

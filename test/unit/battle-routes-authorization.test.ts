@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   class BattleSessionUnavailableError extends Error {}
-  class BattleActionRejectedError extends Error {}
+  class BattleActionRejectedError extends Error {
+    state = {
+      battleId: "battle-test",
+      turn: 2,
+      phase: "switch_required",
+    };
+  }
   class BattleEngine {
     battleId = "battle-test";
 
@@ -15,11 +21,14 @@ const mocks = vi.hoisted(() => {
     BattleActionRejectedError,
     BattleEngine,
     BattleSessionUnavailableError,
+    abandonBattleSession: vi.fn(),
+    canUserAccessStage: vi.fn(),
     findMany: vi.fn(),
     getSession: vi.fn(),
     getTrainer: vi.fn(),
     loadCampaign: vi.fn(),
     processBattleTurn: vi.fn(),
+    consumeFixedWindowRateLimit: vi.fn(),
     registerBattleSession: vi.fn(),
     userPokemonToTrainerPokemon: vi.fn(),
     validateTeamComposition: vi.fn(),
@@ -28,6 +37,18 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: mocks.getSession } },
+}));
+
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
+vi.mock("@/lib/security/rate-limit", () => ({
+  consumeFixedWindowRateLimit: mocks.consumeFixedWindowRateLimit,
+}));
+
+vi.mock("@/lib/campaign/campaign-service", () => ({
+  canUserAccessStage: mocks.canUserAccessStage,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -41,6 +62,7 @@ vi.mock("@/lib/combat/battle-engine", () => ({
 vi.mock("@/lib/combat/battle-session-store", () => ({
   BattleActionRejectedError: mocks.BattleActionRejectedError,
   BattleSessionUnavailableError: mocks.BattleSessionUnavailableError,
+  abandonBattleSession: mocks.abandonBattleSession,
   processBattleTurn: mocks.processBattleTurn,
   registerBattleSession: mocks.registerBattleSession,
 }));
@@ -57,11 +79,15 @@ vi.mock("@/lib/team/team-validator", () => ({
 
 import { POST as startBattle } from "@/app/api/battle/start/route";
 import { POST as applyBattleAction } from "@/app/api/battle/action/route";
+import { POST as abandonBattle } from "@/app/api/battle/abandon/route";
 
 function request(path: string, body: unknown): Request {
   return new Request(`http://localhost:3000${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+    },
     body: JSON.stringify(body),
   });
 }
@@ -69,6 +95,10 @@ function request(path: string, body: unknown): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getSession.mockResolvedValue({ user: { id: "owner-user" } });
+  mocks.consumeFixedWindowRateLimit.mockResolvedValue({
+    allowed: true,
+    retryAfter: null,
+  });
   mocks.findMany.mockResolvedValue([{ id: "pokemon-1" }]);
   mocks.validateTeamComposition.mockReturnValue({ isValid: true, errors: [] });
   mocks.userPokemonToTrainerPokemon.mockReturnValue({
@@ -81,6 +111,10 @@ beforeEach(() => {
     name: "Rival",
     team: [],
     aiProfile: "random",
+  });
+  mocks.canUserAccessStage.mockResolvedValue({
+    allowed: true,
+    trainerId: "trainer-1",
   });
   mocks.loadCampaign.mockReturnValue([]);
   mocks.processBattleTurn.mockResolvedValue({
@@ -97,7 +131,7 @@ describe("POST /api/battle/start", () => {
     mocks.getSession.mockResolvedValue(null);
 
     const response = await startBattle(
-      request("/api/battle/start", { trainerId: "trainer-1" }),
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
     );
 
     expect(response.status).toBe(401);
@@ -109,20 +143,34 @@ describe("POST /api/battle/start", () => {
     const response = await startBattle(
       request("/api/battle/start", {
         userId: "victim-user",
-        trainerId: "trainer-1",
+        stageId: "bachelor-1-stage-1",
       }),
     );
 
     expect(response.status).toBe(400);
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
+
+  it("limite le nombre de combats démarrés par un même compte", async () => {
+    mocks.consumeFixedWindowRateLimit.mockResolvedValue({
+      allowed: false,
+      retryAfter: 42,
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("42");
+    expect(mocks.findMany).not.toHaveBeenCalled();
+  });
 });
 
 describe("autorisation du démarrage d'un combat", () => {
-  it("refuse de mélanger une étape de campagne et un autre dresseur", async () => {
+  it("refuse un identifiant de dresseur fourni directement par le client", async () => {
     const response = await startBattle(
       request("/api/battle/start", {
-        stageId: "bachelor-1-stage-1",
         trainerId: "trainer-1",
       }),
     );
@@ -131,9 +179,61 @@ describe("autorisation du démarrage d'un combat", () => {
     expect(mocks.registerBattleSession).not.toHaveBeenCalled();
   });
 
+  it("refuse une difficulté fournie pour un combat de campagne", async () => {
+    const response = await startBattle(
+      request("/api/battle/start", {
+        stageId: "bachelor-1-stage-1",
+        difficulty: "hard",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.canUserAccessStage).not.toHaveBeenCalled();
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
+  });
+
+  it("refuse le lancement d'une étape de campagne verrouillée avec code 403", async () => {
+    // La route doit arrêter le flux avant toute création de session de combat.
+    mocks.canUserAccessStage.mockResolvedValue({
+      allowed: false,
+      reason: "Cette étape est verrouillée.",
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-2" }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
+    expect(await response.json()).toEqual({
+      success: false,
+      error: "Cette étape est verrouillée.",
+    });
+  });
+
+  it("autorise le lancement d'une étape de campagne débloquée avec code 200", async () => {
+    // Le dresseur provient du contrôle serveur et non du corps de la requête.
+    mocks.canUserAccessStage.mockResolvedValue({
+      allowed: true,
+      trainerId: "trainer-1",
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.canUserAccessStage).toHaveBeenCalledWith(
+      "owner-user",
+      "bachelor-1-stage-1",
+    );
+    expect(mocks.registerBattleSession).toHaveBeenCalled();
+  });
+
   it("charge et enregistre le combat avec l'identité Better Auth", async () => {
     const response = await startBattle(
-      request("/api/battle/start", { trainerId: "trainer-1" }),
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
     );
 
     expect(response.status).toBe(200);
@@ -143,12 +243,35 @@ describe("autorisation du démarrage d'un combat", () => {
       }),
     );
     expect(mocks.registerBattleSession.mock.calls[0]?.[1]).toBe("owner-user");
+    // Les participants sont les créatures lues en base, pas des identifiants clients.
+    expect(mocks.registerBattleSession.mock.calls[0]?.[2]).toEqual([
+      "pokemon-1",
+    ]);
+  });
+
+  it("refuse une origine externe avant de créer un combat", async () => {
+    const response = await startBattle(
+      new Request("http://localhost:3000/api/battle/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://malveillant.example",
+        },
+        body: JSON.stringify({ stageId: "bachelor-1-stage-1" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
   });
 });
 
 describe("POST /api/battle/action", () => {
   const actionBody = {
     battleId: "battle-test",
+    expectedTurn: 1,
+    expectedPhase: "action_selection",
     action: { type: "move", moveIndex: 0 },
   };
 
@@ -173,6 +296,7 @@ describe("POST /api/battle/action", () => {
       "battle-test",
       "owner-user",
       { type: "move", moveIndex: 0 },
+      { turn: 1, phase: "action_selection" },
     );
   });
 });
@@ -180,6 +304,8 @@ describe("POST /api/battle/action", () => {
 describe("erreurs sécurisées des actions de combat", () => {
   const actionBody = {
     battleId: "battle-test",
+    expectedTurn: 1,
+    expectedPhase: "action_selection",
     action: { type: "move", moveIndex: 0 },
   };
 
@@ -198,16 +324,73 @@ describe("erreurs sécurisées des actions de combat", () => {
       error: "Combat introuvable ou expiré.",
     });
   });
+
+  it("renvoie l'état courant lorsqu'une action est devenue obsolète", async () => {
+    mocks.processBattleTurn.mockRejectedValue(
+      new mocks.BattleActionRejectedError(),
+    );
+
+    const response = await applyBattleAction(
+      request("/api/battle/action", actionBody),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).not.toBe("Action invalide");
+    expect(body.state).toEqual(
+      expect.objectContaining({ turn: 2, phase: "switch_required" }),
+    );
+  });
+});
+
+describe("POST /api/battle/abandon", () => {
+  it("libère la session du combat pour le compte authentifié", async () => {
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { battleId: "battle-test" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.abandonBattleSession).toHaveBeenCalledWith(
+      "battle-test",
+      "owner-user",
+    );
+  });
+
+  it("ne libère rien et reste neutre sans session authentifiée", async () => {
+    mocks.getSession.mockResolvedValue(null);
+
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { battleId: "battle-test" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.abandonBattleSession).not.toHaveBeenCalled();
+  });
+
+  it("rejette un corps de requête invalide", async () => {
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { nope: true }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.abandonBattleSession).not.toHaveBeenCalled();
+  });
 });
 
 describe("erreurs internes des combats", () => {
   it("ne renvoie jamais le message technique au navigateur", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mocks.processBattleTurn.mockRejectedValue(new Error("internal-secret-value"));
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    mocks.processBattleTurn.mockRejectedValue(
+      new Error("internal-secret-value"),
+    );
 
     const response = await applyBattleAction(
       request("/api/battle/action", {
         battleId: "battle-test",
+        expectedTurn: 1,
+        expectedPhase: "action_selection",
         action: { type: "move", moveIndex: 0 },
       }),
     );

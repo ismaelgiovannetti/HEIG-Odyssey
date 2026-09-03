@@ -6,7 +6,8 @@ import { VerificationForm } from "@/components/auth/verification-form";
 
 export const metadata: Metadata = {
   title: "Vérifier votre adresse - HEIG Odyssey",
-  description: "Vérifiez l'adresse e-mail associée à votre compte HEIG Odyssey.",
+  description:
+    "Vérifiez l'adresse e-mail associée à votre compte HEIG Odyssey.",
 };
 
 /**

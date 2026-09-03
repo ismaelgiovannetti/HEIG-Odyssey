@@ -9,6 +9,7 @@ import {
   getSpecies,
   getTrainer,
 } from "@/lib/content/loader";
+import { determineSpeciesRarity } from "@/lib/gacha/gacha-service";
 
 describe("Content Validation and Loader (US-15)", () => {
   it("should load and validate all species correctly", () => {
@@ -60,6 +61,20 @@ describe("Content Validation and Loader (US-15)", () => {
     }
   });
 
+  it("donne des catchlines uniques à chaque dresseur ordinaire", () => {
+    const regularTrainers = [...loadTrainers().values()].filter((trainer) =>
+      trainer.id.startsWith("trainer-"),
+    );
+
+    expect(regularTrainers).toHaveLength(56);
+    expect(
+      new Set(regularTrainers.map((trainer) => trainer.victoryCatchline)).size,
+    ).toBe(regularTrainers.length);
+    expect(
+      new Set(regularTrainers.map((trainer) => trainer.defeatCatchline)).size,
+    ).toBe(regularTrainers.length);
+  });
+
   it("should load and validate campaign worlds and stages referential integrity", () => {
     const worlds = loadCampaign();
     expect(worlds.length).toBeGreaterThan(0);
@@ -78,12 +93,35 @@ describe("Content Validation and Loader (US-15)", () => {
     expect(banners.length).toBeGreaterThan(0);
 
     const species = loadSpecies();
+    const obtainableSpecies = new Set<string>();
     for (const banner of banners) {
       expect(banner.costPokedollars).toBeGreaterThan(0);
+      expect(
+        banner.rates.common + banner.rates.rare + banner.rates.epic,
+      ).toBeCloseTo(1, 10);
+      expect(new Set(banner.poolSpecies).size).toBe(banner.poolSpecies.length);
+
+      const poolRarities = new Set(
+        banner.poolSpecies.flatMap((spId) => {
+          const pokemon = species.get(spId);
+          return pokemon ? [determineSpeciesRarity(pokemon)] : [];
+        }),
+      );
+      const advertisedRarities = [
+        [banner.rates.common, "COMMON"],
+        [banner.rates.rare, "RARE"],
+        [banner.rates.epic, "EPIC"],
+      ] as const;
+      for (const [rate, rarity] of advertisedRarities) {
+        if (rate > 0) expect(poolRarities.has(rarity)).toBe(true);
+      }
+
       for (const spId of banner.poolSpecies) {
         expect(species.has(spId)).toBe(true);
+        if (banner.isActive) obtainableSpecies.add(spId);
       }
     }
+    expect(obtainableSpecies.size).toBe(species.size);
   });
 
   it("should validate all content in one unified check", () => {

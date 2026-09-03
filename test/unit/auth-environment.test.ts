@@ -1,6 +1,9 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getApplicationOrigin, getBetterAuthSecret } from "@/lib/auth/environment";
+import {
+  getApplicationOrigin,
+  getBetterAuthSecret,
+} from "@/lib/auth/environment";
 
 const initialAuthSecret = process.env.BETTER_AUTH_SECRET;
 const initialAuthUrl = process.env.BETTER_AUTH_URL;
@@ -33,13 +36,28 @@ describe("auth environment", () => {
     expect(() => getBetterAuthSecret()).toThrow("BETTER_AUTH_SECRET_TOO_SHORT");
   });
 
-  it.each(["http://localhost:3000", "http://127.0.0.1:3000", "https://heig-odyssey.online"])(
-    "accepts the trusted application origin %s",
-    (applicationUrl) => {
-      process.env.BETTER_AUTH_URL = applicationUrl;
-      expect(getApplicationOrigin()).toBe(applicationUrl);
-    },
-  );
+  it("rejects the documented placeholder secret in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    process.env.BETTER_AUTH_SECRET =
+      "change-me-to-a-random-secret-key-at-least-32-characters";
+
+    try {
+      expect(() => getBetterAuthSecret()).toThrow(
+        "BETTER_AUTH_SECRET_INSECURE",
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each([
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://heig-odyssey.online",
+  ])("accepts the trusted application origin %s", (applicationUrl) => {
+    process.env.BETTER_AUTH_URL = applicationUrl;
+    expect(getApplicationOrigin()).toBe(applicationUrl);
+  });
 
   it.each([
     "http://heig-odyssey.online",

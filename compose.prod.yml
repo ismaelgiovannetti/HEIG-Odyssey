@@ -1,13 +1,13 @@
 # Déploiement VPS : seules les images immuables publiées par la CI sont utilisées.
 services:
   traefik:
-    image: traefik:latest
+    image: traefik@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf
     container_name: traefik
     restart: unless-stopped
     command:
       - --api.insecure=false
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
       - --entrypoints.web.address=:80
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
@@ -19,8 +19,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # Traefik lit les conteneurs publiés, sans pouvoir modifier Docker.
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Le routage explicite évite tout accès de Traefik au socket Docker.
+      - ./traefik.dynamic.yml:/etc/traefik/dynamic.yml:ro
       # Le certificat ACME existant est conservé entre les déploiements.
       - ./letsencrypt:/letsencrypt
     security_opt:
@@ -32,6 +32,10 @@ services:
     image: ${APP_IMAGE:?APP_IMAGE is required}
     container_name: webapp
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
       # Accès local de diagnostic ; l'accès public passe uniquement par Traefik.
       - "127.0.0.1:3000:3000"
@@ -49,20 +53,43 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: heig-odyssey-frontend
-      traefik.http.routers.webapp.entrypoints: websecure
-      traefik.http.routers.webapp.rule: Host(`play.heig-odyssey.online`)
-      traefik.http.routers.webapp.tls.certresolver: myresolver
-      traefik.http.routers.webapp.service: webapp
-      # La nouvelle image Next.js écoute sur 3000, et non plus sur 80.
-      traefik.http.services.webapp.loadbalancer.server.port: "3000"
     networks:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  worker:
+    image: ${WORKER_IMAGE:?WORKER_IMAGE is required}
+    container_name: heig-odyssey-worker
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/heig_odyssey?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "scripts/ops/worker-healthcheck.mjs"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -72,20 +99,18 @@ services:
     image: ${LANDING_IMAGE:?LANDING_IMAGE is required}
     container_name: landing-page
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "127.0.0.1:8080:80"
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: heig-odyssey-frontend
-      traefik.http.routers.landing.entrypoints: websecure
-      traefik.http.routers.landing.rule: Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)
-      traefik.http.routers.landing.tls.certresolver: myresolver
-      traefik.http.routers.landing.service: landing
-      traefik.http.services.landing.loadbalancer.server.port: "80"
     networks:
       - frontend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -104,7 +129,7 @@ services:
       - backend
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
     container_name: heig-odyssey-postgres
     restart: unless-stopped
     environment:
@@ -122,7 +147,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     container_name: heig-odyssey-redis
     restart: unless-stopped
     volumes:

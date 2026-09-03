@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { UsersRound } from "lucide-react";
 
 import { ApplicationShell } from "@/components/application/application-shell";
-import { ModePlaceholder } from "@/components/application/mode-placeholder";
+import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
+import { TeamManager } from "@/components/team/team-manager";
+import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
 import { getApplicationPlayer } from "@/lib/player/application-player";
 
 export const metadata: Metadata = {
   title: "Gestion d'équipe - HEIG Odyssey",
 };
 
-/** Espace réservé à la collection et à la composition de l'équipe active. */
+/** La garde serveur reste obligatoire, même si la collection est chargée côté client. */
 export default async function TeamPage() {
   const player = await getApplicationPlayer();
 
@@ -19,14 +20,9 @@ export default async function TeamPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
-      <ModePlaceholder
-        eyebrow="Collection du dresseur"
-        title="Gestion d'équipe"
-        description="Consultez votre collection et composez librement une équipe active comprenant jusqu'à six Pokémon."
-        nextStep="La collection interactive sera bientôt disponible."
-        icon={UsersRound}
-        accent="team"
-      />
+      <MenuSoundtrack trackId={MENU_TRACKS.team} />
+      {/* Le PC affiche le nom de la session serveur, comme l'en-tête du jeu. */}
+      <TeamManager playerName={player.name} />
     </ApplicationShell>
   );
 }

@@ -224,6 +224,7 @@ Pour limiter la dispersion, chaque membre ne garde qu'une tâche principale dans
 | T-US19-02 | Remplacer le contrôle fictif du POC par la CI réelle déclenchée sur `dev` | CI | 2 h | 3 h | 5 h |
 | T-US19-03 | Compléter le workflow de PR avec services éphémères, E2E, accessibilité et validation d'image | CI / QA | 4 h | 8 h | 12 h |
 | T-US19-04 | Protéger `main` et configurer les checks obligatoires | GitHub / Sécurité | 1 h | 1 h | 2 h |
+| T-US19-05 | Test E2E de la boucle principale | QA | 2 h | 4 h | 7 h |
 
 ### US-20 - Déployer et restaurer une version identifiable
 

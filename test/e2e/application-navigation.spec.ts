@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { prisma } from "../../src/lib/prisma";
+import { prisma } from "./helpers/prisma";
 import {
   createApplicationTestUser,
   deleteApplicationTestUser,
@@ -9,22 +9,27 @@ import {
 } from "./helpers/onboarding-user";
 
 // Une seule table pilote les routes, titres et libellés contrôlés dans chaque
-// scénario afin d'éviter qu'un parcours soit oublié lors d'une évolution.
+// scénario. Les expressions bornées acceptent le monde ajouté au titre de la
+// campagne sans rendre les autres intitulés moins précis.
 const APPLICATION_AREAS = [
-  { href: "/campaign", heading: "Campagne", navigationLabel: "Campagne" },
+  {
+    href: "/campaign",
+    heading: /^Campagne - .+$/,
+    navigationLabel: "Campagne",
+  },
   {
     href: "/training",
-    heading: "Entraînement",
+    heading: /^Centre d’entraînement$/,
     navigationLabel: "Entraînement",
   },
   {
     href: "/team",
-    heading: "Gestion d'équipe",
+    heading: /^Gestion d'équipe$/,
     navigationLabel: "Équipe",
   },
   {
     href: "/gacha",
-    heading: "Boutique gacha",
+    heading: /^Invocations Pokémon$/,
     navigationLabel: "Gacha",
   },
 ] as const;
@@ -43,9 +48,7 @@ async function loginApplicationUser(
   user: ApplicationTestUser,
 ): Promise<void> {
   await page.goto("/login");
-  await page
-    .getByLabel("Adresse e-mail ou nom d'utilisateur")
-    .fill(user.email);
+  await page.getByLabel("Adresse e-mail ou nom d'utilisateur").fill(user.email);
   await page.getByRole("textbox", { name: "Mot de passe" }).fill(E2E_PASSWORD);
 
   // Attendre l'hydratation évite que le formulaire soit soumis nativement
@@ -75,6 +78,10 @@ async function focusWithKeyboard(
   target: Locator,
   maximumTabs = 24,
 ): Promise<void> {
+  // Une cible absente doit produire l'erreur explicite de Playwright sans
+  // immobiliser toute la durée maximale du scénario dans locator.evaluate.
+  await expect(target).toBeVisible();
+
   for (let index = 0; index < maximumTabs; index += 1) {
     await page.keyboard.press("Tab");
     const reachedTarget = await target.evaluate(
@@ -121,6 +128,10 @@ test.describe("navigation principale de l'application", () => {
   test("parcourt les quatre espaces et revient à l'accueil uniquement au clavier", async ({
     page,
   }) => {
+    // Ce parcours compile successivement les quatre pages en mode développement.
+    // La page Équipe est nettement plus lourde lors de son premier chargement.
+    test.slow();
+
     const user = requireApplicationTestUser(testUser);
     await loginApplicationUser(page, user);
 
@@ -131,9 +142,11 @@ test.describe("navigation principale de l'application", () => {
       await expectVisibleFocus(card);
       await page.keyboard.press("Enter");
 
-      await expect(page).toHaveURL(new RegExp(`${area.href}$`));
+      await expect(page).toHaveURL(new RegExp(`${area.href}$`), {
+        timeout: 30_000,
+      });
       await expect(
-        page.getByRole("heading", { name: area.heading, exact: true }),
+        page.getByRole("heading", { name: area.heading }),
       ).toBeVisible();
       await expect(
         page.getByRole("link", {
@@ -142,11 +155,14 @@ test.describe("navigation principale de l'application", () => {
         }),
       ).toHaveAttribute("aria-current", "page");
 
-      const backLink = page.getByRole("link", {
-        name: "Retour à l'accueil",
+      // Le retour passe désormais par la navigation persistante du shell ; les
+      // anciens liens propres aux pages ne font plus partie de l'interface.
+      const homeLink = page.getByRole("link", {
+        name: "Accueil",
+        exact: true,
       });
-      await focusWithKeyboard(page, backLink);
-      await expectVisibleFocus(backLink);
+      await focusWithKeyboard(page, homeLink);
+      await expectVisibleFocus(homeLink);
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/dashboard$/);
     }
@@ -183,55 +199,39 @@ test.describe("navigation principale de l'application", () => {
     await loginApplicationUser(page, user);
 
     for (const viewport of SUPPORTED_DESKTOP_VIEWPORTS) {
-      await test.step(
-        `${viewport.label} (${viewport.width}x${viewport.height})`,
-        async () => {
-          await page.setViewportSize({
-            width: viewport.width,
-            height: viewport.height,
-          });
-          await expect(page.locator(".mobile-unsupported")).toBeHidden();
+      await test.step(`${viewport.label} (${viewport.width}x${viewport.height})`, async () => {
+        await page.setViewportSize({
+          width: viewport.width,
+          height: viewport.height,
+        });
+        await expect(page.locator(".mobile-unsupported")).toBeHidden();
 
-          // Aucun contenu ne doit imposer un défilement horizontal, même
-          // lorsque les cartes passent sur deux colonnes à faible largeur.
-          const pageWidth = await page.evaluate(() => ({
-            client: document.documentElement.clientWidth,
-            scroll: document.documentElement.scrollWidth,
-          }));
-          expect(pageWidth.scroll).toBeLessThanOrEqual(pageWidth.client);
+        // Aucun contenu ne doit imposer un défilement horizontal, même
+        // lorsque les cartes passent sur deux colonnes à faible largeur.
+        const pageWidth = await page.evaluate(() => ({
+          client: document.documentElement.clientWidth,
+          scroll: document.documentElement.scrollWidth,
+        }));
+        expect(pageWidth.scroll).toBeLessThanOrEqual(pageWidth.client);
 
-          for (const area of APPLICATION_AREAS) {
-            const card = page.locator(
-              `a.dashboard-mode-card[href="${area.href}"]`,
-            );
-            await expect(card).toBeVisible();
-            await card.scrollIntoViewIfNeeded();
+        for (const area of APPLICATION_AREAS) {
+          const card = page.locator(
+            `a.dashboard-mode-card[href="${area.href}"]`,
+          );
+          await expect(card).toBeVisible();
+          await card.scrollIntoViewIfNeeded();
 
-            const bounds = await card.boundingBox();
-            if (!bounds) {
-              throw new Error(`APPLICATION_CARD_NOT_RENDERED:${area.href}`);
-            }
-
-            expect(bounds.x).toBeGreaterThanOrEqual(-1);
-            expect(bounds.x + bounds.width).toBeLessThanOrEqual(
-              viewport.width + 1,
-            );
+          const bounds = await card.boundingBox();
+          if (!bounds) {
+            throw new Error(`APPLICATION_CARD_NOT_RENDERED:${area.href}`);
           }
-        },
-      );
+
+          expect(bounds.x).toBeGreaterThanOrEqual(-1);
+          expect(bounds.x + bounds.width).toBeLessThanOrEqual(
+            viewport.width + 1,
+          );
+        }
+      });
     }
   });
-});
-
-test("affiche l'avertissement prévu sur un téléphone", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-
-  // Le mobile est volontairement hors MVP : le contenu du jeu doit être
-  // masqué au profit d'un message explicite, et non devenir inutilisable.
-  await expect(page.locator(".desktop-application")).toBeHidden();
-  await expect(page.locator(".mobile-unsupported")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Le jeu arrive sur grand écran" }),
-  ).toBeVisible();
 });

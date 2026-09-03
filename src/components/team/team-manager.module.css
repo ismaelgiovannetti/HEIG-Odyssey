@@ -1,0 +1,1719 @@
+/* Styles isolés : le PC reprend les couleurs du site sans modifier l'onboarding
+   ni les écrans d'authentification. */
+.manager {
+  /* Échelle partagée avec le dashboard : chaque niveau de texte garde la même
+     importance visuelle sur les écrans retenus. */
+  --team-font-page-title: clamp(29px, 3.2vw, 43px);
+  --team-font-subtitle: clamp(16px, 1.35vw, 19px);
+  --team-font-section-title: clamp(14px, 1.3vw, 19px);
+  --team-font-subsection-title: clamp(11px, 0.95vw, 14px);
+  --team-font-label: clamp(10px, 0.8vw, 12px);
+  --team-font-text: clamp(14px, 1.1vw, 17px);
+  --team-font-meta: clamp(11px, 0.9vw, 13px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: clamp(8px, 1.2vh, 14px);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.manager button,
+.manager a {
+  -webkit-tap-highlight-color: transparent;
+}
+.manager button:focus-visible,
+.manager a:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+  position: relative;
+  z-index: 2;
+}
+.manager button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.heading {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.headingLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  min-width: 0;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--color-primary-light);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.heading h1 {
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--team-font-page-title);
+  line-height: 1.35;
+}
+.headingSubtitle {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--team-font-subtitle);
+  font-weight: 650;
+  line-height: 1.55;
+  text-align: right;
+}
+.headingActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.tipsTrigger {
+  display: inline-flex;
+  width: auto;
+  height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-success) 68%, var(--color-border));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  color: var(--color-success);
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(9px, 0.68vw, 12px);
+  line-height: 1;
+  cursor: pointer;
+}
+.tipsTrigger:hover {
+  color: var(--color-success-text);
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+}
+.manager .tipsTrigger:focus-visible {
+  outline: 2px solid var(--color-success);
+  outline-offset: 2px;
+}
+.feedback:empty {
+  display: none;
+}
+.error {
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 2px solid var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  font-size: var(--team-font-text);
+  line-height: 1.6;
+}
+.error p {
+  margin: 0;
+}
+.error button,
+.error a {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  margin-top: 8px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.loading {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+.content {
+  position: relative;
+  display: grid;
+  /* La ligne reste explicitement la troisième même quand le retour invisible
+     de chargement ou de sauvegarde ne participe plus au placement automatique. */
+  grid-row: 3;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.2vh, 14px);
+  min-width: 0;
+  min-height: 0;
+  isolation: isolate;
+}
+.content > .loading {
+  grid-row: 1 / -1;
+}
+.saveFeedback .saveWarning {
+  color: var(--color-error-text);
+}
+.saveFeedback[data-error] {
+  color: var(--color-error-text);
+}
+.saveFeedback {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 20px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--team-font-meta);
+  line-height: 1.6;
+  text-align: right;
+}
+.saveFeedback svg {
+  flex-shrink: 0;
+  color: var(--color-success);
+}
+.savingIcon {
+  animation: saving-spin 1s linear infinite;
+}
+@keyframes saving-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Le workspace absorbe toute la hauteur restante. Les deux panneaux peuvent
+   donc réduire leurs cartes sans créer de défilement dans le shell. */
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: clamp(12px, 1.5vw, 22px);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+.panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  flex-direction: column;
+  border: 3px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 5px 5px 0 var(--color-outline);
+}
+.panelHeading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: clamp(46px, 5.8vh, 58px);
+  gap: 12px;
+  padding: clamp(9px, 1.2vh, 14px) clamp(12px, 1.3vw, 18px);
+  border-bottom: 2px solid var(--color-outline);
+  background: var(--color-surface-raised);
+}
+.panelHeading > div {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.2vw, 18px);
+  min-width: 0;
+}
+.panelHeading svg {
+  /* Le pictogramme reste volontairement plus imposant que le sous-titre. */
+  width: clamp(27px, 2.1vw, 32px);
+  height: clamp(27px, 2.1vw, 32px);
+  color: var(--color-success);
+  flex-shrink: 0;
+}
+.panelHeading h2 {
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--team-font-subsection-title);
+  line-height: 1.8;
+}
+.panelHeading > span {
+  color: var(--color-text-muted);
+  font-size: var(--team-font-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* L'équipe reste rouge ; le PC retrouve un en-tête gris contrasté et des commandes claires. */
+.teamPanel {
+  /* Le PC fixe la hauteur de la rangée. Le contenu de l'équipe ne peut pas l'agrandir. */
+  contain: size;
+  min-height: 0;
+  align-self: stretch;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-alt));
+}
+.teamPanel .panelHeading {
+  background: var(--color-nav-bg);
+  color: var(--color-nav-text);
+}
+.teamPanel .panelHeading svg {
+  color: #ffd5b0;
+}
+.teamPanel .panelHeading > span {
+  color: var(--color-nav-muted);
+}
+.pcPanel {
+  /* Le PC utilise la même hauteur que l'équipe et répartit ses cinq rangées. */
+  align-self: stretch;
+  background: #dce2e9;
+}
+.pcPanel .panelHeading {
+  background: #475569;
+  color: #f8fafc;
+}
+.pcPanel .panelHeading svg {
+  color: #c4e2ff;
+}
+.pcPanel .panelHeading > div {
+  flex: 1;
+}
+.pcPanel .panelHeading h2 {
+  /* Un nom de compte long ne doit pas repousser les limites du PC. */
+  overflow-wrap: anywhere;
+}
+.pcPanel .panelFoot {
+  justify-content: space-between;
+  gap: 12px;
+  text-align: right;
+  background: #dce2e9;
+  color: #475569;
+  border-top-color: var(--color-outline);
+}
+.teamPanel .panelFoot {
+  background: #dce2e9;
+  color: #475569;
+  border-top-color: var(--color-outline);
+}
+.pcCount {
+  margin-left: auto;
+}
+.releaseButton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 2px solid #778495;
+  background: #f6f8fa;
+  color: #36764d;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+.releaseButton:hover:not(:disabled),
+.releaseButton:focus-visible {
+  border-color: #36764d;
+  background: #edf7f0;
+  color: #245c38;
+}
+.releaseButton[data-over="true"] {
+  border-color: #c93d35;
+  background: color-mix(in srgb, #c93d35 12%, #fff);
+  color: #a72c26;
+}
+.releaseButton svg {
+  width: 18px;
+  height: 18px;
+}
+.pcPanel .boxArrow:focus-visible {
+  outline-color: #315d80;
+}
+.pcPanel[data-drop-target] {
+  outline: 2px solid var(--color-success);
+  outline-offset: 3px;
+}
+.teamSlots {
+  display: grid;
+  /* Même ordre que les flèches du clavier : 1–2, 3–4, puis 5–6. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  min-height: 0;
+  flex: 1;
+  gap: clamp(6px, 0.9vh, 10px);
+  padding: clamp(8px, 1.1vh, 12px);
+  overflow: hidden;
+}
+/* La bordure appartient à la carte entière, jamais à une portion du bouton.
+   L'icône de fiche est indépendante, sans ajouter de colonne ni de cadre carré. */
+.teamCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+.teamCard:hover,
+.teamCard:has(> .teamCell:focus-visible) {
+  border-color: var(--color-primary-light);
+}
+.teamCard[data-empty] {
+  border-style: dashed;
+}
+/* Les cartes occupées partagent les mêmes repères d'état que /training ;
+   les cases libres conservent uniquement leur contour discontinu. */
+.teamCard:not([data-empty]) {
+  border-left: 5px solid #5da978;
+}
+.teamCard .slotNumber {
+  top: 6px;
+  left: 7px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  font-size: 8px;
+  line-height: normal;
+  opacity: 1;
+}
+.teamCard[data-picked] {
+  border-color: var(--color-primary-light);
+  outline: 2px dashed var(--color-primary-light);
+  outline-offset: -5px;
+  background: var(--color-surface-raised);
+}
+.teamCard[data-over] {
+  border-color: var(--color-success);
+  box-shadow: inset 0 0 0 2px var(--color-success);
+}
+.detailsButton {
+  position: absolute;
+  /* L'icône suit la ligne du nom, sans lui imposer la hauteur de sa cible de clic. */
+  top: 2px;
+  right: 4px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  /* La cible reste confortable au clic, seul le pictogramme est visible. */
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #61c8ff;
+  cursor: pointer;
+}
+.detailsButton:hover:not(:disabled) {
+  color: #a9e4ff;
+}
+.manager .detailsButton:focus-visible {
+  /* L'anneau circulaire très contrasté identifie clairement le bouton de fiche
+     sans modifier la position du numéro ou du contenu de la carte. */
+  outline: 3px solid #61c8ff;
+  outline-offset: -9px;
+  position: absolute;
+  z-index: 3;
+  background: transparent;
+}
+.cell {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: grab;
+  user-select: none;
+}
+.cell:hover {
+  background: var(--color-surface-raised);
+  border-color: var(--color-success);
+}
+.cell[data-empty] {
+  cursor: pointer;
+  border-style: dashed;
+}
+.cell[data-picked] {
+  border-color: var(--color-primary-light);
+  outline: 2px dashed var(--color-primary-light);
+  outline-offset: -5px;
+  background: var(--color-surface-raised);
+}
+.cell[data-over] {
+  border: 2px solid var(--color-success);
+  box-shadow: inset 0 0 0 2px var(--color-success);
+}
+.cell[aria-disabled="true"] {
+  cursor: default;
+}
+.teamCell {
+  padding: 6px clamp(32px, 3.2vw, 52px);
+  gap: clamp(22px, 2vw, 32px);
+  text-align: left;
+}
+.teamCard > .teamCell {
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+.teamCard[data-empty] > .teamCell {
+  cursor: pointer;
+}
+.teamCard > .teamCell > .pickedMark {
+  top: 15px;
+  right: 54px;
+  left: auto;
+}
+.slotNumber {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  color: var(--color-text-muted);
+  font-size: clamp(9px, 0.75vw, 11px);
+  line-height: 1;
+  opacity: 0.8;
+}
+.sprite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.sprite img {
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.teamInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-self: center;
+  justify-content: center;
+  gap: 5px;
+}
+.nameLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Le niveau suit le nom ; l'espace à droite reste réservé à l'icône i. */
+  min-height: 28px;
+  /* Réduire ensemble la ligne et sa marge haute conserve l'écart avec les types.
+     Les noms longs peuvent toujours agrandir la carte, sans chevauchement. */
+  padding-top: 4px;
+  padding-right: 36px;
+  align-items: baseline;
+  align-content: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+.nameLine strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--team-font-text);
+  line-height: 1.4;
+}
+.nameLine > span {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: var(--team-font-meta);
+}
+.types {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.type {
+  padding: 2px 5px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid #8f8f84;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  font-size: clamp(10px, 0.8vw, 12px);
+  line-height: 1.4;
+}
+.type[data-type="Fire"] {
+  border-left-color: #e47940;
+}
+.type[data-type="Water"] {
+  border-left-color: #5a9cde;
+}
+.type[data-type="Grass"] {
+  border-left-color: #68b85b;
+}
+.type[data-type="Electric"] {
+  border-left-color: #e3be48;
+}
+.type[data-type="Ice"] {
+  border-left-color: #77d7de;
+}
+.type[data-type="Fighting"] {
+  border-left-color: #d86455;
+}
+.type[data-type="Poison"] {
+  border-left-color: #bf72cb;
+}
+.type[data-type="Ground"] {
+  border-left-color: #d5aa60;
+}
+.type[data-type="Flying"] {
+  border-left-color: #9aa9e8;
+}
+.type[data-type="Psychic"] {
+  border-left-color: #e786b1;
+}
+.type[data-type="Bug"] {
+  border-left-color: #a8ba55;
+}
+.type[data-type="Rock"] {
+  border-left-color: #c1ad74;
+}
+.type[data-type="Ghost"] {
+  border-left-color: #a18ac2;
+}
+.type[data-type="Dragon"] {
+  border-left-color: #9a83e4;
+}
+.type[data-type="Steel"] {
+  border-left-color: #98b9c5;
+}
+.type[data-type="Dark"] {
+  border-left-color: #a18c83;
+}
+.hpLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--team-font-meta);
+  color: var(--color-text-muted);
+}
+.hpLine > span:last-child {
+  white-space: nowrap;
+}
+.hpBar {
+  display: block;
+  flex: 1;
+  height: 5px;
+  background: var(--color-border);
+}
+.hpBar > span {
+  display: block;
+  height: 100%;
+  background: var(--color-success);
+}
+.emptyLabel {
+  margin: auto;
+  color: var(--color-text-muted);
+  font-size: var(--team-font-meta);
+}
+.panelFoot {
+  display: flex;
+  flex-shrink: 0;
+  height: clamp(45px, 5.2vh, 52px);
+  align-items: center;
+  margin: 0;
+  padding: clamp(6px, 0.8vh, 10px) 14px;
+  color: var(--color-text-muted);
+  font-size: var(--team-font-meta);
+  line-height: 1.5;
+  border-top: 2px solid var(--color-border);
+}
+.boxHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* Le bandeau respire davantage sans réduire la surface réservée aux cases. */
+  padding: clamp(9px, 1.1vh, 12px) 12px;
+  border-bottom: 1px solid #8b96a5;
+  background: #e7ecf2;
+  color: #202c3b;
+}
+.boxHeading > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  /* Les deux polices partagent la même ligne et restent centrées entre les flèches. */
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+  white-space: nowrap;
+}
+.boxHeading h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--team-font-label);
+  line-height: 1.5;
+}
+.boxHeading span {
+  flex-shrink: 0;
+  color: #475569;
+  font-size: var(--team-font-meta);
+  line-height: 1.5;
+}
+.boxArrow {
+  display: grid;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid #8b96a5;
+  background: #f5f7fa;
+}
+.boxArrow:hover:not(:disabled) {
+  border-color: #315d80;
+  color: #315d80;
+}
+.boxArrow svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+/* Les dimensions viennent du contrat partagé avec le serveur : 7 colonnes et 5 lignes.
+   Les lignes restent présentes, même dans une boîte entièrement vide. */
+.pcGrid {
+  --pc-row-gap: clamp(5px, 0.7vh, 8px);
+  --pc-row-gap-share: clamp(4px, 0.56vh, 6.4px);
+  display: grid;
+  grid-template-rows: repeat(var(--pc-rows), minmax(0, 1fr));
+  container-type: size;
+  min-height: 0;
+  flex: 1;
+  gap: var(--pc-row-gap);
+  padding: clamp(8px, 1vh, 12px);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      var(--color-scanline) 8px
+    ),
+    var(--color-bg-alt);
+}
+.pcRow {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: repeat(var(--pc-columns), minmax(0, 1fr));
+  /* La gouttière horizontale grandit avec le viewport : sur un écran large,
+     les bordures des sept cases ne se confondent plus en une seule grille. */
+  gap: clamp(5px, 0.55vw, 10px);
+}
+.pcRow > div {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+}
+.pcCell {
+  box-sizing: border-box;
+  /* La hauteur est parfois plus contraignante que la largeur. Les unités du
+     conteneur garantissent alors cinq carrés et quatre vraies gouttières. */
+  width: min(100%, calc(20cqh - var(--pc-row-gap-share)));
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1;
+  align-self: center;
+  justify-content: center;
+}
+.pcCell .sprite {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+}
+.pcCell .sprite > div {
+  max-width: 100%;
+}
+.pcCell .slotNumber {
+  font-size: clamp(8px, 0.65vw, 10px);
+}
+.pcCell .emptyLabel {
+  opacity: 0.35;
+  font-size: 16px;
+}
+.pickedMark {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  color: var(--color-primary-light);
+}
+.shiny {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  color: #c58a33;
+  font-size: 13px;
+}
+.ko {
+  position: absolute;
+  left: 3px;
+  bottom: 1px;
+  color: var(--color-text);
+  font-size: 8px;
+  background: var(--color-bg-alt);
+}
+
+/* Le dialogue natif reste centré et défilable à faible hauteur ou au zoom. */
+.detailsDialog {
+  --dialog-font-title: clamp(12px, 0.9vw, 15px);
+  --dialog-font-body: clamp(11px, 0.82vw, 14px);
+  --dialog-font-meta: clamp(9px, 0.68vw, 11px);
+  width: min(860px, calc(100vw - 48px));
+  max-width: none;
+  max-height: calc(100dvh - 64px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 3px solid var(--color-outline);
+  box-shadow: 8px 8px 0 var(--color-outline);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.detailsDialog::backdrop {
+  background: rgb(4 8 14 / 78%);
+}
+.tipsDialog {
+  position: relative;
+  width: min(880px, calc(100vw - 48px));
+  overflow: hidden;
+  padding: 46px 18px 18px;
+  border-color: var(--color-success-border);
+  background: var(--color-surface);
+}
+.tipsDialogClose {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.tipsDialogClose:hover {
+  color: var(--color-success-text);
+}
+.manager .tipsDialogClose:focus-visible {
+  position: absolute;
+  outline: 2px solid var(--color-success);
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+.tipsDialogBody {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+  line-height: 1.6;
+}
+.tipsDialogBody section {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid
+    color-mix(in srgb, var(--color-success) 55%, var(--color-border));
+  background: var(--color-bg-alt);
+}
+.tipsDialogBody h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: var(--color-success);
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--dialog-font-meta);
+  line-height: 1.6;
+}
+.tipsDialogBody h3 svg {
+  flex: 0 0 auto;
+  color: var(--color-success-text);
+}
+.tipsDialogBody ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 22px;
+  list-style: disc outside;
+}
+.tipsDialogBody li {
+  display: list-item;
+  padding-left: 2px;
+  list-style-type: disc;
+}
+.tipsDialogBody li::marker {
+  color: var(--color-success);
+}
+.tipsDialogBody strong {
+  color: var(--color-text);
+  font-weight: 650;
+}
+.releaseDialog {
+  width: min(560px, calc(100vw - 48px));
+  overflow: hidden;
+}
+.releaseDialogHeader {
+  background: var(--color-primary);
+}
+.releaseDialogBody {
+  padding: clamp(20px, 2.4vw, 28px);
+}
+.releasePokemon {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 24px);
+}
+.releasePokemon > div {
+  min-width: 0;
+}
+.releasePokemon p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(14px, 1.05vw, 17px);
+  font-weight: 650;
+  line-height: 1.65;
+}
+.releasePokemon p + p {
+  margin-top: 10px;
+  color: var(--color-text-muted);
+  font-size: clamp(12px, 0.86vw, 14px);
+  font-weight: 400;
+}
+.releaseDialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: clamp(20px, 2.4vw, 28px);
+}
+.releaseCancel,
+.releaseConfirm {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border: 3px solid var(--color-outline);
+  box-shadow: 4px 4px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--dialog-font-meta);
+  line-height: 1.45;
+  cursor: pointer;
+}
+.releaseCancel {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+.releaseConfirm {
+  background: var(--color-primary);
+  color: #fff;
+}
+.releaseCancel:hover:not(:disabled) {
+  background: var(--color-input-hover);
+}
+.releaseConfirm:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+.releaseCancel:disabled,
+.releaseConfirm:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 14px;
+  border-bottom: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+}
+.dialogHeader > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--dialog-font-title);
+  line-height: 1.8;
+}
+.closeDetails {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  color: inherit;
+  cursor: pointer;
+}
+.closeDetails:hover {
+  background: rgb(0 0 0 / 15%);
+}
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  padding: 20px;
+}
+.summaryTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(250px, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.summaryTop > .identity {
+  justify-self: start;
+  max-width: 100%;
+}
+.summaryTop > .stats {
+  width: 100%;
+}
+.identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.identity > div {
+  min-width: 0;
+  flex: 1;
+}
+.identity h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-family: "Press Start 2P", monospace;
+  font-size: var(--dialog-font-title);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.identity .eyebrow {
+  font-size: var(--dialog-font-meta);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.identity .muted {
+  margin: 8px 0 0;
+}
+.pokemonFacts {
+  display: grid;
+  align-self: center;
+  gap: 20px;
+  margin: 0;
+  padding: 0 0 0 20px;
+  border-left: 1px solid var(--color-border);
+}
+.pokemonFacts > div {
+  margin: 0;
+  padding: 0;
+}
+.pokemonFacts dt {
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+  line-height: 1.3;
+}
+.pokemonFacts dd {
+  margin: 1px 0 0;
+  font-size: var(--dialog-font-body);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+  line-height: 1.7;
+}
+.stats h3,
+.moves h3 {
+  margin: 0 0 12px;
+  font-size: var(--dialog-font-meta);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.stats,
+.moves {
+  min-width: 0;
+}
+.summaryBottom {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(170px, 1fr);
+  align-items: center;
+  gap: clamp(40px, 4vw, 64px);
+  margin: 0;
+  padding: 0;
+}
+.stats dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 8px;
+  margin: 0;
+}
+.stats dl > div {
+  padding-left: 8px;
+  border-left: 2px solid var(--color-border);
+}
+.stats dt {
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+}
+.stats dd {
+  margin: 3px 0 0;
+  font-size: var(--dialog-font-body);
+  font-weight: 700;
+}
+.moves ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(78px, auto));
+  gap: 10px;
+}
+.moves li {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  font-size: var(--dialog-font-body);
+}
+.moveHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--dialog-font-body);
+}
+.moveHeading > span:last-child {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+}
+.moveHeading strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.moveDetails {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--color-text-muted);
+  font-size: var(--dialog-font-meta);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .workspace {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 18px;
+  }
+  .panelHeading {
+    padding: 12px;
+  }
+  .teamSlots {
+    padding: 10px;
+    gap: 7px;
+  }
+  .teamCell {
+    padding: 6px 28px;
+    gap: 18px;
+  }
+  .teamInfo {
+    gap: 4px;
+  }
+  .nameLine {
+    gap: 2px 8px;
+  }
+  .pcGrid {
+    padding: 10px;
+    gap: 4px;
+  }
+  .pcRow {
+    gap: 4px;
+  }
+}
+
+/* Repli utile au zoom : garder chaque contrôle accessible sans bloquer le zoom
+   du navigateur. Le garde mobile existant reste inchangé. */
+@media (max-width: 900px) {
+  .headingLine {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .headingSubtitle {
+    max-width: none;
+    text-align: left;
+  }
+  .workspace {
+    gap: 12px;
+  }
+  .panelHeading > div {
+    gap: 5px;
+  }
+  .panelHeading > span {
+    white-space: normal;
+    text-align: right;
+  }
+}
+
+/* Au zoom important, conserver deux colonnes d'équipe et des cases PC lisibles
+   vaut mieux que comprimer les sprites. Le garde mobile reste indépendant. */
+@media (max-width: 740px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .teamPanel {
+    /* Quand les panneaux sont empilés, chacun reprend sa hauteur naturelle. */
+    contain: none;
+    align-self: start;
+  }
+  .teamSlots {
+    flex: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .summaryTop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .moves ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(78px, auto);
+  }
+}
+
+@media (max-width: 650px) {
+  .detailsDialog {
+    width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+  }
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px;
+  }
+  .summaryTop,
+  .summaryBottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pokemonFacts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 14px 0 0;
+    border-top: 1px solid var(--color-border);
+    border-left: 0;
+  }
+  .releasePokemon {
+    align-items: flex-start;
+  }
+  .releaseDialogActions {
+    flex-direction: column-reverse;
+  }
+  .releaseCancel,
+  .releaseConfirm {
+    width: 100%;
+  }
+  .tipsDialogBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Sous 850 px de hauteur, l'app-shell réduit fortement toute sa surface.
+   Cette échelle locale maintient la lisibilité de l'équipe sans modifier les
+   dimensions des panneaux ni les maximums utilisés en plein écran. */
+@media (min-width: 768px) and (max-height: 850px) {
+  .manager {
+    --team-font-page-title: clamp(35px, 3.6vw, 46px);
+    --team-font-subtitle: clamp(17px, 1.5vw, 20px);
+    --team-font-subsection-title: clamp(14px, 1.2vw, 18px);
+    --team-font-label: clamp(12px, 1vw, 15px);
+    --team-font-text: clamp(17px, 1.4vw, 21px);
+    --team-font-meta: clamp(14px, 1.15vw, 16px);
+  }
+
+  .eyebrow { font-size: 14px; }
+  .tipsTrigger { font-size: clamp(11px, 0.9vw, 15px); }
+  .slotNumber { font-size: clamp(11px, 0.9vw, 13px); }
+  .type { font-size: clamp(12px, 1vw, 15px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .savingIcon {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Gestion des Capacités & Évolutions
+   ========================================================================== */
+
+.editMovesBtn,
+.evolveActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 2px solid var(--color-outline);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  cursor: pointer;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  transition: transform 0.1s, background 0.1s;
+}
+
+.editMovesBtn:hover,
+.evolveActionBtn:hover {
+  background: var(--color-input-hover);
+  transform: translate(-1px, -1px);
+}
+
+.evolveActionBtn {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #78350f;
+  box-shadow: 2px 2px 0 #78350f;
+}
+
+.evolveActionBtn:hover {
+  background: #d97706;
+}
+
+.evolveActionBtn.notReady {
+  background: #94a3b8;
+  border-color: #475569;
+  box-shadow: 2px 2px 0 #475569;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.summaryHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.movesSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.movesSectionHeader h3 {
+  margin: 0;
+}
+
+/* Dialogue d'édition des capacités */
+.movesEditorDialog {
+  width: min(780px, calc(100vw - 32px));
+  max-height: min(720px, calc(100dvh - 32px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-outline);
+  padding: 0;
+}
+
+.movesEditorBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+.editorAlert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 2px solid #ef4444;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sectionHeading {
+  margin-bottom: 10px;
+}
+
+.sectionHeading h3 {
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  color: var(--color-text);
+}
+
+.sectionHeading small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.equippedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.equippedCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  min-height: 72px;
+}
+
+.equippedCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.equippedCardTop strong {
+  font-size: 12px;
+}
+
+.removeMoveBtn {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.removeMoveBtn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.removeMoveBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.equippedCardMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.emptySlotCard {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border: 2px dashed var(--color-border);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  min-height: 72px;
+}
+
+.learnableList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.learnableCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.learnableCard.isEquipped {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-bg-alt));
+}
+
+.learnableCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.learnableCardTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.learnableCardTitle strong {
+  font-size: 12px;
+}
+
+.levelBadge {
+  display: inline-flex;
+  padding: 2px 6px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-outline);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.categoryBadge {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.learnableCardStats {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.moveDescription {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+.equipActionBtn,
+.equippedActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 2px solid var(--color-outline);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.equipActionBtn {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.equipActionBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.equipActionBtn:disabled {
+  background: #cbd5e1;
+  border-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.equippedActionBtn {
+  background: var(--color-success);
+  color: #fff;
+  border-color: #14532d;
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 2px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+.cancelBtn,
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 3px solid var(--color-outline);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--color-input-hover);
+}
+
+.saveBtn {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Dialogue d'évolution */
+.evolutionDialog {
+  width: min(540px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-outline);
+  padding: 0;
+}
+
+.evolutionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px;
+}
+
+.evolutionStages {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 10px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg-alt);
+}
+
+.evolutionStageCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.evolutionStageCard strong {
+  font-size: 13px;
+}
+
+.evolutionStageCard span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.levelReady {
+  color: #15803d !important;
+  font-weight: 700;
+}
+
+.levelNeeded {
+  color: #b91c1c !important;
+  font-weight: 700;
+}
+
+.evolutionArrow {
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+  animation: pulseArrow 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseArrow {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.evolutionNotice {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.02);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.evolutionNotice p {
+  margin: 0;
+}
+
+.evolutionSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.evolutionCelebration {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+}
+
+.loadingSpinner {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

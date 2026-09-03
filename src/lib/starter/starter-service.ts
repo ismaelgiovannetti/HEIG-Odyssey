@@ -1,33 +1,31 @@
+import "server-only";
+
+import { randomInt } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 import { loadStarters, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
+import {
+  StarterClaimResultSchema,
+  type StarterClaimResult,
+} from "./starter-contract";
 
-export interface StarterClaimResult {
-  success: boolean;
-  pokemon: {
-    id: string;
-    speciesId: string;
-    name: string;
-    level: number;
-    currentHp: number;
-    maxHp: number;
-    teamPosition: number;
-    moves: any;
-    isShiny: boolean;
-  };
-  unlockedStageId: string;
-}
+export type { StarterClaimResult } from "./starter-contract";
 
 export async function selectStarter(
   userId: string,
   speciesId: string,
-  nickname?: string
+  nickname?: string,
 ): Promise<StarterClaimResult> {
   const starters = loadStarters();
-  const starterConfig = starters.find((s) => s.speciesId === speciesId.toLowerCase());
+  const starterConfig = starters.find(
+    (s) => s.speciesId === speciesId.toLowerCase(),
+  );
 
   if (!starterConfig) {
-    throw new Error(`La créature ${speciesId} n'est pas éligible comme starter gratuit.`);
+    throw new Error(
+      `La créature ${speciesId} n'est pas éligible comme starter gratuit.`,
+    );
   }
 
   const species = getSpecies(starterConfig.speciesId);
@@ -36,23 +34,36 @@ export async function selectStarter(
   }
 
   const initialIvs = {
-    hp: Math.floor(Math.random() * 16) + 16, // 16-31
-    atk: Math.floor(Math.random() * 16) + 16,
-    def: Math.floor(Math.random() * 16) + 16,
-    spa: Math.floor(Math.random() * 16) + 16,
-    spd: Math.floor(Math.random() * 16) + 16,
-    spe: Math.floor(Math.random() * 16) + 16,
+    hp: randomInt(16, 32), // 16-31
+    atk: randomInt(16, 32),
+    def: randomInt(16, 32),
+    spa: randomInt(16, 32),
+    spd: randomInt(16, 32),
+    spe: randomInt(16, 32),
   };
 
   const initialEvs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
   const maxHp = calculateMaxHp(species.baseStats.hp, 5, initialIvs.hp, 0);
 
-  // 1/512 shiny chance for starter recruitment
-  const isShiny = Math.random() < 1 / 512;
+  // Une créature de départ a une chance sur 512 d'être chromatique.
+  const isShiny = randomInt(512) === 0;
+  const persistedMoves: Prisma.InputJsonArray = starterConfig.moves.map(
+    (move) => ({
+      id: move.id,
+      name: move.name,
+      type: move.type,
+      category: move.category,
+      power: move.power,
+      accuracy: move.accuracy,
+      pp: move.pp,
+      maxPp: move.maxPp,
+      priority: move.priority,
+      ...(move.description ? { description: move.description } : {}),
+    }),
+  );
 
-  // Execute atomic transaction
+  // Le profil, la créature et la première étape sont créés atomiquement.
   const result = await prisma.$transaction(async (tx) => {
-    // 1. Verify user profile onboarding status
     const existingProfile = await tx.userProfile.findUnique({
       where: { userId },
     });
@@ -69,14 +80,13 @@ export async function selectStarter(
       throw new Error("Ce joueur possède déjà des créatures.");
     }
 
-    // 2. Create or update UserProfile
     await tx.userProfile.upsert({
       where: { userId },
       create: {
         userId,
         hasCompletedOnboarding: true,
         onboardingCompletedAt: new Date(),
-        pokedollars: 100, // Initial balance
+        pokedollars: 100,
       },
       update: {
         hasCompletedOnboarding: true,
@@ -84,7 +94,6 @@ export async function selectStarter(
       },
     });
 
-    // 3. Create starter UserPokemon assigned to team slot 1
     const createdPokemon = await tx.userPokemon.create({
       data: {
         userId,
@@ -96,16 +105,15 @@ export async function selectStarter(
         maxHp: maxHp,
         ivs: initialIvs,
         evs: initialEvs,
-        moves: starterConfig.moves as any,
+        moves: persistedMoves,
         ability: species.possibleAbilities[0] || "Overgrow",
         nature: "Hardy",
         gender: "GENDERLESS",
         isShiny,
-        teamPosition: 1, // First active slot
+        teamPosition: 1,
       },
     });
 
-    // 4. Unlock first campaign stage (Bachelor 1 - Stage 1)
     await tx.campaignProgress.upsert({
       where: {
         userId_stageId: {
@@ -139,5 +147,5 @@ export async function selectStarter(
     };
   });
 
-  return result;
+  return StarterClaimResultSchema.parse(result);
 }

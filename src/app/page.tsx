@@ -1,46 +1,39 @@
+import "./home.css";
+import "./onboarding.css";
+
 import Image from "next/image";
 import Link from "next/link";
-import { BrainCircuit, Compass, LogIn, Sparkles, Swords, UserPlus } from "lucide-react";
-
-const STARTERS = [
-  {
-    name: "Tortipouss",
-    type: "Plante",
-    sprite: "/sprites/pokemon/front/turtwig.png",
-    className: "home-starter home-starter--left",
-  },
-  {
-    name: "Ouisticram",
-    type: "Feu",
-    sprite: "/sprites/pokemon/front/chimchar.png",
-    className: "home-starter home-starter--center",
-  },
-  {
-    name: "Tiplouf",
-    type: "Eau",
-    sprite: "/sprites/pokemon/front/piplup.png",
-    className: "home-starter home-starter--right",
-  },
-] as const;
+import {
+  BrainCircuit,
+  Compass,
+  LogIn,
+  Sparkles,
+  Swords,
+  UserPlus,
+} from "lucide-react";
+import { StarterShowcase } from "@/components/onboarding/starter-showcase";
 
 const GAME_PILLARS = [
   {
     title: "Partez à l'aventure",
-    description: "Explorez huit mondes, affrontez leurs dresseurs et atteignez le Doctorat.",
+    description:
+      "Explorez huit mondes, affrontez leurs dresseurs et atteignez le Doctorat.",
     icon: Compass,
     iconClassName: "home-pillar__icon home-pillar__icon--campaign",
     label: "Campagne",
   },
   {
     title: "Progressez à votre rythme",
-    description: "Entraînez votre équipe avec une IA random, heuristique ou expectiminimax.",
+    description:
+      "Entraînez votre équipe avec une IA random, heuristique ou expectiminimax.",
     icon: BrainCircuit,
     iconClassName: "home-pillar__icon home-pillar__icon--training",
     label: "Entraînement",
   },
   {
     title: "Maîtrisez la Génération 4",
-    description: "Préparez vos choix, exploitez les types et remportez des combats tactiques.",
+    description:
+      "Préparez vos choix, exploitez les types et remportez des combats tactiques.",
     icon: Swords,
     iconClassName: "home-pillar__icon home-pillar__icon--battle",
     label: "Combats",
@@ -57,24 +50,6 @@ export default function HomePage() {
       <a className="skip-link" href="#home-actions">
         Aller aux actions
       </a>
-
-      {/* Les Pokémon latéraux donnent de la profondeur sans ajouter de contenu lu. */}
-      <Image
-        className="home-floating-sprite home-floating-sprite--left"
-        src="/sprites/pokemon/front/eevee.png"
-        alt=""
-        width={96}
-        height={96}
-        aria-hidden="true"
-      />
-      <Image
-        className="home-floating-sprite home-floating-sprite--right"
-        src="/sprites/pokemon/front/lucario.png"
-        alt=""
-        width={110}
-        height={110}
-        aria-hidden="true"
-      />
 
       <section className="home-window" aria-labelledby="home-title">
         <div className="home-window__topbar" aria-hidden="true">
@@ -107,52 +82,44 @@ export default function HomePage() {
             </h1>
 
             <p className="home-lead">
-              Construisez votre équipe, explorez une campagne inédite et révélez votre talent
-              dans des combats inspirés des règles compétitives de la Génération 4.
+              Construisez votre équipe, explorez une campagne inédite et révélez
+              votre talent dans des combats inspirés des règles compétitives de
+              la Génération 4.
             </p>
 
             <div className="home-actions" id="home-actions">
-              <Link className="home-action home-action--primary pixel-btn" href="/login">
+              <Link
+                className="home-action home-action--primary pixel-btn"
+                href="/login"
+              >
                 <LogIn aria-hidden="true" size={19} />
                 Se connecter
               </Link>
-              <Link className="home-action home-action--secondary pixel-btn" href="/signup">
+              <Link
+                className="home-action home-action--secondary pixel-btn"
+                href="/signup"
+              >
                 <UserPlus aria-hidden="true" size={19} />
                 Créer un compte
               </Link>
             </div>
 
             <p className="home-reassurance">
-              <span aria-hidden="true">●</span> Jeu solo · progression persistante · aucun achat réel
+              <span aria-hidden="true">●</span> Jeu solo · progression
+              persistante
             </p>
           </div>
 
-          <div className="home-showcase" aria-label="Trois Pokémon partenaires disponibles">
+          <div
+            className="home-showcase"
+            aria-label="Trois Pokémon partenaires disponibles"
+          >
             <div className="home-showcase__header">
               <span>Choisissez votre premier partenaire</span>
               <strong>Recrutement offert</strong>
             </div>
 
-            <div className="home-showcase__scene">
-              <div className="home-showcase__grid" aria-hidden="true" />
-
-              {STARTERS.map((starter) => (
-                <figure className={starter.className} key={starter.name}>
-                  <div className="home-starter__sprite">
-                    <Image
-                      src={starter.sprite}
-                      alt={starter.name}
-                      width={128}
-                      height={128}
-                    />
-                  </div>
-                  <figcaption>
-                    <strong>{starter.name}</strong>
-                    <span>{starter.type}</span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+            <StarterShowcase />
 
             <div className="home-showcase__message">
               <span aria-hidden="true">▶</span>
@@ -161,19 +128,24 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="home-pillars" aria-label="Les trois piliers de HEIG Odyssey">
-          {GAME_PILLARS.map(({ title, description, icon: Icon, iconClassName, label }) => (
-            <article className="home-pillar" key={label}>
-              <div className={iconClassName} aria-hidden="true">
-                <Icon size={22} />
-              </div>
-              <div>
-                <span>{label}</span>
-                <h2>{title}</h2>
-                <p>{description}</p>
-              </div>
-            </article>
-          ))}
+        <div
+          className="home-pillars"
+          aria-label="Les trois piliers de HEIG Odyssey"
+        >
+          {GAME_PILLARS.map(
+            ({ title, description, icon: Icon, iconClassName, label }) => (
+              <article className="home-pillar" key={label}>
+                <div className={iconClassName} aria-hidden="true">
+                  <Icon size={22} />
+                </div>
+                <div>
+                  <span>{label}</span>
+                  <h2>{title}</h2>
+                  <p>{description}</p>
+                </div>
+              </article>
+            ),
+          )}
         </div>
 
         <footer className="home-footer">

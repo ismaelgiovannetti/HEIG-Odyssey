@@ -2,13 +2,16 @@ import { describe, it, expect } from "vitest";
 import {
   validateTeamComposition,
   calculateMaxHp,
-  calculateStat,
   userPokemonToTrainerPokemon,
 } from "@/lib/team/team-validator";
 import type { UserPokemon } from "@prisma/client";
 
 describe("Team Validation & Stats Calculation (US-05)", () => {
-  const mockPokemon = (id: string, teamPosition: number, currentHp = 20): UserPokemon => ({
+  const mockPokemon = (
+    id: string,
+    teamPosition: number,
+    currentHp = 20,
+  ): UserPokemon => ({
     id,
     userId: "user-1",
     speciesId: "turtwig",
@@ -37,6 +40,9 @@ describe("Team Validation & Stats Calculation (US-05)", () => {
     gender: "M",
     isShiny: false,
     teamPosition,
+    // Une créature active n'occupe aucune case du PC.
+    boxNumber: null,
+    boxSlot: null,
     caughtAt: new Date(),
   });
 
@@ -119,5 +125,12 @@ describe("Team Validation & Stats Calculation (US-05)", () => {
     expect(trainerPkmn.level).toBe(5);
     expect(trainerPkmn.moves.length).toBe(1);
     expect(trainerPkmn.ivs.hp).toBe(15);
+  });
+
+  it("rejects malformed persisted moves instead of forwarding them to the battle engine", () => {
+    const userPkmn = mockPokemon("p1", 1);
+    userPkmn.moves = [{ id: "incomplete-move" }];
+
+    expect(() => userPokemonToTrainerPokemon(userPkmn)).toThrow();
   });
 });

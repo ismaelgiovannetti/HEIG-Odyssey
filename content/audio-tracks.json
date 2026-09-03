@@ -1,0 +1,215 @@
+{
+  "version": "1.0.0",
+  "tracks": [
+    {
+      "id": "gym-leader-rse",
+      "title": "Gym Leader Battle",
+      "gameOrigin": "Pokémon Ruby, Sapphire & Emerald",
+      "trainer": "Fouad",
+      "trainerId": "trainer-fouad",
+      "src": "/audio/tracks/gym-leader-rse.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "gym-leader-hgss",
+      "title": "Kanto Gym Leader Battle",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "trainer": "Nastaran",
+      "trainerId": "trainer-nastaran",
+      "src": "/audio/tracks/gym-leader-hgss.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "champion-alder-bw",
+      "title": "Champion Alder Battle",
+      "gameOrigin": "Pokémon Black & White",
+      "trainer": "Mosqueron",
+      "trainerId": "trainer-mosqueron",
+      "src": "/audio/tracks/champion-alder-bw.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "gym-leader-dpp",
+      "title": "Gym Leader Battle",
+      "gameOrigin": "Pokémon Diamond, Pearl & Platinum",
+      "trainer": "Augier",
+      "trainerId": "trainer-augier",
+      "src": "/audio/tracks/gym-leader-dpp.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "champion-diantha-xy",
+      "title": "Champion Diantha Battle Mashup",
+      "gameOrigin": "Pokémon X/Y & Remix",
+      "trainer": "Torri",
+      "trainerId": "trainer-torri",
+      "src": "/audio/tracks/champion-diantha-xy.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "boss-lysandre-xy",
+      "title": "Team Flare Boss Lysandre Battle",
+      "gameOrigin": "Pokémon X/Y",
+      "trainer": "Gamba",
+      "trainerId": "trainer-gamba",
+      "src": "/audio/tracks/boss-lysandre-xy.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "chairman-rose-swsh",
+      "title": "Chairman Rose Battle",
+      "gameOrigin": "Pokémon Sword & Shield",
+      "trainer": "Auberson",
+      "trainerId": "trainer-auberson",
+      "src": "/audio/tracks/chairman-rose-swsh.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "hooh-battle-hgss",
+      "title": "Ho-oh Battle",
+      "gameOrigin": "Pokémon HeartGold / SoulSilver",
+      "trainer": "Tiago",
+      "trainerId": "trainer-tiago",
+      "src": "/audio/tracks/hooh-battle-hgss.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "n-final-battle-bw",
+      "title": "N Final Battle",
+      "gameOrigin": "Pokémon Black & White",
+      "trainer": "Mo",
+      "trainerId": "trainer-mo",
+      "src": "/audio/tracks/n-final-battle-bw.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "champion-cynthia-dpp",
+      "title": "Champion Cynthia Battle",
+      "gameOrigin": "Pokémon Diamond, Pearl & Platinum",
+      "trainer": "Ismael",
+      "trainerId": "trainer-ismael",
+      "src": "/audio/tracks/champion-cynthia-dpp.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "zinnia-battle-oras",
+      "title": "Zinnia Battle",
+      "gameOrigin": "Pokémon Omega Ruby & Alpha Sapphire",
+      "trainer": "Evan",
+      "trainerId": "trainer-evan",
+      "src": "/audio/tracks/zinnia-battle-oras.mp3",
+      "loop": true,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "giratina-battle-pla",
+      "title": "Giratina Battle",
+      "gameOrigin": "Pokémon Legends: Arceus",
+      "trainer": "Hêche",
+      "trainerId": "trainer-heche",
+      "src": "/audio/tracks/giratina-battle-pla.mp3",
+      "loop": true,
+      "defaultVolume": 0.85
+    },
+    {
+      "id": "boss-giovanni-usum",
+      "title": "Rocket Boss Giovanni Battle",
+      "gameOrigin": "Pokémon UltraSun & UltraMoon",
+      "trainer": "Donini",
+      "trainerId": "trainer-donini",
+      "src": "/audio/tracks/boss-giovanni-usum.mp3",
+      "loop": true,
+      "defaultVolume": 0.85
+    },
+    {
+      "id": "battle-theme-1",
+      "title": "Thème de combat standard",
+      "gameOrigin": "HEIG Odyssey Original",
+      "src": "/audio/tracks/battle-theme-1.mp3",
+      "loop": true,
+      "defaultVolume": 0.7
+    },
+    {
+      "id": "victory-theme",
+      "title": "Fanfare de Victoire",
+      "gameOrigin": "Pokémon Gen 4",
+      "src": "/audio/tracks/victory-theme.mp3",
+      "loop": false,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "defeat-theme",
+      "title": "Fanfare de Défaite",
+      "gameOrigin": "Pokémon Gen 4",
+      "src": "/audio/tracks/defeat-theme.mp3",
+      "loop": false,
+      "defaultVolume": 0.8
+    },
+    {
+      "id": "route-1",
+      "title": "Thème d'accueil (Route 30)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/route-1.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "pokemon-center",
+      "title": "Centre Pokémon (Gacha)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/pokemon-center.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "pc-box",
+      "title": "Boîte PC (Gestion d'équipe)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/pc-box.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "town",
+      "title": "Ville (Entraînement)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/town.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-bachelor",
+      "title": "Campagne Bachelor (Route 29)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-bachelor.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-master",
+      "title": "Campagne Master (Doublonville)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-master.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-doctorat",
+      "title": "Campagne Doctorat (Plateau Indigo)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-doctorat.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    }
+  ]
+}

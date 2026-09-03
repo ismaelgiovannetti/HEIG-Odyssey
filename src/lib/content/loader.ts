@@ -1,5 +1,7 @@
+import "server-only";
+
 import {
-  SpeciesSchema,
+  SpeciesConfigSchema,
   StartersConfigSchema,
   TrainersConfigSchema,
   CampaignConfigSchema,
@@ -29,13 +31,13 @@ function getContentDir(): string {
   return path.join(process.cwd(), "content");
 }
 
-function loadJsonFile<T>(filename: string): T {
+function loadJsonFile(filename: string): unknown {
   const filePath = path.join(getContentDir(), filename);
   if (!fs.existsSync(filePath)) {
     throw new Error(`Content file not found: ${filePath}`);
   }
   const content = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(content) as T;
+  return JSON.parse(content);
 }
 
 // In-memory validated caches
@@ -47,11 +49,10 @@ let cachedGacha: GachaBannerConfig[] | null = null;
 
 export function loadSpecies(): Map<string, Species> {
   if (cachedSpecies) return cachedSpecies;
-  const raw = loadJsonFile<{ version: string; species: unknown[] }>("species.json");
+  const raw = SpeciesConfigSchema.parse(loadJsonFile("species.json"));
   const speciesMap = new Map<string, Species>();
 
-  for (const item of raw.species) {
-    const validated = SpeciesSchema.parse(item);
+  for (const validated of raw.species) {
     if (speciesMap.has(validated.id)) {
       throw new Error(`Duplicate species ID found: ${validated.id}`);
     }
@@ -64,7 +65,7 @@ export function loadSpecies(): Map<string, Species> {
 
 export function loadStarters(): StarterOption[] {
   if (cachedStarters) return cachedStarters;
-  const raw = loadJsonFile<unknown>("starters.json");
+  const raw = loadJsonFile("starters.json");
   const validated = StartersConfigSchema.parse(raw);
 
   const species = loadSpecies();
@@ -88,7 +89,7 @@ export function loadStarters(): StarterOption[] {
 
 export function loadTrainers(): Map<string, Trainer> {
   if (cachedTrainers) return cachedTrainers;
-  const raw = loadJsonFile<unknown>("trainers.json");
+  const raw = loadJsonFile("trainers.json");
   const validated = TrainersConfigSchema.parse(raw);
 
   const species = loadSpecies();
@@ -116,7 +117,7 @@ export function loadTrainers(): Map<string, Trainer> {
 
 export function loadCampaign(): CampaignWorld[] {
   if (cachedCampaign) return cachedCampaign;
-  const raw = loadJsonFile<unknown>("campaign.json");
+  const raw = loadJsonFile("campaign.json");
   const validated = CampaignConfigSchema.parse(raw);
 
   const trainers = loadTrainers();
@@ -152,10 +153,11 @@ export function loadCampaign(): CampaignWorld[] {
 
 export function loadGachaBanners(): GachaBannerConfig[] {
   if (cachedGacha) return cachedGacha;
-  const raw = loadJsonFile<unknown>("gacha-banners.json");
+  const raw = loadJsonFile("gacha-banners.json");
   const validated = GachaConfigSchema.parse(raw);
 
   const species = loadSpecies();
+  const availableSpecies = new Set<string>();
   for (const banner of validated.banners) {
     for (const spId of banner.poolSpecies) {
       if (!species.has(spId)) {
@@ -163,7 +165,19 @@ export function loadGachaBanners(): GachaBannerConfig[] {
           `Gacha banner "${banner.id}" references unknown speciesId: "${spId}"`
         );
       }
+      if (banner.isActive) availableSpecies.add(spId);
     }
+  }
+
+  // Chaque espèce du Pokédex doit rester obtenable dans au moins une bannière
+  // active ; ce contrôle empêche une modification de contenu de la rendre orpheline.
+  const unavailableSpecies = [...species.keys()].filter(
+    (speciesId) => !availableSpecies.has(speciesId),
+  );
+  if (unavailableSpecies.length > 0) {
+    throw new Error(
+      `Species missing from active gacha banners: ${unavailableSpecies.join(", ")}`,
+    );
   }
 
   cachedGacha = validated.banners;

@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({ useRouter: onboardingMocks.useRouter }));
 
 // Les sprites ont déjà leurs propres tests ; ce substitut garde ici le focus
 // sur le parcours, les choix et le contrat envoyé à l'API.
-vi.mock("@/components/SpriteProvider", () => ({
+vi.mock("@/components/pokemon/sprite-provider", () => ({
   SpriteProvider: ({ alt }: { alt: string }) => (
     <span data-testid="sprite">{alt}</span>
   ),
@@ -25,6 +25,7 @@ import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 
 const catalogResponse = {
   success: true,
+  count: 2,
   starters: [
     {
       speciesId: "bulbasaur",
@@ -33,7 +34,19 @@ const catalogResponse = {
       generation: 1,
       types: ["Grass", "Poison"],
       level: 5,
-      moves: [{ id: "tackle", name: "Charge", type: "Normal" }],
+      moves: [
+        {
+          id: "tackle",
+          name: "Charge",
+          type: "Normal",
+          category: "physical",
+          power: 40,
+          accuracy: 100,
+          pp: 35,
+          maxPp: 35,
+          priority: 0,
+        },
+      ],
       baseStats: {
         hp: 45,
         attack: 49,
@@ -50,7 +63,19 @@ const catalogResponse = {
       generation: 1,
       types: ["Fire"],
       level: 5,
-      moves: [{ id: "scratch", name: "Griffe", type: "Normal" }],
+      moves: [
+        {
+          id: "scratch",
+          name: "Griffe",
+          type: "Normal",
+          category: "physical",
+          power: 40,
+          accuracy: 100,
+          pp: 35,
+          maxPp: 35,
+          priority: 0,
+        },
+      ],
       baseStats: {
         hp: 39,
         attack: 52,
@@ -66,6 +91,12 @@ const catalogResponse = {
 describe("interface d'onboarding", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockImplementation(
+      async () => undefined,
+    );
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(
+      () => undefined,
+    );
     onboardingMocks.useRouter.mockReturnValue({
       prefetch: onboardingMocks.prefetch,
       refresh: onboardingMocks.refresh,
@@ -75,6 +106,7 @@ describe("interface d'onboarding", () => {
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -126,8 +158,25 @@ describe("interface d'onboarding", () => {
             speciesId: "charmander",
             name: "Flamme",
             level: 5,
+            currentHp: 20,
+            maxHp: 20,
+            teamPosition: 1,
+            moves: [
+              {
+                id: "scratch",
+                name: "Griffe",
+                type: "Normal",
+                category: "physical",
+                power: 40,
+                accuracy: 100,
+                pp: 35,
+                maxPp: 35,
+                priority: 0,
+              },
+            ],
             isShiny: false,
           },
+          unlockedStageId: "bachelor-1-stage-1",
         }),
       });
     vi.stubGlobal("fetch", fetchMock);

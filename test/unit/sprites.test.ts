@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { loadSpecies, loadTrainers } from "@/lib/content/loader";
-import { getPokemonSpriteUrl } from "@/components/SpriteProvider";
+import { getPokemonSpriteUrl } from "@/components/pokemon/sprite-provider";
 
 describe("Sprite Assets & Manifest Validation (US-16)", () => {
   it("should have a valid sprites manifest.json with all 493 species", () => {
@@ -10,7 +10,7 @@ describe("Sprite Assets & Manifest Validation (US-16)", () => {
       process.cwd(),
       "public",
       "sprites",
-      "manifest.json"
+      "manifest.json",
     );
     expect(fs.existsSync(manifestPath)).toBe(true);
 
@@ -30,34 +30,46 @@ describe("Sprite Assets & Manifest Validation (US-16)", () => {
         "sprites",
         "pokemon",
         "front",
-        `${speciesId}.png`
+        `${speciesId}.png`,
       );
       const backPath = path.join(
         publicDir,
         "sprites",
         "pokemon",
         "back",
-        `${speciesId}.png`
+        `${speciesId}.png`,
       );
       const frontShinyPath = path.join(
         publicDir,
         "sprites",
         "pokemon",
         "front_shiny",
-        `${speciesId}.png`
+        `${speciesId}.png`,
       );
       const backShinyPath = path.join(
         publicDir,
         "sprites",
         "pokemon",
         "back_shiny",
-        `${speciesId}.png`
+        `${speciesId}.png`,
       );
 
-      expect(fs.existsSync(frontPath), `Missing front sprite for ${speciesId}`).toBe(true);
-      expect(fs.existsSync(backPath), `Missing back sprite for ${speciesId}`).toBe(true);
-      expect(fs.existsSync(frontShinyPath), `Missing front shiny sprite for ${speciesId}`).toBe(true);
-      expect(fs.existsSync(backShinyPath), `Missing back shiny sprite for ${speciesId}`).toBe(true);
+      expect(
+        fs.existsSync(frontPath),
+        `Missing front sprite for ${speciesId}`,
+      ).toBe(true);
+      expect(
+        fs.existsSync(backPath),
+        `Missing back sprite for ${speciesId}`,
+      ).toBe(true);
+      expect(
+        fs.existsSync(frontShinyPath),
+        `Missing front shiny sprite for ${speciesId}`,
+      ).toBe(true);
+      expect(
+        fs.existsSync(backShinyPath),
+        `Missing back shiny sprite for ${speciesId}`,
+      ).toBe(true);
     }
   });
 
@@ -73,23 +85,23 @@ describe("Sprite Assets & Manifest Validation (US-16)", () => {
 
       expect(
         fs.existsSync(fullPath),
-        `Trainer ${trainer.id} sprite missing at ${fullPath}`
+        `Trainer ${trainer.id} sprite missing at ${fullPath}`,
       ).toBe(true);
     }
   });
 
   it("should generate correct local URLs via getPokemonSpriteUrl for all 4 variants", () => {
     expect(getPokemonSpriteUrl("turtwig", "front")).toBe(
-      "/sprites/pokemon/front/turtwig.png"
+      "/sprites/pokemon/front/turtwig.png",
     );
     expect(getPokemonSpriteUrl("turtwig", "back")).toBe(
-      "/sprites/pokemon/back/turtwig.png"
+      "/sprites/pokemon/back/turtwig.png",
     );
     expect(getPokemonSpriteUrl("turtwig", "shiny")).toBe(
-      "/sprites/pokemon/front_shiny/turtwig.png"
+      "/sprites/pokemon/front_shiny/turtwig.png",
     );
     expect(getPokemonSpriteUrl("turtwig", "back_shiny")).toBe(
-      "/sprites/pokemon/back_shiny/turtwig.png"
+      "/sprites/pokemon/back_shiny/turtwig.png",
     );
     expect(getPokemonSpriteUrl("", "front")).toBe("/pokeball-pixel.svg");
   });

@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import {
   buildPostSignInCallback,
   signInWithIdentifier,
-} from "@/lib/auth-client";
+} from "@/lib/auth/client";
 import { INVALID_CREDENTIALS_MESSAGE } from "@/lib/auth/constants";
 import { FormAlert } from "@/components/auth/form-alert";
 import { PasswordField } from "@/components/auth/password-field";
@@ -79,7 +79,8 @@ export function LoginForm() {
 
       {verificationFailed ? (
         <FormAlert tone="error">
-          Ce lien de vérification est invalide ou a expiré. Demandez-en un nouveau.
+          Ce lien de vérification est invalide ou a expiré. Demandez-en un
+          nouveau.
         </FormAlert>
       ) : null}
 
@@ -96,7 +97,9 @@ export function LoginForm() {
       {formError ? <FormAlert tone="error">{formError}</FormAlert> : null}
 
       <div className="auth-field">
-        <label htmlFor="identifier">Adresse e-mail ou nom d&apos;utilisateur</label>
+        <label htmlFor="identifier">
+          Adresse e-mail ou nom d&apos;utilisateur
+        </label>
         <input
           id="identifier"
           name="identifier"
@@ -119,6 +122,10 @@ export function LoginForm() {
         onChange={setPassword}
         autoComplete="current-password"
       />
+
+      <p className="auth-recovery-link">
+        <Link href="/forgot-password">Mot de passe oublié&nbsp;?</Link>
+      </p>
 
       <label className="auth-checkbox">
         <input

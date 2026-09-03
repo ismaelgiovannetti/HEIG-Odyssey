@@ -56,7 +56,7 @@ describe("GET /auth/continue", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe(
-      `${APPLICATION_ORIGIN}/login?sessionExpired=1`
+      `${APPLICATION_ORIGIN}/login?sessionExpired=1`,
     );
     expect(routeMocks.findProfile).not.toHaveBeenCalled();
   });
@@ -72,7 +72,9 @@ describe("GET /auth/continue", () => {
       where: { userId: "user-1" },
       select: { hasCompletedOnboarding: true },
     });
-    expect(response.headers.get("location")).toBe(`${APPLICATION_ORIGIN}/onboarding`);
+    expect(response.headers.get("location")).toBe(
+      `${APPLICATION_ORIGIN}/onboarding`,
+    );
   });
 
   it("traite un profil absent comme un onboarding incomplet", async () => {
@@ -81,7 +83,9 @@ describe("GET /auth/continue", () => {
 
     const response = await GET(createRequest());
 
-    expect(response.headers.get("location")).toBe(`${APPLICATION_ORIGIN}/onboarding`);
+    expect(response.headers.get("location")).toBe(
+      `${APPLICATION_ORIGIN}/onboarding`,
+    );
   });
 
   // Un joueur initialisé peut reprendre le jeu depuis une destination interne.
@@ -91,7 +95,9 @@ describe("GET /auth/continue", () => {
 
     const response = await GET(createRequest());
 
-    expect(response.headers.get("location")).toBe(`${APPLICATION_ORIGIN}/dashboard`);
+    expect(response.headers.get("location")).toBe(
+      `${APPLICATION_ORIGIN}/dashboard`,
+    );
   });
 
   it("conserve une destination interne autorisée pour une session valide", async () => {
@@ -101,7 +107,7 @@ describe("GET /auth/continue", () => {
     const response = await GET(createRequest("/campaign?world=bachelor-1"));
 
     expect(response.headers.get("location")).toBe(
-      `${APPLICATION_ORIGIN}/campaign?world=bachelor-1`
+      `${APPLICATION_ORIGIN}/campaign?world=bachelor-1`,
     );
   });
 
@@ -119,12 +125,16 @@ describe("GET /auth/continue", () => {
     "remplace la destination interdite %s par le tableau de bord",
     async (destination) => {
       routeMocks.getSession.mockResolvedValue({ user: { id: "user-1" } });
-      routeMocks.findProfile.mockResolvedValue({ hasCompletedOnboarding: true });
+      routeMocks.findProfile.mockResolvedValue({
+        hasCompletedOnboarding: true,
+      });
 
       const response = await GET(createRequest(destination));
 
-      expect(response.headers.get("location")).toBe(`${APPLICATION_ORIGIN}/dashboard`);
-    }
+      expect(response.headers.get("location")).toBe(
+        `${APPLICATION_ORIGIN}/dashboard`,
+      );
+    },
   );
 
   // Cette vérification empêche une régression vers request.url ou l'en-tête Host.
@@ -133,7 +143,9 @@ describe("GET /auth/continue", () => {
 
     const response = await GET(createRequest());
 
-    expect(response.headers.get("location")).not.toContain("untrusted-host.example");
+    expect(response.headers.get("location")).not.toContain(
+      "untrusted-host.example",
+    );
     expect(routeMocks.getApplicationOrigin).toHaveBeenCalledOnce();
   });
 });

@@ -1,0 +1,142 @@
+/* Ajustements de contraste de la palette sombre unique. */
+.site-header {
+  background: linear-gradient(
+    90deg,
+    #45110e 0%,
+    var(--color-nav-bg) 28%,
+    #a13029 50%,
+    var(--color-nav-bg) 72%,
+    #45110e 100%
+  );
+}
+
+.hero-screen {
+  background:
+    linear-gradient(rgba(9, 12, 17, 0.18), rgba(9, 12, 17, 0.18)),
+    url("../assets/battle-arena-background-v2.jpg") center 52% / cover no-repeat;
+}
+
+.hero-screen-dialog {
+  background: rgba(25, 31, 40, 0.94);
+  border-color: var(--color-primary-light);
+  color: var(--color-text);
+}
+
+.hero-screen-dialog b {
+  color: #ff8c83;
+}
+
+.menu-card:nth-child(1) .menu-card-tag {
+  color: #8dbaff;
+}
+
+.menu-card:nth-child(2) .menu-card-tag {
+  color: #ffb46b;
+}
+
+.menu-card:nth-child(3) .menu-card-tag {
+  color: #75d59e;
+}
+
+.menu-card:nth-child(4) .menu-card-tag {
+  color: #c7a0f0;
+}
+
+.diff-card--easy {
+  --diff-panel: #173128;
+  --diff-panel-deep: #214937;
+  --diff-text: #d9f4e4;
+  --diff-highlight: #91dfad;
+}
+
+.diff-card--normal {
+  --diff-panel: #382c12;
+  --diff-panel-deep: #574114;
+  --diff-text: #ffe9b2;
+  --diff-highlight: #ffd36a;
+}
+
+.diff-card--hard {
+  --diff-panel: #391818;
+  --diff-panel-deep: #5a2020;
+  --diff-text: #ffd8d4;
+  --diff-highlight: #ff918a;
+}
+
+.threat-item:nth-child(1) .threat-item-tag {
+  color: #b9c0ff;
+}
+
+.threat-item:nth-child(2) .threat-item-tag {
+  color: #8dd2ff;
+}
+
+.threat-item:nth-child(3) .threat-item-tag {
+  color: #f2a5c2;
+}
+
+.starter-tile {
+  background: var(--color-starter-card);
+}
+
+.version-card--now {
+  background: linear-gradient(135deg, #34201f, #4b2724);
+}
+
+.version-card--next {
+  background: linear-gradient(135deg, #202832, #2b3542);
+}
+
+.version-card--next .version-badge {
+  background: #3a4654;
+}
+
+.version-card--next .version-list li::before {
+  background: #3a4654;
+  color: #f4f7fb;
+}
+
+.trainer-card {
+  --member-soft: color-mix(
+    in srgb,
+    var(--member-color) 20%,
+    var(--color-surface)
+  );
+  border-color: var(--member-color);
+  box-shadow: 6px 6px 0 var(--color-outline);
+}
+
+.trainer-card--tiago {
+  --member-color: #5f9fc4;
+}
+
+.trainer-card--ismael {
+  --member-color: #60a989;
+}
+
+.trainer-card--evan {
+  --member-color: #c49a43;
+}
+
+.trainer-card--mo {
+  --member-color: #9a7bc2;
+}
+
+.trainer-card:hover {
+  border-color: var(--member-color);
+  box-shadow: 9px 9px 0 var(--color-outline);
+}
+
+.trainer-photo {
+  border-color: var(--member-color);
+}
+
+.trainer-role {
+  color: color-mix(in srgb, var(--member-color) 72%, #ffffff);
+}
+
+.trainer-tag {
+  color: #ffffff;
+  background: var(--member-dark);
+  border-color: color-mix(in srgb, var(--member-color) 78%, #ffffff);
+}

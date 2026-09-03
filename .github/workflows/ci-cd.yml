@@ -16,6 +16,11 @@ on:
 env:
   REGISTRY: ghcr.io
 
+# Aucun job n'obtient de droit d'écriture implicitement. Les rares publications
+# déclarent ensuite leur permission minimale au niveau du job concerné.
+permissions:
+  contents: read
+
 jobs:
   # Vérifie que les Pull Requests respectent le Git flow défini.
   pull-request-policy:
@@ -56,47 +61,68 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect committed secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Validate current repository structure
         shell: bash
         run: |
           set -euo pipefail
+          test -f package.json
+          test -f package-lock.json
+          test -f tsconfig.json
+          test -f eslint.config.mjs
+          test -f vitest.config.ts
+          test -f playwright.config.ts
+          test -f prisma.config.ts
+          test -f prisma/schema.prisma
+          test -f prisma/migrations/migration_lock.toml
           test -f Dockerfile
           test -f compose.ci.yml
           test -f compose.prod.yml
+          test -f traefik.dynamic.yml
           test -f landing-page/Dockerfile
           test -f landing-page/index.html
-
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les contrôles npm ne sont pas encore applicables."
-          fi
+          test -f src/worker/index.ts
+          test -f scripts/ops/worker-healthcheck.mjs
 
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
+      - name: Audit dependencies for high-severity vulnerabilities
+        run: npm audit --audit-level=high
+
       - name: Require essential npm scripts
-        if: steps.app.outputs.exists == 'true'
         shell: bash
         run: |
           node - <<'NODE'
           const scripts = require('./package.json').scripts ?? {};
-          const required = ['lint', 'typecheck', 'test:unit', 'build'];
+          const required = [
+            'lint',
+            'format:check',
+            'typecheck',
+            'test',
+            'test:coverage',
+            'test:performance',
+            'test:integration',
+            'test:e2e',
+            'test:a11y',
+            'landing:assets:check',
+            'build',
+            'worker',
+          ];
           const missing = required.filter((name) => !scripts[name]);
           if (missing.length) {
             throw new Error('Scripts npm manquants : ' + missing.join(', '));
@@ -104,19 +130,24 @@ jobs:
           NODE
 
       - name: Lint
-        if: steps.app.outputs.exists == 'true'
         run: npm run lint
 
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Validate duplicated landing assets
+        run: npm run landing:assets:check
+
       - name: Typecheck
-        if: steps.app.outputs.exists == 'true'
         run: npm run typecheck
 
-      - name: Unit tests
-        if: steps.app.outputs.exists == 'true'
-        run: npm run test:unit
+      - name: Unit and combat tests with coverage thresholds
+        run: npm run test:coverage
+
+      - name: Performance thresholds
+        run: npm run test:performance
 
       - name: Build Next.js
-        if: steps.app.outputs.exists == 'true'
         # Better Auth exige un secret pendant l'analyse des routes au build.
         env:
           BETTER_AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -135,7 +166,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgrespassword
@@ -148,7 +179,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       redis:
-        image: redis:7-alpine
+        image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
         ports:
           - 6379:6379
         options: >-
@@ -163,56 +194,35 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les tests d'intégration ne sont pas encore applicables."
-          fi
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
       - name: Apply Prisma Migrations to Ephemeral Database
-        if: steps.app.outputs.exists == 'true'
         run: npx prisma migrate deploy
 
-      - name: Run Combat and Integration Tests
-        if: steps.app.outputs.exists == 'true'
-        run: |
-          npm run test:combat
-          npm run test:integration
+      - name: Run PostgreSQL and Redis integration tests
+        run: npm run test:integration
 
       - name: Validate Docker Compose Configuration
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            # Vérifie la structure sans exiger les secrets de production.
-            docker compose config --no-interpolate
-            docker compose config --variables
-          else
-            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
-          fi
+          # Le fichier est déjà exigé par le contrôle de structure du dépôt.
+          docker compose config --no-interpolate
+          docker compose config --variables
 
-  # Exécute les contrôles complets pour une release de dev vers main.
+  # Exécute les contrôles navigateur et conteneurs sur chaque Pull Request.
   release-validation:
     name: Full release validation
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request'
     needs:
       - pull-request-policy
       - quick-checks
@@ -222,7 +232,7 @@ jobs:
     # Le parcours Playwright utilise une base isolée, créée uniquement pour ce job.
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgrespassword
@@ -235,7 +245,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
       redis:
-        image: redis:7-alpine
+        image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
         ports:
           - 6379:6379
         options: >-
@@ -256,59 +266,48 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les contrôles navigateur ne sont pas encore applicables."
-          fi
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
       - name: Apply Prisma migrations to E2E database
-        if: steps.app.outputs.exists == 'true'
         run: npx prisma migrate deploy
 
       - name: Install Chromium for Playwright
-        if: steps.app.outputs.exists == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run Pull Request browser checks
-        if: steps.app.outputs.exists == 'true'
-        shell: bash
-        run: |
-          npm run test:e2e -- --project=chromium
-          npm run test:a11y --if-present
+        run: npm run test:e2e
+
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/playwright/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Validate Docker Compose when available
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            # Vérifie la structure sans exiger les secrets de production.
-            docker compose config --no-interpolate
-            docker compose config --variables
-          else
-            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
-          fi
+          # Le fichier est déjà exigé par le contrôle de structure du dépôt.
+          docker compose config --no-interpolate
+          docker compose config --variables
 
           # Valide également les substitutions sans utiliser de secret réel.
           export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
+          export WORKER_IMAGE=heig-odyssey-worker-validation:"$GITHUB_SHA"
           export MIGRATION_IMAGE=heig-odyssey-migrate-validation:"$GITHUB_SHA"
           export LANDING_IMAGE=heig-odyssey-landing-validation:"$GITHUB_SHA"
           export POSTGRES_PASSWORD=release-validation-postgres-password
@@ -326,27 +325,45 @@ jobs:
         run: |
           set -euo pipefail
           docker build --tag heig-odyssey-validation:"$GITHUB_SHA" .
+          docker build --target worker --tag heig-odyssey-worker-validation:"$GITHUB_SHA" .
           docker build --target migrator --tag heig-odyssey-migrate-validation:"$GITHUB_SHA" .
           docker build --tag heig-odyssey-landing-validation:"$GITHUB_SHA" ./landing-page
 
           # Confirme que l'image dédiée contient bien le client de migration Prisma.
           docker run --rm heig-odyssey-migrate-validation:"$GITHUB_SHA" --version
 
-      - name: Smoke test landing image
+      - name: Smoke test validation images
         shell: bash
         run: |
           set -euo pipefail
-          docker run -d --rm --name landing-ci -p 8080:80 heig-odyssey-landing-validation:"$GITHUB_SHA"
-          trap 'docker rm -f landing-ci >/dev/null 2>&1 || true' EXIT
+          export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
+          export WORKER_IMAGE=heig-odyssey-worker-validation:"$GITHUB_SHA"
+          export MIGRATION_IMAGE=heig-odyssey-migrate-validation:"$GITHUB_SHA"
+          export LANDING_IMAGE=heig-odyssey-landing-validation:"$GITHUB_SHA"
 
-          for attempt in {1..10}; do
-            if curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+          cleanup() {
+            docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
+          }
+          worker_ready() {
+            docker compose -f compose.ci.yml exec -T redis \
+              redis-cli --raw XINFO GROUPS heig-odyssey:events \
+              | grep -Fxq quest-workers
+          }
+          trap cleanup EXIT
+
+          docker compose -f compose.ci.yml run --rm migrate
+          docker compose -f compose.ci.yml up -d --wait --wait-timeout 60 app worker landing
+
+          for attempt in {1..15}; do
+            if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
+              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null \
+              && worker_ready; then
               exit 0
             fi
             sleep 2
           done
 
-          docker logs landing-ci
+          docker compose -f compose.ci.yml logs 2>/dev/null || true
           exit 1
 
   # Construit, teste et publie les images identifiées par le SHA Git.
@@ -361,7 +378,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Define immutable image names
         shell: bash
@@ -369,6 +386,7 @@ jobs:
           set -euo pipefail
           IMAGE_NAME_LOWER="$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           echo "APP_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "WORKER_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-worker:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "MIGRATION_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-migrate:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "LANDING_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-landing:${GITHUB_SHA}" >> "$GITHUB_ENV"
 
@@ -377,6 +395,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --tag "$APP_IMAGE" .
+          docker build --target worker --tag "$WORKER_IMAGE" .
           docker build --target migrator --tag "$MIGRATION_IMAGE" .
           docker build --tag "$LANDING_IMAGE" ./landing-page
 
@@ -388,18 +407,24 @@ jobs:
           cleanup() {
             docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
           }
+          worker_ready() {
+            docker compose -f compose.ci.yml exec -T redis \
+              redis-cli --raw XINFO GROUPS heig-odyssey:events \
+              | grep -Fxq quest-workers
+          }
           trap cleanup EXIT
 
-          export APP_IMAGE MIGRATION_IMAGE LANDING_IMAGE
+          export APP_IMAGE WORKER_IMAGE MIGRATION_IMAGE LANDING_IMAGE
           docker compose -f compose.ci.yml config
 
           # Applique le schéma avec l'image qui sera réellement publiée.
           docker compose -f compose.ci.yml run --rm migrate
-          docker compose -f compose.ci.yml up -d --wait app landing
+          docker compose -f compose.ci.yml up -d --wait --wait-timeout 60 app worker landing
 
           for attempt in {1..15}; do
             if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
-              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null \
+              && worker_ready; then
               exit 0
             fi
             sleep 2
@@ -409,7 +434,7 @@ jobs:
           exit 1
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -420,6 +445,7 @@ jobs:
         run: |
           set -euo pipefail
           docker push "$APP_IMAGE"
+          docker push "$WORKER_IMAGE"
           docker push "$MIGRATION_IMAGE"
           docker push "$LANDING_IMAGE"
 
@@ -436,22 +462,29 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Log deployment start
+        shell: bash
+        env:
+          DEPLOY_EVENT_ID: deploy_${{ github.run_id }}_${{ github.run_attempt }}
+        run: |
+          node -e 'console.log(JSON.stringify({timestamp:new Date().toISOString(),level:"info",message:"Production deployment started",eventId:process.env.DEPLOY_EVENT_ID,sha:process.env.GITHUB_SHA}))'
 
       # Le VPS reçoit toujours le Compose appartenant au même SHA que les images.
       - name: Copy production Compose to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          source: compose.prod.yml
+          source: compose.prod.yml,traefik.dynamic.yml
           target: /home/app/heig-odyssey
           overwrite: true
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         env:
           DEPLOY_SHA: ${{ github.sha }}
           IMAGE_NAME: ${{ github.repository }}
@@ -479,6 +512,7 @@ jobs:
             configure_images() {
               local tag="$1"
               export APP_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}:${tag}"
+              export WORKER_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-worker:${tag}"
               export MIGRATION_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-migrate:${tag}"
               export LANDING_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-landing:${tag}"
             }
@@ -487,14 +521,24 @@ jobs:
               docker compose -f compose.prod.yml "$@"
             }
 
+            worker_is_healthy() {
+              local required="$1"
+              if [[ "$required" != "true" ]]; then
+                return 0
+              fi
+              dc exec -T worker node scripts/ops/worker-healthcheck.mjs >/dev/null 2>&1
+            }
+
             smoke_test() {
+              local require_worker="${1:-true}"
               local public_app_url="${BETTER_AUTH_URL%/}/api/health"
 
               for attempt in $(seq 1 30); do
                 if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
                   && curl --fail --silent --show-error http://localhost:8080/health >/dev/null \
                   && curl --fail --silent --show-error "$public_app_url" >/dev/null \
-                  && curl --fail --silent --show-error https://heig-odyssey.online/health >/dev/null; then
+                  && curl --fail --silent --show-error https://heig-odyssey.online/health >/dev/null \
+                  && worker_is_healthy "$require_worker"; then
                   return 0
                 fi
                 sleep 2
@@ -510,17 +554,32 @@ jobs:
 
               configure_images "$PREVIOUS_SHA"
               dc pull webapp landing-page || return 1
+              local restore_worker=true
+              if ! dc pull worker; then
+                # Lors du tout premier déploiement du worker, le SHA précédent
+                # ne possède pas encore d'image dédiée. Revenir à l'ancien web
+                # implique alors de retirer le worker, comme avant cette feature.
+                echo "Aucune image worker pour ${PREVIOUS_SHA}; rollback sans worker."
+                restore_worker=false
+                dc stop worker >/dev/null 2>&1 || true
+                dc rm -f worker >/dev/null 2>&1 || true
+              fi
               # Les migrations ne sont pas annulées automatiquement : elles doivent
               # rester compatibles avec la version applicative précédente.
-              dc up -d --remove-orphans traefik webapp landing-page postgres redis || return 1
-              smoke_test
+              local services=(traefik webapp landing-page postgres redis)
+              if [[ "$restore_worker" == "true" ]]; then
+                services+=(worker)
+              fi
+              dc up -d --wait --wait-timeout 60 --remove-orphans \
+                "${services[@]}" || return 1
+              smoke_test "$restore_worker"
             }
 
             echo "$CR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
             configure_images "$DEPLOY_SHA"
             dc config >/dev/null
-            dc --profile tools pull webapp landing-page migrate
+            dc --profile tools pull webapp worker landing-page migrate
 
             # Le volume existant est conservé. Cette commande remplace seulement
             # l'ancien mot de passe local par le secret de production actuel.
@@ -541,7 +600,8 @@ jobs:
               exit 1
             fi
 
-            if ! dc up -d --remove-orphans traefik webapp landing-page postgres redis; then
+            if ! dc up -d --wait --wait-timeout 60 --remove-orphans \
+              traefik webapp worker landing-page postgres redis; then
               echo "Le démarrage de ${DEPLOY_SHA} a échoué."
               if restore_previous; then
                 echo "Version ${PREVIOUS_SHA} restaurée."

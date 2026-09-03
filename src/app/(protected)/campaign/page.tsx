@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Map } from "lucide-react";
+
+import "../../battle.css";
 
 import { ApplicationShell } from "@/components/application/application-shell";
-import { ModePlaceholder } from "@/components/application/mode-placeholder";
+import { CampaignMap } from "@/components/campaign/campaign-map";
+import { getCampaignProgressForUser } from "@/lib/campaign/campaign-service";
 import { getApplicationPlayer } from "@/lib/player/application-player";
 
 export const metadata: Metadata = {
   title: "Campagne - HEIG Odyssey",
+  description:
+    "Explorez les 8 mondes de HEIG Odyssey, affrontez les dresseurs académiques et remportez les épreuves jusqu'au Doctorat.",
 };
 
-/** Espace réservé à la progression dans les huit mondes de la campagne. */
+/**
+ * Page principale de progression de la campagne solo.
+ * Charge l'état persistant du joueur connecté et restitue la carte interactive.
+ */
 export default async function CampaignPage() {
   const player = await getApplicationPlayer();
+  const overview = await getCampaignProgressForUser(player.id);
 
   return (
     <ApplicationShell
@@ -19,14 +27,7 @@ export default async function CampaignPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
-      <ModePlaceholder
-        eyebrow="Mode aventure"
-        title="Campagne"
-        description="Parcourez les mondes Bachelor, Master et Doctorat, puis affrontez leurs dresseurs et leurs Boss."
-        nextStep="La carte de progression de la campagne sera bientôt disponible."
-        icon={Map}
-        accent="campaign"
-      />
+      <CampaignMap overview={overview} />
     </ApplicationShell>
   );
 }

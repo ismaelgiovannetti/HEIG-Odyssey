@@ -1,3 +1,5 @@
+import "../application-shell.css";
+
 import { redirect } from "next/navigation";
 
 import { ACCESS_ROUTES } from "@/lib/auth/route-access";

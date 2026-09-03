@@ -1,5 +1,10 @@
+import "server-only";
+
 // HTTP n'est toléré que pour ces hôtes de développement locaux.
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "[::1]"]);
+const INSECURE_PRODUCTION_SECRETS = new Set([
+  "change-me-to-a-random-secret-key-at-least-32-characters",
+]);
 
 // Une variable absente provoque un échec immédiat au lieu d'une configuration incertaine.
 function getRequiredEnvironmentVariable(name: string): string {
@@ -19,6 +24,13 @@ export function getBetterAuthSecret(): string {
   // Better Auth exige un secret suffisamment long pour signer les jetons et cookies.
   if (secret.length < 32) {
     throw new Error("BETTER_AUTH_SECRET_TOO_SHORT");
+  }
+
+  if (
+    process.env.NODE_ENV === "production" &&
+    INSECURE_PRODUCTION_SECRETS.has(secret)
+  ) {
+    throw new Error("BETTER_AUTH_SECRET_INSECURE");
   }
 
   return secret;

@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Ces tests protègent le contrat entre nos formulaires et Better Auth : choix
 // de la méthode de connexion, normalisation et destinations de retour sûres.
 const authClientMocks = vi.hoisted(() => ({
+  isUsernameAvailable: vi.fn(),
+  requestPasswordReset: vi.fn(),
+  resetPassword: vi.fn(),
   sendVerificationEmail: vi.fn(),
   signInEmail: vi.fn(),
   signInUsername: vi.fn(),
@@ -14,6 +17,9 @@ const authClientMocks = vi.hoisted(() => ({
 // uniquement les données que notre adaptateur lui transmet.
 vi.mock("better-auth/react", () => ({
   createAuthClient: () => ({
+    isUsernameAvailable: authClientMocks.isUsernameAvailable,
+    requestPasswordReset: authClientMocks.requestPasswordReset,
+    resetPassword: authClientMocks.resetPassword,
     sendVerificationEmail: authClientMocks.sendVerificationEmail,
     signIn: {
       email: authClientMocks.signInEmail,
@@ -32,11 +38,14 @@ vi.mock("better-auth/client/plugins", () => ({
 
 import {
   buildPostSignInCallback,
+  checkUsernameAvailability,
+  requestPasswordRecovery,
   requestVerificationEmail,
+  resetPasswordWithToken,
   signInWithIdentifier,
   signOutCurrentSession,
   signUpWithEmail,
-} from "@/lib/auth-client";
+} from "@/lib/auth/client";
 
 describe("adaptateur client d'authentification", () => {
   beforeEach(() => {
@@ -48,10 +57,10 @@ describe("adaptateur client d'authentification", () => {
   // Une destination reçue depuis l'URL ne doit jamais permettre de sortir du site.
   it("construit une reprise interne et refuse une redirection externe", () => {
     expect(buildPostSignInCallback("/campaign?world=bachelor-1")).toBe(
-      "/auth/continue?next=%2Fcampaign%3Fworld%3Dbachelor-1"
+      "/auth/continue?next=%2Fcampaign%3Fworld%3Dbachelor-1",
     );
     expect(buildPostSignInCallback("https://malicious.example")).toBe(
-      "/auth/continue?next=%2Fdashboard"
+      "/auth/continue?next=%2Fdashboard",
     );
   });
 
@@ -112,15 +121,63 @@ describe("adaptateur client d'authentification", () => {
     });
   });
 
+  it("normalise le nom avant de vérifier sa disponibilité", async () => {
+    authClientMocks.isUsernameAvailable.mockResolvedValue({
+      data: { available: true },
+      error: null,
+    });
+
+    await checkUsernameAvailability("  Kim.Possible_1  ");
+
+    expect(authClientMocks.isUsernameAvailable).toHaveBeenCalledWith({
+      username: "kim.possible_1",
+    });
+  });
+
   // Le renvoi utilise la même normalisation que l'inscription initiale.
   it("normalise le renvoi de vérification et utilise une destination fixe", async () => {
-    authClientMocks.sendVerificationEmail.mockResolvedValue({ data: {}, error: null });
+    authClientMocks.sendVerificationEmail.mockResolvedValue({
+      data: {},
+      error: null,
+    });
 
     await requestVerificationEmail("  Player@Example.COM  ");
 
     expect(authClientMocks.sendVerificationEmail).toHaveBeenCalledWith({
       email: "player@example.com",
       callbackURL: "/login?verified=1",
+    });
+  });
+
+  // Le retour de récupération reste fixé côté application : une valeur fournie
+  // par l'utilisateur ne peut pas transformer le lien reçu en redirection externe.
+  it("normalise la demande de récupération et utilise une destination interne", async () => {
+    authClientMocks.requestPasswordReset.mockResolvedValue({
+      data: {},
+      error: null,
+    });
+
+    await requestPasswordRecovery("  Player@Example.COM  ");
+
+    expect(authClientMocks.requestPasswordReset).toHaveBeenCalledWith({
+      email: "player@example.com",
+      redirectTo: "/reset-password",
+    });
+  });
+
+  // Le jeton et le nouveau secret sont transmis uniquement à la route Better Auth
+  // chargée de vérifier l'expiration et de consommer le lien une seule fois.
+  it("transmet le jeton lors de la réinitialisation du mot de passe", async () => {
+    authClientMocks.resetPassword.mockResolvedValue({ data: {}, error: null });
+
+    await resetPasswordWithToken({
+      token: "reset-token",
+      newPassword: "TestPassword!2026",
+    });
+
+    expect(authClientMocks.resetPassword).toHaveBeenCalledWith({
+      token: "reset-token",
+      newPassword: "TestPassword!2026",
     });
   });
 
@@ -133,7 +190,7 @@ describe("adaptateur client d'authentification", () => {
       signInWithIdentifier({
         identifier: "player@example.com",
         password: "TestPassword!2026",
-      })
+      }),
     ).rejects.toBe(serviceError);
   });
 

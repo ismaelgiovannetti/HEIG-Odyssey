@@ -1,0 +1,587 @@
+/* Styles du centre d’entraînement chargés uniquement par les routes qui en ont besoin. */
+.training-hub {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(24px, 3vh, 38px);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.training-hub__hero {
+  display: grid;
+  gap: 0;
+}
+
+.training-hub__heading-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+}
+
+.training-hub__hero h1 {
+  margin: 0;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: clamp(29px, 3.2vw, 43px);
+  line-height: 1.35;
+}
+
+.training-hub__heading-line > p {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: clamp(16px, 1.35vw, 19px);
+  font-weight: 650;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.training-hub__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.16fr) minmax(390px, 0.84fr);
+  gap: clamp(18px, 2vw, 28px);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.training-section,
+.training-difficulties {
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--color-bg-alt);
+}
+
+.training-team-section,
+.training-control-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 6px 6px 0 var(--color-outline);
+}
+
+.training-team-section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.training-control-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.training-difficulties {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.training-section__heading {
+  display: flex;
+  min-height: clamp(78px, 9vh, 104px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0;
+  padding: clamp(14px, 1.4vw, 20px);
+  border-bottom: 3px solid var(--color-outline);
+  background:
+    linear-gradient(110deg, rgb(137 115 196 / 22%), transparent 62%),
+    var(--color-surface-raised);
+}
+
+.training-team-section > .training-section__heading {
+  background: var(--color-nav-bg);
+}
+
+.training-team-section > .training-section__heading > div:first-child > span,
+.training-team-section > .training-section__heading a {
+  color: #ffd5b0;
+}
+
+.training-section__heading > div:first-child > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #9a86d5;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.training-section__heading h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(14px, 1.3vw, 19px);
+  line-height: 1.5;
+}
+
+.training-section__heading a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary-light);
+  font-size: clamp(13px, 1vw, 16px);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.training-team-list {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: clamp(9px, 1.1vh, 13px);
+  margin: 0;
+  padding: clamp(12px, 1.35vw, 18px);
+  list-style: none;
+}
+
+.training-team-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  align-items: center;
+  gap: clamp(22px, 2vw, 32px);
+  padding: 6px clamp(32px, 3.2vw, 52px);
+  border: 2px solid var(--color-border);
+  border-left: 5px solid #5da978;
+  background: var(--color-surface);
+  text-align: left;
+}
+
+.training-team-card.is-empty {
+  border: 2px dashed var(--color-border);
+}
+
+.training-team-card__slot {
+  position: absolute;
+  top: 6px;
+  left: 7px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 8px;
+}
+
+.training-team-card__info {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  align-self: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.training-team-card__sprite {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.training-team-card__sprite > * {
+  max-width: 100%;
+}
+
+.training-team-card__name-line {
+  display: flex;
+  min-width: 0;
+  min-height: 28px;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.training-team-card__name-line strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: clamp(13px, 1.05vw, 16px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-team-card__name-line > span,
+.training-team-card__hp-line {
+  color: var(--color-text-muted);
+  font-size: clamp(10px, 0.82vw, 12px);
+}
+
+.training-team-card__hp-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.training-team-card__hp-line > span:last-child {
+  white-space: nowrap;
+}
+
+.training-team-card__hp {
+  display: block;
+  height: 5px;
+  flex: 1;
+  overflow: hidden;
+  background: var(--color-border);
+}
+
+.training-team-card__hp > span {
+  display: block;
+  height: 100%;
+  background: var(--color-success);
+}
+
+.training-team-card .is-fainted {
+  color: var(--color-error-border);
+  font-weight: 850;
+}
+
+.training-team-card__empty {
+  margin: auto;
+  color: var(--color-text-muted);
+  font-size: clamp(10px, 0.82vw, 12px);
+}
+
+.training-empty-team,
+.training-state-card {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 2px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.training-state-card {
+  height: 100%;
+  border: 3px solid var(--color-outline);
+  box-shadow: 6px 6px 0 var(--color-outline);
+}
+
+.training-state-card svg {
+  color: #9a86d5;
+}
+
+.training-state-card > strong {
+  color: var(--color-text);
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+}
+
+.training-state-card > span {
+  max-width: 540px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.training-state-card > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.training-state-card.is-error svg {
+  color: var(--color-error-border);
+}
+
+.training-difficulty-grid {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: clamp(9px, 1.1vh, 13px);
+  padding: clamp(12px, 1.35vw, 18px);
+}
+
+.training-difficulty-grid label {
+  --difficulty-color: #70b5e4;
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  align-items: center;
+  gap: 3px 12px;
+  padding: clamp(11px, 1.15vw, 16px);
+  border: 3px solid var(--color-outline);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--difficulty-color), transparent 86%),
+      transparent 58%
+    ),
+    var(--color-surface);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.training-difficulty-grid label[data-difficulty="easy"] {
+  --difficulty-color: #55c98b;
+}
+.training-difficulty-grid label[data-difficulty="normal"] {
+  --difficulty-color: #70b5e4;
+}
+.training-difficulty-grid label[data-difficulty="hard"] {
+  --difficulty-color: #ff7a70;
+}
+
+.training-difficulty-grid label.is-selected {
+  border-color: var(--difficulty-color);
+  box-shadow:
+    0 0 0 2px var(--color-outline),
+    5px 5px 0 var(--color-outline);
+}
+
+.training-difficulty-grid input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.training-difficulty-grid
+  input:focus-visible
+  + .training-difficulty-card__marker {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.training-difficulty-card__marker {
+  position: static;
+  width: 15px;
+  height: 15px;
+  grid-column: 1;
+  grid-row: 1 / 4;
+  border: 2px solid var(--difficulty-color);
+  border-radius: 50%;
+}
+
+.is-selected .training-difficulty-card__marker {
+  background: var(--difficulty-color);
+  box-shadow: inset 0 0 0 3px var(--color-surface);
+}
+
+.training-difficulty-grid label > strong {
+  grid-column: 2;
+  color: var(--difficulty-color);
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(12px, 1vw, 15px);
+  line-height: 1.5;
+}
+
+.training-difficulty-grid
+  label
+  > span:not(.training-difficulty-card__marker):not(
+    .training-difficulty-card__reward
+  ) {
+  min-width: 0;
+  grid-column: 2;
+  color: var(--color-text);
+  font-size: clamp(12px, 0.95vw, 15px);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.training-difficulty-grid label > small {
+  min-width: 0;
+  grid-column: 2;
+  color: var(--color-text-muted);
+  font-size: clamp(10px, 0.82vw, 13px);
+  line-height: 1.45;
+}
+
+.training-difficulty-card__reward {
+  display: flex;
+  grid-column: 3;
+  grid-row: 1 / 4;
+  align-items: center;
+  align-self: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  max-width: 118px;
+  color: var(--difficulty-color);
+  font-size: clamp(11px, 0.9vw, 14px);
+  font-weight: 850;
+}
+
+.training-difficulty-card__reward > span {
+  white-space: nowrap;
+}
+
+.training-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 11px 13px;
+  border: 2px solid var(--color-info-border);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.training-feedback.is-error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+.training-control-panel > .training-feedback {
+  margin: 0 clamp(12px, 1.35vw, 18px) 10px;
+}
+
+.training-hub__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.training-hub__actions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  padding: clamp(12px, 1.2vw, 17px);
+  border-top: 3px solid var(--color-outline);
+  background: var(--color-surface-raised);
+}
+
+.training-hub__actions .battle-primary-button {
+  width: 100%;
+  min-height: clamp(52px, 6vh, 64px);
+  background: #715cad;
+  font-size: clamp(10px, 0.9vw, 13px);
+}
+
+/* Sous la hauteur nominale de l'app shell, la typographie reste lisible malgré
+   la mise à l'échelle globale appliquée aux écrans non plein écran. */
+@media (min-width: 768px) and (max-height: 850px) {
+  .training-hub__hero h1 {
+    font-size: clamp(35px, 3.6vw, 46px);
+  }
+  .training-hub__heading-line > p {
+    font-size: clamp(17px, 1.5vw, 20px);
+  }
+  .training-section__heading > div:first-child > span {
+    font-size: clamp(10px, 0.72vw, 12px);
+  }
+  .training-section__heading h2 {
+    font-size: clamp(15px, 1.25vw, 19px);
+  }
+  .training-section__heading a {
+    font-size: clamp(13px, 1vw, 16px);
+  }
+  .training-team-card__name-line strong {
+    font-size: clamp(13px, 1.05vw, 16px);
+  }
+  .training-team-card__name-line > span,
+  .training-team-card__hp-line,
+  .training-team-card__empty {
+    font-size: clamp(11px, 0.82vw, 13px);
+  }
+  .training-difficulty-grid label > strong {
+    font-size: clamp(12px, 1vw, 15px);
+  }
+  .training-difficulty-grid
+    label
+    > span:not(.training-difficulty-card__marker):not(
+      .training-difficulty-card__reward
+    ) {
+    font-size: clamp(12px, 0.95vw, 15px);
+  }
+  .training-difficulty-grid label > small {
+    font-size: clamp(11px, 0.82vw, 13px);
+  }
+  .training-difficulty-card__reward {
+    font-size: clamp(11px, 0.9vw, 14px);
+  }
+  .training-hub__actions .battle-primary-button {
+    font-size: clamp(10px, 0.9vw, 13px);
+  }
+}
+
+/* Les points de rupture conservent toutes les commandes accessibles sans scroll. */
+@media (max-width: 1180px) {
+  .training-hub__workspace {
+    grid-template-columns: minmax(0, 1.1fr) minmax(350px, 0.9fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .training-hub__heading-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .training-hub__heading-line > p {
+    max-width: 62ch;
+    text-align: left;
+  }
+  .training-hub__workspace {
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+    gap: 12px;
+  }
+  .training-section__heading {
+    gap: 10px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 680px) {
+  .training-hub {
+    gap: 14px;
+  }
+  .training-hub__workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+  .training-section__heading {
+    min-height: 68px;
+  }
+  .training-team-card {
+    gap: 14px;
+    padding-inline: clamp(18px, 4vw, 32px);
+  }
+  .training-difficulty-grid {
+    gap: 7px;
+    padding: 9px;
+  }
+  .training-difficulty-grid label {
+    padding: 9px;
+  }
+}

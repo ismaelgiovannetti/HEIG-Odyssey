@@ -12,14 +12,14 @@ generator client {
 // ----------------------------------------------------
 
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  username      String?   @unique // Forme normalisée et unique du nom d'utilisateur
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  username      String?  @unique // Forme normalisée et unique du nom d'utilisateur
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   sessions      Session[]
   accounts      Account[]
@@ -52,7 +52,7 @@ model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
-  issuer                String    // Origine du compte exigée par Better Auth 1.7
+  issuer                String // Origine du compte exigée par Better Auth 1.7
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
@@ -93,6 +93,8 @@ model UserProfile {
   pokedollars            Int       @default(0)
   hasCompletedOnboarding Boolean   @default(false)
   onboardingCompletedAt  DateTime?
+  // Version du rangement : un ancien onglet ne peut pas écraser une sauvegarde récente.
+  collectionRevision     Int       @default(0)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
@@ -107,23 +109,27 @@ model UserPokemon {
   id           String   @id @default(cuid())
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  speciesId    String   // ex: "turtwig", "chimchar", "piplup"
+  speciesId    String // ex: "turtwig", "chimchar", "piplup"
   nickname     String?
   level        Int      @default(5)
   experience   Int      @default(0)
   currentHp    Int
   maxHp        Int
-  ivs          Json     // { hp: number, atk: number, def: number, spa: number, spd: number, spe: number }
-  evs          Json     // { hp: number, atk: number, def: number, spa: number, spd: number, spe: number }
-  moves        Json     // Array of 1-4 moves: [{ id: string, name: string, type: string, power: number, pp: number, maxPp: number }]
+  ivs          Json // { hp: number, atk: number, def: number, spa: number, spd: number, spe: number }
+  evs          Json // { hp: number, atk: number, def: number, spa: number, spd: number, spe: number }
+  moves        Json // Array of 1-4 moves: [{ id: string, name: string, type: string, power: number, pp: number, maxPp: number }]
   ability      String?
   nature       String?
   gender       String?  @default("GENDERLESS") // M, F, GENDERLESS
   isShiny      Boolean  @default(false)
-  teamPosition Int?     // 1 to 6 if in active team, null if in collection/PC
+  teamPosition Int? // De 1 à 6 dans l'équipe ; null dans le PC.
+  boxNumber    Int? // De 1 à 20 dans le PC ; null dans l'équipe.
+  boxSlot      Int? // De 1 à 35, ligne par ligne (7 colonnes, 5 lignes).
   caughtAt     DateTime @default(now())
 
-  @@index([userId, teamPosition])
+  // La migration SQL diffère ces contraintes jusqu'au commit pour permettre les échanges.
+  @@unique([userId, teamPosition])
+  @@unique([userId, boxNumber, boxSlot])
   @@map("user_pokemon")
 }
 
@@ -135,8 +141,8 @@ model CampaignProgress {
   id             String    @id @default(cuid())
   userId         String
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  worldId        String    // ex: "bachelor-1"
-  stageId        String    // ex: "bachelor-1-stage-1"
+  worldId        String // ex: "bachelor-1"
+  stageId        String // ex: "bachelor-1-stage-1"
   isCompleted    Boolean   @default(false)
   firstClearedAt DateTime?
   unlockedAt     DateTime  @default(now())
@@ -167,7 +173,7 @@ model BattleRecord {
   userId               String
   user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   battleType           BattleType
-  opponentId           String       // ex: "trainer-jean" or "training-normal-01"
+  opponentId           String // ex: "trainer-jean" or "training-normal-01"
   opponentTeamSnapshot Json
   playerTeamSnapshot   Json
   result               BattleResult @default(IN_PROGRESS)
@@ -192,8 +198,8 @@ model GachaBanner {
   name            String
   description     String
   costPokedollars Int         @default(100)
-  rates           Json        // { common: 0.70, rare: 0.25, epic: 0.05, shinyMultiplier: 0.01 }
-  poolSpecies     Json        // Array of species keys
+  rates           Json // { common: 0.70, rare: 0.25, epic: 0.05, shinyMultiplier: 0.01 }
+  poolSpecies     Json // Array of species keys
   isActive        Boolean     @default(true)
   startDate       DateTime    @default(now())
   endDate         DateTime?
@@ -232,7 +238,7 @@ model QuestDefinition {
   title             String
   description       String
   type              QuestType
-  targetType        String          // ex: "WIN_BATTLES", "TRAIN_POKEMON", "DEFEAT_TYPE_WATER"
+  targetType        String // ex: "WIN_BATTLES", "TRAIN_POKEMON", "DEFEAT_TYPE_WATER"
   targetCount       Int
   rewardPokedollars Int             @default(50)
   rewardXp          Int             @default(100)
@@ -243,7 +249,7 @@ model QuestDefinition {
 
 model QuestRotation {
   id             String              @id @default(cuid())
-  periodKey      String              // ex: "2026-08-26" or "2026-W35"
+  periodKey      String // ex: "2026-08-26" or "2026-W35"
   type           QuestType
   questId        String
   quest          QuestDefinition     @relation(fields: [questId], references: [id], onDelete: Cascade)
@@ -270,4 +276,42 @@ model UserQuestProgress {
   @@unique([userId, rotationId])
   @@index([userId, isCompleted])
   @@map("user_quest_progress")
+}
+
+// ----------------------------------------------------
+// 8. Event Outbox (Transactional Event Log - US-17)
+// ----------------------------------------------------
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
+
+model OutboxEvent {
+  id            String       @id @default(cuid())
+  eventId       String       @unique
+  eventType     String
+  aggregateType String // "BATTLE" | "TRAINING"
+  aggregateId   String // ex: battleId
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  retryCount    Int          @default(0)
+  lastError     String?
+  createdAt     DateTime     @default(now())
+  publishedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@map("outbox_event")
+}
+
+// Reçu transactionnel des événements consommés. Redis Streams livre au moins
+// une fois ; cette clé unique empêche qu'un rejeu incrémente deux fois une quête.
+model ProcessedDomainEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  aggregateId String   @unique
+  processedAt DateTime @default(now())
+
+  @@map("processed_domain_event")
 }

@@ -1,6 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { selectStarter } from "@/lib/starter/starter-service";
 import { prisma } from "@/lib/prisma";
+import { mockInteractiveTransaction } from "../helpers/mock-clients";
+
+const starterMove = {
+  id: "tackle",
+  name: "Charge",
+  type: "Normal",
+  category: "physical",
+  power: 35,
+  accuracy: 95,
+  pp: 35,
+  maxPp: 35,
+  priority: 0,
+};
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -15,7 +28,7 @@ describe("Starter Recruitment Service (US-03)", () => {
 
   it("should reject an invalid or non-starter speciesId", async () => {
     await expect(selectStarter("user-123", "garchomp")).rejects.toThrow(
-      "pas éligible comme starter"
+      "pas éligible comme starter",
     );
   });
 
@@ -23,7 +36,10 @@ describe("Starter Recruitment Service (US-03)", () => {
     const mockTx = {
       userProfile: {
         findUnique: vi.fn().mockResolvedValue(null),
-        upsert: vi.fn().mockResolvedValue({ userId: "user-123", hasCompletedOnboarding: true }),
+        upsert: vi.fn().mockResolvedValue({
+          userId: "user-123",
+          hasCompletedOnboarding: true,
+        }),
       },
       userPokemon: {
         count: vi.fn().mockResolvedValue(0),
@@ -36,7 +52,7 @@ describe("Starter Recruitment Service (US-03)", () => {
           currentHp: 21,
           maxHp: 21,
           teamPosition: 1,
-          moves: [],
+          moves: [starterMove],
           isShiny: false,
         }),
       },
@@ -45,9 +61,7 @@ describe("Starter Recruitment Service (US-03)", () => {
       },
     };
 
-    (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-      return callback(mockTx);
-    });
+    mockInteractiveTransaction(prisma, mockTx);
 
     const result = await selectStarter("user-123", "turtwig", "Torti");
 
@@ -60,38 +74,40 @@ describe("Starter Recruitment Service (US-03)", () => {
   it("should throw an error if the user has already completed onboarding", async () => {
     const mockTx = {
       userProfile: {
-        findUnique: vi.fn().mockResolvedValue({ userId: "user-123", hasCompletedOnboarding: true }),
+        findUnique: vi.fn().mockResolvedValue({
+          userId: "user-123",
+          hasCompletedOnboarding: true,
+        }),
       },
       userPokemon: {
         count: vi.fn().mockResolvedValue(0),
       },
     };
 
-    (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-      return callback(mockTx);
-    });
+    mockInteractiveTransaction(prisma, mockTx);
 
     await expect(selectStarter("user-123", "chimchar")).rejects.toThrow(
-      "L'onboarding a déjà été complété"
+      "L'onboarding a déjà été complété",
     );
   });
 
   it("should throw an error if user already has Pokémon", async () => {
     const mockTx = {
       userProfile: {
-        findUnique: vi.fn().mockResolvedValue({ userId: "user-123", hasCompletedOnboarding: false }),
+        findUnique: vi.fn().mockResolvedValue({
+          userId: "user-123",
+          hasCompletedOnboarding: false,
+        }),
       },
       userPokemon: {
         count: vi.fn().mockResolvedValue(1),
       },
     };
 
-    (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-      return callback(mockTx);
-    });
+    mockInteractiveTransaction(prisma, mockTx);
 
     await expect(selectStarter("user-123", "piplup")).rejects.toThrow(
-      "Ce joueur possède déjà des créatures"
+      "Ce joueur possède déjà des créatures",
     );
   });
 });

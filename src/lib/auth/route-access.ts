@@ -1,9 +1,6 @@
 import { sanitizeCallbackPath } from "@/lib/auth/constants";
 
-export type PlayerAccessState =
-  | "anonymous"
-  | "onboarding-required"
-  | "ready";
+export type PlayerAccessState = "anonymous" | "onboarding-required" | "ready";
 
 /** Routes uniques utilisées par tous les gardes serveur. */
 export const ACCESS_ROUTES = {
@@ -17,6 +14,8 @@ const ROUTES_OUTSIDE_GAME = [
   "/login",
   "/signup",
   "/verify-email",
+  "/forgot-password",
+  "/reset-password",
   "/logout",
   ACCESS_ROUTES.continue,
   ACCESS_ROUTES.onboarding,

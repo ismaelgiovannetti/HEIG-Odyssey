@@ -1,0 +1,244 @@
+/* ============================================================
+   HEIG ODYSSEY - Landing Page
+   Direction artistique : retro gaming / flash game annees 2010
+   Palette Pokeball : rouge / blanc / noir
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* --- Palette sombre unique : rouge, blanc et noir de la Poké Ball --- */
+  color-scheme: dark;
+  --color-bg: #10141a;
+  --color-bg-alt: #171d25;
+  --color-surface: #202733;
+  --color-surface-raised: #2b3543;
+  --color-outline: #080b10;
+
+  --color-primary: #c94036;
+  --color-primary-light: #ff7a70;
+  --color-primary-dark: #7a1f1a;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #e7ecf3;
+
+  --color-accent: #c94036;
+  --color-on-accent: #ffffff;
+
+  --color-text: #f4f7fb;
+  --color-text-muted: #b8c2ce;
+  --color-border: #59687a;
+
+  --color-success: #1f7545;
+
+  --color-nav-bg: #81251f;
+  --color-nav-text: #ffffff;
+  --color-nav-muted: #fce9e7;
+  --color-nav-control: #551612;
+  --color-footer-bg: #080b10;
+  --color-footer-text: #f4f7fb;
+  --color-footer-muted: #b7c0ca;
+  --color-starter-card: #263140;
+  --color-starter-border: #65758a;
+  --color-champion: #9a6500;
+  --color-nightmare: #d51f1f;
+  --color-nightmare-dark: #700c0c;
+  --color-primary-soft: rgba(214, 75, 64, 0.18);
+  --color-scanline: rgba(255, 255, 255, 0.035);
+  --color-title-shadow: #3a4553;
+  --color-orb-shadow: rgba(0, 0, 0, 0.68);
+  --orb-opacity-min: 0.11;
+  --orb-opacity-max: 0.18;
+  --hero-motif-opacity: 0.06;
+  --header-offset: 70px;
+  --header-visual-height: 71px;
+
+  /* --- Typographie --- */
+  --font-display: "Press Start 2P", "Courier New", monospace;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* --- Échelle d'espacement basée sur un rythme de 8 px --- */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+
+  /* --- Découpe pixelisée commune aux panneaux --- */
+  --notch: polygon(
+    0 10px,
+    10px 10px,
+    10px 0,
+    calc(100% - 10px) 0,
+    calc(100% - 10px) 10px,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    10px calc(100% - 10px),
+    0 calc(100% - 10px)
+  );
+  --notch-sm: polygon(
+    0 6px,
+    6px 6px,
+    6px 0,
+    calc(100% - 6px) 0,
+    calc(100% - 6px) 6px,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    6px calc(100% - 6px),
+    0 calc(100% - 6px)
+  );
+
+  --shadow-pixel: 4px 4px 0 var(--color-outline);
+  --shadow-pixel-sm: 3px 3px 0 var(--color-outline);
+  --shadow-pixel-lg: 6px 6px 0 var(--color-outline);
+
+  --transition-base: 180ms ease-out;
+}
+
+/* ============================================================
+   Reset
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-offset);
+  overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  min-height: 100dvh;
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.5;
+  margin: 0;
+  color: var(--color-text);
+}
+
+p {
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: clamp(1180px, 72vw, 1680px);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+
+/* --- Focus states (a11y, priority 1) --- */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   Décor de Poké Balls (purement visuel, sans mouvement si demandé)
+   ============================================================ */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-orb {
+  position: absolute;
+  background-image: url("../assets/pokeball-pixel.svg");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  opacity: var(--orb-opacity-min);
+  animation: drift 9s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px var(--color-orb-shadow));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-orb {
+    animation: none;
+    opacity: var(--orb-opacity-min);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    opacity: var(--orb-opacity-min);
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: var(--orb-opacity-max);
+    transform: translateY(-14px);
+  }
+}
+
+/* ============================================================
+   Real sprites (imported PokeAPI assets)
+   ============================================================ */
+.sprite-pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

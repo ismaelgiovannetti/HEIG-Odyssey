@@ -1,4 +1,4 @@
-# Valide ensemble les trois images exactes qui seront publiées dans GHCR.
+# Valide ensemble les quatre images exactes qui seront publiées dans GHCR.
 services:
   app:
     image: ${APP_IMAGE:?APP_IMAGE is required}
@@ -22,7 +22,33 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  worker:
+    image: ${WORKER_IMAGE:?WORKER_IMAGE is required}
+    init: true
+    stop_grace_period: 10s
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/heig_odyssey_ci?schema=public
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - heig-odyssey-ci-network
+    healthcheck:
+      test: ["CMD", "node", "scripts/ops/worker-healthcheck.mjs"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -35,7 +61,11 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -54,7 +84,7 @@ services:
       - heig-odyssey-ci-network
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -68,7 +98,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     networks:
       - heig-odyssey-ci-network
     healthcheck:

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 import { Battle, Dex, toID } from "@pkmn/sim";
 import type { PRNGSeed } from "@pkmn/sim";
@@ -13,10 +15,32 @@ import type {
   BattlePhase,
   BattleStatus,
 } from "./types";
-import type { TrainerPokemon, TrainerPokemonInput, Move, PokemonType } from "../content/schemas";
-import { getSpecies } from "../content/loader";
+import type {
+  TrainerPokemon,
+  TrainerPokemonInput,
+  PokemonType,
+} from "../content/schemas";
+import { parseBattleLogs } from "./battle-log-parser";
+import { getMoveFrenchName } from "../pokemon/move-names-fr";
+import { getSpeciesFrenchName } from "../pokemon/species-names-fr";
 
 const dex = Dex.forGen(4);
+
+const DISPLAYABLE_STATUSES: readonly BattleStatus[] = [
+  "brn",
+  "par",
+  "slp",
+  "psn",
+  "tox",
+  "frz",
+];
+
+/** Ne garde qu'une altération d'état réelle ; « fnt » et l'inconnu deviennent `null`. */
+function normalizeBattleStatus(raw: unknown): BattleStatus {
+  return DISPLAYABLE_STATUSES.includes(raw as BattleStatus)
+    ? (raw as BattleStatus)
+    : null;
+}
 
 interface BattleSideInfo {
   name: string;
@@ -39,6 +63,18 @@ export class BattleEngine {
   private logCursor = 0;
   private accumulatedEvents: BattleEvent[] = [];
 
+  // `@pkmn/sim` réordonne `side.pokemon` (l'actif passe en tête) à chaque
+  // changement. On lie donc chaque instance de combattant à sa fiche d'origine
+  // et à son emplacement initial, pour ne jamais rattacher un surnom — ni un
+  // identifiant — au mauvais Pokémon après un switch.
+  private readonly originBySide: Record<
+    BattleSideId,
+    WeakMap<
+      object,
+      { member: TrainerPokemon | TrainerPokemonInput; slot: number }
+    >
+  > = { p1: new WeakMap(), p2: new WeakMap() };
+
   constructor(options: BattleInitOptions) {
     // Un identifiant imprévisible évite qu'un autre joueur puisse deviner une
     // session de combat active. L'autorisation reste néanmoins vérifiée côté API.
@@ -54,11 +90,32 @@ export class BattleEngine {
       seed: options.seed,
     });
 
-    this.battle.setPlayer("p1", { name: options.p1.name, team: p1ShowdownTeam });
-    this.battle.setPlayer("p2", { name: options.p2.name, team: p2ShowdownTeam });
+    this.battle.setPlayer("p1", {
+      name: options.p1.name,
+      team: p1ShowdownTeam,
+    });
+    this.battle.setPlayer("p2", {
+      name: options.p2.name,
+      team: p2ShowdownTeam,
+    });
+
+    // Juste après `setPlayer`, `side.pokemon` est encore dans l'ordre d'entrée.
+    this.linkOrigins("p1", options.p1.team);
+    this.linkOrigins("p2", options.p2.team);
 
     // Process initial intro logs
     this.parseNewLogs();
+  }
+
+  private linkOrigins(
+    sideId: BattleSideId,
+    team: (TrainerPokemon | TrainerPokemonInput)[],
+  ): void {
+    const simSide = sideId === "p1" ? this.battle.p1 : this.battle.p2;
+    const map = this.originBySide[sideId];
+    simSide.pokemon.forEach((pkmn, index) => {
+      if (team[index]) map.set(pkmn, { member: team[index], slot: index });
+    });
   }
 
   private convertToPokemonSet(team: (TrainerPokemon | TrainerPokemonInput)[]) {
@@ -96,8 +153,10 @@ export class BattleEngine {
 
   /** True once both sides have submitted their choice for the current turn. */
   public isTurnReady(): boolean {
-    const p1Done = this.battle.p1.isChoiceDone() || this.battle.p1.requestState === "";
-    const p2Done = this.battle.p2.isChoiceDone() || this.battle.p2.requestState === "";
+    const p1Done =
+      this.battle.p1.isChoiceDone() || this.battle.p1.requestState === "";
+    const p2Done =
+      this.battle.p2.isChoiceDone() || this.battle.p2.requestState === "";
     return p1Done && p2Done;
   }
 
@@ -124,13 +183,28 @@ export class BattleEngine {
     if (reqState === "move" || reqState === "teampreview" || reqState === "") {
       const active = simSide.active[0];
       if (active && !active.fainted) {
-        active.moveSlots.forEach((slot, idx) => {
-          if (!slot.disabled && slot.pp > 0) {
-            actions.push({ type: "move", moveIndex: idx });
-          }
-        });
+        // Le simulateur impose parfois la liste exacte des coups jouables ce
+        // tour (verrou Uproar / Bide / Danse-Fleur, Entrave, Provoc, objet
+        // Choix, Encore...). S'y fier évite de proposer un coup que
+        // `battle.choose` refusera ensuite, ce qui bloquerait tout le combat.
+        const requestMoves = this.getRequestMoveIds(simSide);
 
-        // Fallback to Struggle if all moves are 0 PP
+        if (requestMoves) {
+          requestMoves.forEach((moveId) => {
+            const idx = active.moveSlots.findIndex(
+              (slot) => slot.id === moveId,
+            );
+            if (idx >= 0) actions.push({ type: "move", moveIndex: idx });
+          });
+        } else {
+          active.moveSlots.forEach((slot, idx) => {
+            if (!slot.disabled && slot.pp > 0) {
+              actions.push({ type: "move", moveIndex: idx });
+            }
+          });
+        }
+
+        // Repli sur « move 1 » (Lutte / coup forcé) si rien n'a été retenu.
         if (actions.length === 0) {
           actions.push({ type: "move", moveIndex: 0 });
         }
@@ -149,228 +223,80 @@ export class BattleEngine {
     return actions;
   }
 
+  /**
+   * Identifiants des coups réellement jouables ce tour d'après la requête du
+   * simulateur, ou `null` si les quatre emplacements restent disponibles.
+   */
+  private getRequestMoveIds(simSide: Battle["p1"]): string[] | null {
+    const request = (simSide as { activeRequest?: unknown }).activeRequest as
+      | {
+          active?: Array<{
+            moves?: Array<{
+              id?: string;
+              move?: string;
+              disabled?: boolean | string;
+            }>;
+          }>;
+        }
+      | null
+      | undefined;
+
+    const requestMoves = request?.active?.[0]?.moves;
+    if (!Array.isArray(requestMoves) || requestMoves.length === 0) return null;
+
+    const ids = requestMoves
+      .filter((entry) => !entry.disabled)
+      .map((entry) => entry.id ?? (entry.move ? toID(entry.move) : ""))
+      .filter((id): id is string => id.length > 0);
+
+    // Une requête à quatre coups non contraints équivaut à « pas de verrou ».
+    if (ids.length >= 4) return null;
+    return ids.length > 0 ? ids : null;
+  }
+
   /** Submits a side's chosen action for the current turn. */
   public submitAction(side: BattleSideId, action: BattleAction): boolean {
     if (this.battle.ended) return false;
 
+    const simSide = side === "p1" ? this.battle.p1 : this.battle.p2;
     let choiceStr = "";
-    if (action.type === "move") {
-      choiceStr = `move ${action.moveIndex + 1}`;
-    } else if (action.type === "switch") {
+
+    if (action.type === "switch") {
       choiceStr = `switch ${action.targetPokemonIndex + 1}`;
+    } else {
+      // Quand le simulateur restreint les coups jouables ce tour (verrou Uproar
+      // / Bide / Danse-Fleur, Encore, Entrave, Provoc, objet Choix...), la
+      // requête `move N` s'indexe sur cette liste réduite et non sur les quatre
+      // emplacements. On convertit donc l'index d'emplacement en position réelle.
+      const requestIds = this.getRequestMoveIds(simSide);
+      if (requestIds) {
+        const wantedId = simSide.active?.[0]?.moveSlots?.[action.moveIndex]?.id;
+        const pos = wantedId ? requestIds.indexOf(wantedId) : -1;
+        choiceStr = `move ${(pos >= 0 ? pos : 0) + 1}`;
+      } else {
+        choiceStr = `move ${action.moveIndex + 1}`;
+      }
     }
 
-    return this.battle.choose(side, choiceStr);
+    if (this.battle.choose(side, choiceStr)) {
+      return true;
+    }
+
+    // Dernier recours : le choix reste refusé (cible piégée, état incohérent...).
+    // On applique le choix forcé du simulateur pour ne jamais figer le combat.
+    simSide.clearChoice();
+    return this.battle.choose(side, "default");
   }
 
   /** Parses raw @pkmn/sim protocol lines emitted since the last call into BattleEvents. */
   public parseNewLogs(): BattleEvent[] {
-    const newLogs = this.battle.log.slice(this.logCursor);
+    const rawLogs = this.battle.log.slice(this.logCursor);
     this.logCursor = this.battle.log.length;
 
-    const events: BattleEvent[] = [];
-    const turn = this.battle.turn;
-
-    for (const rawLine of newLogs) {
-      if (!rawLine.startsWith("|")) continue;
-      const parts = rawLine.slice(1).split("|");
-      const cmd = parts[0];
-
-      switch (cmd) {
-        case "turn": {
-          events.push({
-            type: "turn_start",
-            turn: parseInt(parts[1], 10) || turn,
-            message: `--- Tour ${parts[1]} ---`,
-          });
-          break;
-        }
-
-        case "move": {
-          // |move|p1a: Turtwig|Tackle|p2a: Chimchar
-          const userStr = parts[1] || "";
-          const moveName = parts[2] || "";
-          const targetStr = parts[3] || "";
-
-          const side: BattleSideId = userStr.startsWith("p1") ? "p1" : "p2";
-          const targetSide: BattleSideId | undefined = targetStr.startsWith("p1")
-            ? "p1"
-            : targetStr.startsWith("p2")
-            ? "p2"
-            : undefined;
-
-          events.push({
-            type: "move",
-            turn,
-            side,
-            moveName,
-            targetSide,
-            message: `${this.formatName(userStr)} utilise ${moveName} !`,
-          });
-          break;
-        }
-
-        case "-damage": {
-          // |-damage|p2a: Chimchar|19/31
-          const targetStr = parts[1] || "";
-          const hpStr = parts[2] || "";
-          const side: BattleSideId = targetStr.startsWith("p1") ? "p1" : "p2";
-
-          const [currHp, maxHp] = this.parseHp(hpStr);
-          const percent = maxHp > 0 ? Math.round((currHp / maxHp) * 100) : 0;
-
-          events.push({
-            type: "damage",
-            turn,
-            side,
-            currentHp: currHp,
-            maxHp: maxHp,
-            hpPercent: percent,
-            message: `${this.formatName(targetStr)} subit des dégâts (${percent}% PV restants).`,
-          });
-          break;
-        }
-
-        case "-heal": {
-          // |-heal|p1a: Turtwig|30/34
-          const targetStr = parts[1] || "";
-          const hpStr = parts[2] || "";
-          const side: BattleSideId = targetStr.startsWith("p1") ? "p1" : "p2";
-
-          const [currHp, maxHp] = this.parseHp(hpStr);
-          const percent = maxHp > 0 ? Math.round((currHp / maxHp) * 100) : 0;
-
-          events.push({
-            type: "heal",
-            turn,
-            side,
-            currentHp: currHp,
-            maxHp: maxHp,
-            hpPercent: percent,
-            message: `${this.formatName(targetStr)} récupère des PV !`,
-          });
-          break;
-        }
-
-        case "-supereffective": {
-          events.push({
-            type: "effectiveness",
-            turn,
-            multiplier: 2,
-            message: "C'est super efficace !",
-          });
-          break;
-        }
-
-        case "-resisted": {
-          events.push({
-            type: "effectiveness",
-            turn,
-            multiplier: 0.5,
-            message: "Ce n'est pas très efficace...",
-          });
-          break;
-        }
-
-        case "-immune": {
-          const targetStr = parts[1] || "";
-          events.push({
-            type: "effectiveness",
-            turn,
-            multiplier: 0,
-            message: `Cela n'affecte pas ${this.formatName(targetStr)} !`,
-          });
-          break;
-        }
-
-        case "-crit": {
-          const targetStr = parts[1] || "";
-          events.push({
-            type: "critical_hit",
-            turn,
-            message: `Coup critique porté à ${this.formatName(targetStr)} !`,
-          });
-          break;
-        }
-
-        case "-status": {
-          // |-status|p2a: Chimchar|par
-          const targetStr = parts[1] || "";
-          const status = parts[2] || "";
-          const side: BattleSideId = targetStr.startsWith("p1") ? "p1" : "p2";
-
-          events.push({
-            type: "status_inflicted",
-            turn,
-            side,
-            status,
-            message: `${this.formatName(targetStr)} est maintenant ${this.formatStatus(status)} !`,
-          });
-          break;
-        }
-
-        case "-curestatus": {
-          const targetStr = parts[1] || "";
-          events.push({
-            type: "status_cleared",
-            turn,
-            message: `${this.formatName(targetStr)} n'a plus de problème de statut !`,
-          });
-          break;
-        }
-
-        case "faint": {
-          // |faint|p2a: Chimchar
-          const targetStr = parts[1] || "";
-          const side: BattleSideId = targetStr.startsWith("p1") ? "p1" : "p2";
-
-          events.push({
-            type: "faint",
-            turn,
-            side,
-            message: `${this.formatName(targetStr)} est K.O. !`,
-          });
-          break;
-        }
-
-        case "switch": {
-          // |switch|p2a: Luxio|Luxio, L34|100/100
-          const userStr = parts[1] || "";
-          const details = parts[2] || "";
-          const side: BattleSideId = userStr.startsWith("p1") ? "p1" : "p2";
-          const pkmnName = details.split(",")[0] || userStr;
-
-          events.push({
-            type: "switch",
-            turn,
-            side,
-            message: `${side === "p1" ? this.p1Info.name : this.p2Info.name} envoie ${pkmnName} au combat !`,
-          });
-          break;
-        }
-
-        case "win": {
-          const winnerName = parts[1] || "";
-          const winner: BattleSideId = winnerName === this.p1Info.name ? "p1" : "p2";
-          events.push({
-            type: "battle_end",
-            turn,
-            side: winner,
-            message: `${winnerName} remporte la victoire !`,
-          });
-          break;
-        }
-
-        case "-miss": {
-          events.push({
-            type: "miss",
-            turn,
-            message: `L'attaque a manqué sa cible !`,
-          });
-          break;
-        }
-      }
-    }
+    const events = parseBattleLogs(rawLogs, {
+      battle: this.battle,
+      playerNames: { p1: this.p1Info.name, p2: this.p2Info.name },
+    });
 
     this.accumulatedEvents.push(...events);
     return events;
@@ -396,10 +322,9 @@ export class BattleEngine {
     let phase: BattlePhase = "action_selection";
     if (this.battle.ended) {
       phase = "finished";
-    } else if (
-      this.battle.p1.requestState === "switch" ||
-      this.battle.p2.requestState === "switch"
-    ) {
+    } else if (this.battle.p1.requestState === "switch") {
+      // La phase exposée à l'interface décrit uniquement l'action attendue
+      // du joueur. Les remplacements adverses sont résolus côté serveur.
       phase = "switch_required";
     }
 
@@ -425,59 +350,96 @@ export class BattleEngine {
     };
   }
 
-  private buildSideState(sideId: BattleSideId, sideInfo: BattleSideInfo): BattleSideState {
+  private buildSideState(
+    sideId: BattleSideId,
+    sideInfo: BattleSideInfo,
+  ): BattleSideState {
     const simSide = sideId === "p1" ? this.battle.p1 : this.battle.p2;
+    const originMap = this.originBySide[sideId];
 
-    const teamState: BattlePokemonState[] = simSide.pokemon.map((pkmn, index) => {
-      const original = sideInfo.team[index];
-      const spec = dex.species.get(pkmn.species.name);
+    const teamState: BattlePokemonState[] = simSide.pokemon.map(
+      (pkmn, index) => {
+        // Identité liée à l'instance : robuste au réordonnancement post-switch.
+        const origin = originMap.get(pkmn);
+        const original = origin?.member ?? sideInfo.team[index];
+        const stableSlot = origin?.slot ?? index;
+        const spec = dex.species.get(pkmn.species.name);
+        const isActive =
+          Boolean(pkmn.isActive) || simSide.active.includes(pkmn);
 
-      const moveInfos: BattleMoveInfo[] = pkmn.moveSlots.map((slot) => {
-        const moveData = dex.moves.get(slot.id);
+        // Coups verrouillés ce tour (Uproar, Bide, Encore, Entrave, Provoc...) :
+        // l'interface doit les griser, sinon un clic déclenche un rejet serveur.
+        const allowedMoveIds =
+          isActive && simSide.requestState === "move"
+            ? this.getRequestMoveIds(simSide)
+            : null;
+
+        const moveInfos: BattleMoveInfo[] = pkmn.moveSlots.map((slot) => {
+          const moveData = dex.moves.get(slot.id);
+          const frenchName = getMoveFrenchName(
+            slot.id,
+            moveData.name || slot.id,
+          );
+          const lockedOut =
+            allowedMoveIds !== null && !allowedMoveIds.includes(slot.id);
+          return {
+            id: slot.id,
+            name: frenchName,
+            type: (moveData.type === "???"
+              ? "Ghost"
+              : moveData.type) as PokemonType,
+            category:
+              (moveData.category.toLowerCase() as
+                "physical" | "special" | "status") || "physical",
+            power: moveData.basePower || 0,
+            accuracy:
+              moveData.accuracy === true
+                ? 100
+                : (moveData.accuracy as number) || 100,
+            pp: slot.pp,
+            maxPp: slot.maxpp,
+            disabled: !!slot.disabled || lockedOut,
+          };
+        });
+
+        const currentHp = Math.max(0, pkmn.hp);
+        const maxHp = pkmn.maxhp || 1;
+        const hpPercent = Math.round((currentHp / maxHp) * 100);
+        const frenchSpeciesName = getSpeciesFrenchName(
+          pkmn.species.id,
+          pkmn.name,
+        );
+
         return {
-          id: slot.id,
-          name: moveData.name,
-          type: (moveData.type === "???" ? "Ghost" : moveData.type) as PokemonType,
-          category: (moveData.category.toLowerCase() as "physical" | "special" | "status") || "physical",
-          power: moveData.basePower || 0,
-          accuracy: moveData.accuracy === true ? 100 : (moveData.accuracy as number) || 100,
-          pp: slot.pp,
-          maxPp: slot.maxpp,
-          disabled: !!slot.disabled,
+          id: `${sideId}-${stableSlot}-${pkmn.species.id}`,
+          speciesId: pkmn.species.id,
+          name: frenchSpeciesName,
+          nickname: original?.nickname,
+          level: pkmn.level,
+          types: (pkmn.types as PokemonType[]) || ["Normal"],
+          currentHp,
+          maxHp,
+          hpPercent,
+          // `@pkmn/sim` marque un combattant K.O. avec le statut « fnt », qui
+          // n'est pas une altération d'état affichable. On ne conserve que les
+          // six altérations réelles ; l'état K.O. est porté par `isFainted`.
+          status: normalizeBattleStatus(pkmn.status),
+          moves: moveInfos,
+          isShiny: pkmn.set.shiny ?? false,
+          isActive,
+          isFainted: pkmn.fainted || currentHp === 0,
+          baseStats: {
+            hp: spec.baseStats.hp,
+            attack: spec.baseStats.atk,
+            defense: spec.baseStats.def,
+            specialAttack: spec.baseStats.spa,
+            specialDefense: spec.baseStats.spd,
+            speed: spec.baseStats.spe,
+          },
+          boosts: pkmn.boosts,
         };
-      });
-
-      const currentHp = Math.max(0, pkmn.hp);
-      const maxHp = pkmn.maxhp || 1;
-      const hpPercent = Math.round((currentHp / maxHp) * 100);
-      const isActive = Boolean(pkmn.isActive) || simSide.active.includes(pkmn);
-
-      return {
-        id: `${sideId}-${index}-${pkmn.species.id}`,
-        speciesId: pkmn.species.id,
-        name: pkmn.name,
-        nickname: original?.nickname,
-        level: pkmn.level,
-        types: (pkmn.types as PokemonType[]) || ["Normal"],
-        currentHp,
-        maxHp,
-        hpPercent,
-        status: (pkmn.status || null) as BattleStatus,
-        moves: moveInfos,
-        isShiny: pkmn.set.shiny ?? false,
-        isActive,
-        isFainted: pkmn.fainted || currentHp === 0,
-        baseStats: {
-          hp: spec.baseStats.hp,
-          attack: spec.baseStats.atk,
-          defense: spec.baseStats.def,
-          specialAttack: spec.baseStats.spa,
-          specialDefense: spec.baseStats.spd,
-          speed: spec.baseStats.spe,
-        },
-        boosts: pkmn.boosts,
-      };
-    });
+      },
+    );
 
     const activeIndex = teamState.findIndex((p) => p.isActive);
 
@@ -488,33 +450,5 @@ export class BattleEngine {
       team: teamState,
       activePokemonIndex: activeIndex >= 0 ? activeIndex : 0,
     };
-  }
-
-  private formatName(str: string): string {
-    if (!str) return "Pokémon";
-    const parts = str.split(": ");
-    return parts.length > 1 ? parts[1] : str;
-  }
-
-  private parseHp(str: string): [number, number] {
-    if (!str) return [0, 0];
-    if (str.includes("fnt")) return [0, 0];
-    const parts = str.split("/");
-    if (parts.length === 2) {
-      return [parseInt(parts[0], 10) || 0, parseInt(parts[1], 10) || 0];
-    }
-    return [0, 0];
-  }
-
-  private formatStatus(status: string): string {
-    switch (status) {
-      case "brn": return "brûlé";
-      case "par": return "paralysé";
-      case "slp": return "endormi";
-      case "psn":
-      case "tox": return "empoisonné";
-      case "frz": return "gelé";
-      default: return status;
-    }
   }
 }

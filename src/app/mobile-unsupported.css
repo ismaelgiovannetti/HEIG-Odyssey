@@ -1,0 +1,131 @@
+/* Interface de remplacement affichée sur les appareils non pris en charge. */
+
+/*
+ * Le jeu est limité aux écrans d'ordinateur pendant le MVP. La landing page
+ * possède son propre déploiement et reste, elle, disponible sur mobile.
+ */
+.desktop-application {
+  display: contents;
+}
+
+.mobile-unsupported {
+  display: none;
+}
+
+.mobile-unsupported__card {
+  width: min(100%, 420px);
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 6px 6px 0 var(--color-outline);
+}
+
+.mobile-unsupported__topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 7px;
+  letter-spacing: 0.04em;
+}
+
+.mobile-unsupported__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 22px 28px;
+  text-align: center;
+}
+
+.mobile-unsupported__logo {
+  width: min(100%, 250px);
+  height: auto;
+  margin-bottom: 26px;
+}
+
+.mobile-unsupported__icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  place-items: center;
+  border: 3px solid var(--color-outline);
+  background: var(--color-bg-alt);
+  box-shadow: 4px 4px 0 var(--color-outline);
+  color: var(--color-primary-light);
+}
+
+.mobile-unsupported__eyebrow {
+  margin: 0 0 12px;
+  color: var(--color-primary-light);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.mobile-unsupported h1 {
+  margin: 0 0 16px;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: clamp(17px, 5.5vw, 23px);
+  line-height: 1.45;
+}
+
+.mobile-unsupported__content > p:not(.mobile-unsupported__eyebrow) {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.mobile-unsupported__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 26px;
+  padding: 14px 16px;
+  border: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  box-shadow: 4px 4px 0 var(--color-outline);
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.mobile-unsupported__link:hover {
+  background: var(--color-primary-dark);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-outline);
+}
+
+.mobile-unsupported__link:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 4px;
+}
+
+/* Bloque aussi les téléphones utilisés horizontalement. */
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .desktop-application {
+    display: none;
+  }
+
+  .mobile-unsupported {
+    display: flex;
+    min-height: 100svh;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 16px 96px;
+    background:
+      radial-gradient(circle at 10% 12%, rgb(188 71 63 / 14%), transparent 30%),
+      radial-gradient(circle at 90% 80%, rgb(188 71 63 / 10%), transparent 28%),
+      var(--color-bg);
+  }
+}

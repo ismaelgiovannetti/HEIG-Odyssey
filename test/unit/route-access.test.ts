@@ -15,9 +15,7 @@ describe("matrice d'accès aux routes", () => {
     expect(getPlayerAccessState("user-1", undefined)).toBe(
       "onboarding-required",
     );
-    expect(getPlayerAccessState("user-1", false)).toBe(
-      "onboarding-required",
-    );
+    expect(getPlayerAccessState("user-1", false)).toBe("onboarding-required");
     expect(getPlayerAccessState("user-1", true)).toBe("ready");
   });
 
@@ -32,9 +30,9 @@ describe("matrice d'accès aux routes", () => {
   });
 
   it("conserve une destination interne pour un joueur prêt", () => {
-    expect(
-      getAccessDestination("ready", "/campaign?world=bachelor-1"),
-    ).toBe("/campaign?world=bachelor-1");
+    expect(getAccessDestination("ready", "/campaign?world=bachelor-1")).toBe(
+      "/campaign?world=bachelor-1",
+    );
   });
 
   // Ces routes pourraient renvoyer vers le garde et multiplier les
@@ -43,6 +41,8 @@ describe("matrice d'accès aux routes", () => {
     "/login",
     "/signup",
     "/verify-email",
+    "/forgot-password",
+    "/reset-password",
     "/logout",
     "/auth/continue",
     "/onboarding",
@@ -56,9 +56,7 @@ describe("matrice d'accès aux routes", () => {
   it.each(["https://malicious.example", "//malicious.example", "/%2fescape"])(
     "remplace la destination ambiguë %s",
     (destination) => {
-      expect(getSafeGameDestination(destination)).toBe(
-        ACCESS_ROUTES.dashboard,
-      );
+      expect(getSafeGameDestination(destination)).toBe(ACCESS_ROUTES.dashboard);
     },
   );
 });

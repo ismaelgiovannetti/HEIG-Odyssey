@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { prisma } from "../../src/lib/prisma";
+import { prisma } from "./helpers/prisma";
 import {
   createOnboardingTestUser,
   deleteOnboardingTestUser,
@@ -100,6 +100,7 @@ test.describe("premier lancement du joueur", () => {
 
     // Un rejeu authentifié est refusé et ne crée aucune deuxième créature.
     const replay = await page.context().request.post("/api/starter/choose", {
+      headers: { Origin: new URL(page.url()).origin },
       data: { speciesId: "charmander" },
     });
     expect(replay.status()).toBe(409);
@@ -107,9 +108,7 @@ test.describe("premier lancement du joueur", () => {
       await prisma.userPokemon.count({ where: { userId: testUser.id } }),
     ).toBe(1);
 
-    await page
-      .getByRole("button", { name: "Accéder à l’accueil" })
-      .click();
+    await page.getByRole("button", { name: "Accéder à l’accueil" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
 
     // Une visite ultérieure de l'URL est redirigée sans rejouer le recrutement.
