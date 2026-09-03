@@ -26,12 +26,14 @@ export default async function GachaPage() {
   ).flatMap((speciesId) => {
     const pokemon = species.get(speciesId);
     return pokemon
-      ? [{
-          id: pokemon.id,
-          name: pokemon.name,
-          dexNumber: pokemon.dexNumber,
-          rarity: determineSpeciesRarity(pokemon),
-        }]
+      ? [
+          {
+            id: pokemon.id,
+            name: pokemon.name,
+            dexNumber: pokemon.dexNumber,
+            rarity: determineSpeciesRarity(pokemon),
+          },
+        ]
       : [];
   });
 

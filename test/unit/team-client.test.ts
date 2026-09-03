@@ -28,7 +28,9 @@ describe("réponses de la collection côté navigateur", () => {
   ])("refuse une position hors du nouveau PC (%#)", async (position) => {
     const snapshot = teamSnapshot();
     Object.assign(snapshot.pokemon[2], position);
-    await expect(readTeamResponse(response(snapshot))).rejects.toThrow("incomplète");
+    await expect(readTeamResponse(response(snapshot))).rejects.toThrow(
+      "incomplète",
+    );
   });
 
   it("refuse les doublons de Pokémon et de cases avant de créer le brouillon", async () => {

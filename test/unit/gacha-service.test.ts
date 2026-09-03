@@ -9,6 +9,7 @@ import {
   BannerNotFoundError,
 } from "@/lib/gacha/gacha-service";
 import type { GachaBannerConfig, Species } from "@/lib/content/schemas";
+import { asPrismaClient } from "../helpers/mock-clients";
 
 describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () => {
   const mockBanner: GachaBannerConfig = {
@@ -17,7 +18,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
     description: "Bannière de test",
     costPokedollars: 100,
     rates: {
-      common: 0.70,
+      common: 0.7,
       rare: 0.25,
       epic: 0.05,
       shinyRate: 0.01,
@@ -38,7 +39,14 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
         name: "Étourmi",
         generation: 4,
         types: ["Normal", "Flying"],
-        baseStats: { hp: 40, attack: 55, defense: 30, specialAttack: 30, specialDefense: 30, speed: 60 },
+        baseStats: {
+          hp: 40,
+          attack: 55,
+          defense: 30,
+          specialAttack: 30,
+          specialDefense: 30,
+          speed: 60,
+        },
         stage: 1,
         isLegendary: false,
         isMythical: false,
@@ -53,7 +61,14 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
         name: "Tortipouss",
         generation: 4,
         types: ["Grass"],
-        baseStats: { hp: 55, attack: 68, defense: 64, specialAttack: 45, specialDefense: 55, speed: 31 },
+        baseStats: {
+          hp: 55,
+          attack: 68,
+          defense: 64,
+          specialAttack: 45,
+          specialDefense: 55,
+          speed: 31,
+        },
         stage: 1,
         isLegendary: false,
         isMythical: false,
@@ -68,7 +83,14 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
         name: "Carchacrok",
         generation: 4,
         types: ["Dragon", "Ground"],
-        baseStats: { hp: 108, attack: 130, defense: 95, specialAttack: 80, specialDefense: 85, speed: 102 },
+        baseStats: {
+          hp: 108,
+          attack: 130,
+          defense: 95,
+          specialAttack: 80,
+          specialDefense: 85,
+          speed: 102,
+        },
         stage: 3,
         isLegendary: false,
         isMythical: false,
@@ -119,7 +141,9 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       const mockTx = {
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-poor" }]),
         userProfile: {
-          findUnique: vi.fn().mockResolvedValue({ userId: "user-poor", pokedollars: 50 }),
+          findUnique: vi
+            .fn()
+            .mockResolvedValue({ userId: "user-poor", pokedollars: 50 }),
         },
       };
       const mockPrisma = {
@@ -130,8 +154,8 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       await expect(
         executeGachaPull(
           { userId: "user-poor", bannerId: "banner-standard" },
-          mockPrisma as any
-        )
+          asPrismaClient(mockPrisma),
+        ),
       ).rejects.toThrow(InsufficientFundsError);
     });
 
@@ -139,7 +163,9 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       const mockTx = {
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
-          findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
+          findUnique: vi
+            .fn()
+            .mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
           update: vi.fn().mockResolvedValue({ pokedollars: 200 }),
         },
         userPokemon: {
@@ -162,7 +188,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
 
       const result = await executeGachaPull(
         { userId: "user-1", bannerId: "banner-standard" },
-        mockPrisma as any
+        asPrismaClient(mockPrisma),
       );
 
       expect(result.success).toBe(true);
@@ -197,7 +223,9 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       const mockTx = {
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-1" }]),
         userProfile: {
-          findUnique: vi.fn().mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
+          findUnique: vi
+            .fn()
+            .mockResolvedValue({ userId: "user-1", pokedollars: 500 }),
           update: vi.fn().mockResolvedValue({ pokedollars: 200 }),
         },
         userPokemon: {
@@ -220,7 +248,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
 
       const result = await executeGachaPull(
         { userId: "user-1", bannerId: "banner-standard" },
-        mockPrisma as any
+        asPrismaClient(mockPrisma),
       );
 
       expect(result.isDuplicate).toBe(true);
@@ -245,8 +273,12 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       };
 
       const result = await executeGachaPull(
-        { userId: "user-1", bannerId: "banner-standard", idempotencyKey: "replay_key_1" },
-        mockPrisma as any
+        {
+          userId: "user-1",
+          bannerId: "banner-standard",
+          idempotencyKey: "replay_key_1",
+        },
+        asPrismaClient(mockPrisma),
       );
 
       expect(result.success).toBe(true);
@@ -269,8 +301,12 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
 
       await expect(
         executeGachaPull(
-          { userId: "user-1", bannerId: "banner-standard", idempotencyKey: "foreign-key" },
-          mockPrisma as any,
+          {
+            userId: "user-1",
+            bannerId: "banner-standard",
+            idempotencyKey: "foreign-key",
+          },
+          asPrismaClient(mockPrisma),
         ),
       ).rejects.toThrow(GachaIdempotencyConflictError);
     });
@@ -283,7 +319,9 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       const mockTx = {
         $queryRaw: vi.fn().mockResolvedValue([{ id: "profile-full" }]),
         userProfile: {
-          findUnique: vi.fn().mockResolvedValue({ userId: "user-full", pokedollars: 500 }),
+          findUnique: vi
+            .fn()
+            .mockResolvedValue({ userId: "user-full", pokedollars: 500 }),
           update: vi.fn(),
         },
         userPokemon: {
@@ -300,7 +338,7 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       await expect(
         executeGachaPull(
           { userId: "user-full", bannerId: "banner-standard" },
-          mockPrisma as any,
+          asPrismaClient(mockPrisma),
         ),
       ).rejects.toThrow(GachaPcFullError);
       expect(mockTx.userProfile.update).not.toHaveBeenCalled();
@@ -315,8 +353,8 @@ describe("Gacha Service & Probabilities (T-US12-01, T-US12-02, T-US12-04)", () =
       await expect(
         executeGachaPull(
           { userId: "user-1", bannerId: "banner-inexistante" },
-          mockPrisma as any
-        )
+          asPrismaClient(mockPrisma),
+        ),
       ).rejects.toThrow(BannerNotFoundError);
     });
   });

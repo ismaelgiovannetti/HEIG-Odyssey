@@ -1,6 +1,12 @@
 import { Dex } from "@pkmn/sim";
 import type { BattleEngine } from "./battle-engine";
-import type { BattleAction, AIProfile, BattleSideId, BattlePokemonState, BattleMoveInfo } from "./types";
+import type {
+  BattleAction,
+  AIProfile,
+  BattleSideId,
+  BattlePokemonState,
+  BattleMoveInfo,
+} from "./types";
 import type { PokemonType } from "../content/schemas";
 
 const dex = Dex.forGen(4);
@@ -9,7 +15,7 @@ const dex = Dex.forGen(4);
 export function selectAIAction(
   profile: AIProfile,
   battleEngine: BattleEngine,
-  aiSide: BattleSideId = "p2"
+  aiSide: BattleSideId = "p2",
 ): BattleAction {
   const validActions = battleEngine.getValidActions(aiSide);
   if (validActions.length === 0) {
@@ -49,7 +55,7 @@ function selectRandomAction(validActions: BattleAction[]): BattleAction {
 function selectHeuristicAction(
   battleEngine: BattleEngine,
   aiSide: BattleSideId,
-  validActions: BattleAction[]
+  validActions: BattleAction[],
 ): BattleAction {
   const state = battleEngine.getState();
   const mySideState = aiSide === "p1" ? state.p1 : state.p2;
@@ -93,7 +99,7 @@ function selectHeuristicAction(
 function evaluateMoveScore(
   move: BattleMoveInfo,
   user: BattlePokemonState,
-  target: BattlePokemonState
+  target: BattlePokemonState,
 ): number {
   if (move.pp <= 0) return -100;
 
@@ -143,7 +149,8 @@ function evaluateMoveScore(
     }
 
     // Finishing blow heuristic: if power is high and target is low HP
-    const estimatedDamage = (power * effectiveness * stabMultiplier * (user.level / 50)) / 2;
+    const estimatedDamage =
+      (power * effectiveness * stabMultiplier * (user.level / 50)) / 2;
     if (estimatedDamage >= target.currentHp) {
       score += 60; // Prioritize securing KO
     }
@@ -160,7 +167,7 @@ function evaluateMoveScore(
 function evaluateSwitchScore(
   currentActive: BattlePokemonState,
   benchTarget: BattlePokemonState,
-  opponent: BattlePokemonState
+  opponent: BattlePokemonState,
 ): number {
   // Defensive penalty on current active if facing super effective
   let currentThreatLevel = 0;
@@ -184,7 +191,11 @@ function evaluateSwitchScore(
   }
 
   // Only switch if active is severely threatened and bench has clear advantage
-  if (currentThreatLevel >= 30 && benchAdvantage > 20 && benchTarget.hpPercent > 60) {
+  if (
+    currentThreatLevel >= 30 &&
+    benchAdvantage > 20 &&
+    benchTarget.hpPercent > 60
+  ) {
     return 40 + benchAdvantage;
   }
 
@@ -195,7 +206,7 @@ function evaluateSwitchScore(
 function selectBestSwitch(
   team: BattlePokemonState[],
   opponent: BattlePokemonState,
-  validActions: BattleAction[]
+  validActions: BattleAction[],
 ): BattleAction {
   const switchActions = validActions.filter((a) => a.type === "switch");
   if (switchActions.length === 0) return validActions[0];
@@ -235,7 +246,7 @@ function selectBestSwitch(
 /** Computes the combined Gen 4 type-effectiveness multiplier of an attack type against a (possibly dual-typed) target. */
 export function calculateTypeEffectiveness(
   attackType: PokemonType,
-  targetTypes: PokemonType[]
+  targetTypes: PokemonType[],
 ): number {
   let totalMultiplier = 1.0;
 
@@ -257,7 +268,7 @@ export function calculateTypeEffectiveness(
 function selectExpectiminimaxAction(
   battleEngine: BattleEngine,
   aiSide: BattleSideId,
-  validActions: BattleAction[]
+  validActions: BattleAction[],
 ): BattleAction {
   // For deep minimax: evaluate 1-ply forward minimax with regret minimization
   const state = battleEngine.getState();

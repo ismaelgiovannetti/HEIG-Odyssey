@@ -3,7 +3,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
-import { getEvolutionOptions, type EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
+import {
+  getEvolutionOptions,
+  type EvolutionTarget,
+} from "@/lib/pokemon/pokemon-evolution-types";
 import { PokemonSummary } from "./pokemon-summary";
 import { PokemonMovesEditor } from "./pokemon-moves-editor";
 import { PokemonEvolutionDialog } from "./pokemon-evolution-dialog";
@@ -23,7 +26,8 @@ export function PokemonDetailsDialog({
   const titleId = useId();
 
   const [isMovesEditorOpen, setIsMovesEditorOpen] = useState(false);
-  const [selectedEvolution, setSelectedEvolution] = useState<EvolutionTarget | null>(null);
+  const [selectedEvolution, setSelectedEvolution] =
+    useState<EvolutionTarget | null>(null);
 
   // Les évolutions sont calculées immédiatement sans requête réseau superflue
   const evolutions = useMemo(

@@ -19,7 +19,7 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-/** Préférences audio globales, lues depuis le localStorage (T-US14-02). */
+/** Préférences audio globales, lues depuis le localStorage. */
 export function getSavedAudioPreferences(): AudioPreferences {
   if (typeof window === "undefined") {
     return { ...DEFAULT_AUDIO_PREFERENCES };
@@ -30,9 +30,13 @@ export function getSavedAudioPreferences(): AudioPreferences {
     const rawVolume = localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME);
 
     const isMuted =
-      rawMuted !== null ? rawMuted === "true" : DEFAULT_AUDIO_PREFERENCES.isMuted;
+      rawMuted !== null
+        ? rawMuted === "true"
+        : DEFAULT_AUDIO_PREFERENCES.isMuted;
     const parsedVolume =
-      rawVolume !== null ? parseFloat(rawVolume) : DEFAULT_AUDIO_PREFERENCES.volume;
+      rawVolume !== null
+        ? parseFloat(rawVolume)
+        : DEFAULT_AUDIO_PREFERENCES.volume;
     const volume = Number.isFinite(parsedVolume)
       ? clamp01(parsedVolume)
       : DEFAULT_AUDIO_PREFERENCES.volume;
@@ -43,7 +47,7 @@ export function getSavedAudioPreferences(): AudioPreferences {
   }
 }
 
-/** Persiste les préférences audio globales et prévient les abonnés (T-US14-02). */
+/** Persiste les préférences audio globales et prévient les abonnés. */
 export function saveAudioPreferences(
   prefs: Partial<AudioPreferences>,
 ): AudioPreferences {
@@ -55,8 +59,7 @@ export function saveAudioPreferences(
   const updated: AudioPreferences = {
     isMuted:
       prefs.isMuted !== undefined ? Boolean(prefs.isMuted) : current.isMuted,
-    volume:
-      prefs.volume !== undefined ? clamp01(prefs.volume) : current.volume,
+    volume: prefs.volume !== undefined ? clamp01(prefs.volume) : current.volume,
   };
 
   try {

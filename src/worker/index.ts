@@ -1,3 +1,5 @@
+import "server-only";
+
 import type Redis from "ioredis";
 import { createRedisClient } from "@/lib/events/redis-client";
 import { publishPendingOutboxEvents } from "@/lib/events/publisher";
@@ -101,20 +103,28 @@ async function main() {
 
     outboxTimer = setInterval(() => {
       void flushOutboxWithoutOverlap().catch((error) => {
-        logger.error("Échec du rattrapage périodique de l'Outbox", {
-          eventId: logger.generateEventId(),
-          action: "worker.outbox.periodic-flush",
-        }, error);
+        logger.error(
+          "Échec du rattrapage périodique de l'Outbox",
+          {
+            eventId: logger.generateEventId(),
+            action: "worker.outbox.periodic-flush",
+          },
+          error,
+        );
       });
     }, OUTBOX_FLUSH_INTERVAL_MS);
     outboxTimer.unref();
 
     await worker.start();
   } catch (error) {
-    logger.error("Erreur fatale du worker", {
-      eventId: logger.generateEventId(),
-      action: "worker.run",
-    }, error);
+    logger.error(
+      "Erreur fatale du worker",
+      {
+        eventId: logger.generateEventId(),
+        action: "worker.run",
+      },
+      error,
+    );
     process.exitCode = 1;
   } finally {
     if (outboxTimer) clearInterval(outboxTimer);
@@ -129,10 +139,14 @@ async function main() {
 
 if (process.env.NODE_ENV !== "test") {
   main().catch((err) => {
-    logger.error("Erreur de démarrage du worker", {
-      eventId: logger.generateEventId(),
-      action: "worker.start",
-    }, err);
+    logger.error(
+      "Erreur de démarrage du worker",
+      {
+        eventId: logger.generateEventId(),
+        action: "worker.start",
+      },
+      err,
+    );
     process.exit(1);
   });
 }

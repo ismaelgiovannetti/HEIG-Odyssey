@@ -5,7 +5,7 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
 
@@ -16,7 +16,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npx prisma generate
 # Ces valeurs sont factices, limitées au build et absentes du conteneur final.
 # Les vraies valeurs sont injectées uniquement au démarrage du conteneur.
 RUN BETTER_AUTH_SECRET=build-only-auth-secret-at-least-32-characters \
@@ -42,7 +41,7 @@ WORKDIR /app
 
 COPY tsconfig.json ./tsconfig.json
 COPY src ./src
-COPY scripts/worker-healthcheck.mjs ./scripts/worker-healthcheck.mjs
+COPY scripts/ops/worker-healthcheck.mjs ./scripts/ops/worker-healthcheck.mjs
 
 # Les modules internes sont regroupés dans un seul fichier ESM ; seuls les
 # paquets npm restent externes. Les dépendances de développement sont ensuite
@@ -53,6 +52,7 @@ RUN ./node_modules/.bin/esbuild src/worker/index.ts \
     --target=node22 \
     --format=esm \
     --packages=external \
+    --alias:server-only=./src/worker/server-only-shim.ts \
     --tsconfig=tsconfig.json \
     --outfile=dist/worker.mjs \
     && npm prune --omit=dev --ignore-scripts
@@ -68,15 +68,15 @@ COPY --from=worker-builder --chown=node:node /app/node_modules ./node_modules
 # même si npm prune retire les dossiers générés non déclarés.
 COPY --from=deps --chown=node:node /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=worker-builder --chown=node:node /app/dist/worker.mjs ./worker.mjs
-COPY --from=worker-builder --chown=node:node /app/scripts/worker-healthcheck.mjs ./scripts/worker-healthcheck.mjs
+COPY --from=worker-builder --chown=node:node /app/scripts/ops/worker-healthcheck.mjs ./scripts/ops/worker-healthcheck.mjs
 
 # Le worker n'a besoin d'aucun port et s'exécute sans privilèges root.
 USER node
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=5 \
-  CMD ["node", "scripts/worker-healthcheck.mjs"]
+  CMD ["node", "scripts/ops/worker-healthcheck.mjs"]
 
-CMD ["node", "worker.mjs"]
+CMD ["node", "--conditions=react-server", "worker.mjs"]
 
 # 6. Image de production minimale
 # Cette cible reste la dernière afin que `docker build .` continue de produire

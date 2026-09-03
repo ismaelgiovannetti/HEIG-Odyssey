@@ -22,12 +22,26 @@ export function GachaEgg({ className = "" }: Readonly<GachaEggProps>) {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient id={shellGradientId} x1="18" y1="20" x2="99" y2="130" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id={shellGradientId}
+          x1="18"
+          y1="20"
+          x2="99"
+          y2="130"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0" stopColor="#fffdf0" />
           <stop offset="0.48" stopColor="#f3e9c9" />
           <stop offset="1" stopColor="#bcae87" />
         </linearGradient>
-        <linearGradient id={spotGradientId} x1="28" y1="28" x2="82" y2="112" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id={spotGradientId}
+          x1="28"
+          y1="28"
+          x2="82"
+          y2="112"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop className={styles.eggSpotLight} offset="0" />
           <stop className={styles.eggSpotDark} offset="1" />
         </linearGradient>
@@ -49,7 +63,13 @@ export function GachaEgg({ className = "" }: Readonly<GachaEggProps>) {
         fill={`url(#${shellGradientId})`}
         d="M60 7C36 7 17 37 9 69C0 106 18 139 60 139C102 139 120 106 111 69C103 37 84 7 60 7Z"
       />
-      <ellipse cx="60" cy="118" rx="47" ry="25" fill={`url(#${shadowGradientId})`} />
+      <ellipse
+        cx="60"
+        cy="118"
+        rx="47"
+        ry="25"
+        fill={`url(#${shadowGradientId})`}
+      />
       <g className={styles.eggSpots} fill={`url(#${spotGradientId})`}>
         <path d="M49 10C56 7 68 8 74 15C76 21 70 28 61 29C52 28 46 20 49 10Z" />
         <path d="M20 55C25 47 34 45 40 50C45 57 42 67 34 72C26 72 20 65 20 55Z" />

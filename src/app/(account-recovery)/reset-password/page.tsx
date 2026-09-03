@@ -1,3 +1,5 @@
+import "../../auth.css";
+
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -25,7 +27,9 @@ export default function ResetPasswordPage() {
       title="Nouveau mot de passe"
       description="Choisissez une nouvelle clé d'accès pour reprendre votre aventure."
     >
-      <Suspense fallback={<p className="auth-loading">Vérification du lien...</p>}>
+      <Suspense
+        fallback={<p className="auth-loading">Vérification du lien...</p>}
+      >
         <ResetPasswordForm />
       </Suspense>
     </AuthShell>

@@ -14,6 +14,11 @@ HEIG Odyssey est un jeu web solo qui combine l'aventure d'un jeu Pokémon avec l
 
 La présentation du projet est disponible sur [heig-odyssey.online](https://heig-odyssey.online).
 
+Le dossier [`landing-page/`](landing-page/) contient une application statique
+déployée indépendamment du jeu Next.js. Les assets qu'elle partage avec le jeu
+ont [`public/`](public/) comme source canonique et sont synchronisés par les
+commandes décrites dans [son guide](landing-page/README.md).
+
 ## Stack Technique
 
 - **Frontend & Backend :** Next.js 15 (App Router), React 19, TypeScript strict, Tailwind CSS.
@@ -23,13 +28,15 @@ La présentation du projet est disponible sur [heig-odyssey.online](https://heig
 - **Moteur de combat :** `@pkmn/sim` (Génération 4).
 - **Conteneurs & CI/CD :** Docker Compose, GitHub Actions, GHCR.
 
-## Démarrage rapide en local (US-18)
+## Démarrage rapide en local
 
 ### 1. Prérequis
+
 - [Node.js](https://nodejs.org/) version 22 ou supérieure
 - [Docker](https://www.docker.com/) et Docker Compose
 
 ### 2. Installation
+
 ```bash
 # Cloner le dépôt et copier l'environnement
 cp .env.example .env
@@ -39,40 +46,70 @@ npm ci
 ```
 
 ### 3. Démarrer les dépendances (PostgreSQL & Redis)
+
 ```bash
 docker compose up -d postgres redis
 ```
 
 ### 4. Appliquer les migrations et le seed initial
+
 ```bash
 npm run db:deploy
 npm run db:seed
 ```
 
 ### 5. Lancer le worker de quêtes et le serveur de développement
+
 ```bash
 # Le worker traite les événements de combat et actualise les quêtes.
 docker compose up -d worker
 
 npm run dev
 ```
-L'application est accessible sur [http://localhost:3000](http://localhost:3000). Le contrôle de santé est disponible sur `GET /api/health`.
+
+L'application est accessible sur [http://localhost:3000](http://localhost:3000).
+Le contrôle `GET /api/health` vérifie PostgreSQL et Redis et renvoie un statut
+`503` si l'une de ces dépendances est indisponible.
 
 Le worker doit rester actif pendant le développement. Son état et ses journaux
 peuvent être consultés avec `docker compose ps worker` et
 `docker compose logs -f worker`.
 
-### 6. Commandes de contrôle qualité (US-19)
+### 6. Commandes de contrôle qualité
+
 ```bash
-npm run lint          # Analyse statique ESLint
-npm run typecheck     # Validation stricte des types TypeScript
-npm run test:unit      # Tests unitaires Vitest
-npm run test:combat    # Tests du moteur de combat Gen 4
-npm run build          # Compilation de production Next.js
+npm run lint              # Analyse ESLint de l'ensemble du code
+npm run format:check      # Vérification du formatage Prettier
+npm run typecheck         # Validation stricte des types TypeScript
+npm test                  # Tests unitaires et moteur de combat
+npm run test:coverage     # Tests avec seuils de couverture
+npm run test:integration  # Intégration PostgreSQL et Redis
+npm run build             # Compilation de production Next.js
+```
+
+Les tests d'intégration nécessitent les services locaux :
+
+```bash
+docker compose up -d postgres redis
+npm run db:deploy
+npm run test:integration
+```
+
+Pour les contrôles navigateur, installez d'abord Chromium :
+
+```bash
+npx playwright install chromium
+npm run test:e2e           # Parcours desktop, fallback mobile et accessibilité
+npm run test:e2e:chromium  # Parcours fonctionnels rapides sur Chromium
+npm run test:a11y          # Accessibilité uniquement
 ```
 
 ## Documentation
 
+- [Architecture du dépôt](docs/ARCHITECTURE.md)
+- [Guide de la landing page et des assets partagés](landing-page/README.md)
+- [Maquettes](docs/design/mockups/)
+- [Storyboards](docs/design/storyboards/)
 - [Kick-off](docs/01-kickoff/HEIG_Odyssey_Kickoff.md)
 - [Personas](docs/02-conception/HEIG_Odyssey_Personas.md)
 - [User stories](docs/02-conception/HEIG_Odyssey_User_Stories.md)

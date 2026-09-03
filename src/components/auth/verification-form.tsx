@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MailCheck } from "lucide-react";
 
-import { requestVerificationEmail } from "@/lib/auth-client";
+import { requestVerificationEmail } from "@/lib/auth/client";
 import { FormAlert } from "@/components/auth/form-alert";
 import { SubmitButton } from "@/components/auth/submit-button";
 
@@ -27,7 +27,7 @@ export function VerificationForm() {
   useEffect(() => {
     try {
       const storedEmail = window.sessionStorage.getItem(
-        "heig-odyssey-verification-email"
+        "heig-odyssey-verification-email",
       );
 
       if (storedEmail) {
@@ -56,15 +56,21 @@ export function VerificationForm() {
       const result = await requestVerificationEmail(email);
 
       if (result.error) {
-        setFormError("Impossible de traiter la demande maintenant. Réessayez plus tard.");
+        setFormError(
+          "Impossible de traiter la demande maintenant. Réessayez plus tard.",
+        );
         return;
       }
 
       // La réponse ne confirme jamais l'existence du compte afin d'éviter
       // l'énumération d'adresses e-mail.
-      setMessage("Si cette adresse correspond à un compte, un nouveau lien a été envoyé.");
+      setMessage(
+        "Si cette adresse correspond à un compte, un nouveau lien a été envoyé.",
+      );
     } catch {
-      setFormError("Impossible de traiter la demande maintenant. Réessayez plus tard.");
+      setFormError(
+        "Impossible de traiter la demande maintenant. Réessayez plus tard.",
+      );
     } finally {
       setIsPending(false);
     }
@@ -86,11 +92,15 @@ export function VerificationForm() {
       {formError ? <FormAlert tone="error">{formError}</FormAlert> : null}
 
       <p className="auth-instruction">
-        Le lien est valable pendant une heure. Pensez à vérifier votre dossier spam.
-        Vous devrez ensuite vous connecter manuellement.
+        Le lien est valable pendant une heure. Pensez à vérifier votre dossier
+        spam. Vous devrez ensuite vous connecter manuellement.
       </p>
 
-      <form className="auth-form auth-form--nested" onSubmit={handleResend} noValidate>
+      <form
+        className="auth-form auth-form--nested"
+        onSubmit={handleResend}
+        noValidate
+      >
         <div className="auth-field">
           <label htmlFor="verification-email">Adresse e-mail</label>
           <input

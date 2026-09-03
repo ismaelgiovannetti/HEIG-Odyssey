@@ -1,42 +1,27 @@
+import "server-only";
+
+import type { PrismaClient } from "@prisma/client";
 import { prisma } from "../prisma";
-import { getOrGenerateActiveRotations } from "./rotation-service";
-import type { BattleCompletedPayload, TrainingCompletedPayload } from "../events/contracts";
+import {
+  getOrGenerateActiveRotations,
+  type QuestDatabaseClient,
+} from "./rotation-service";
+import type {
+  BattleCompletedPayload,
+  TrainingCompletedPayload,
+} from "../events/contracts";
 import { PermanentDomainEventError } from "../events/errors";
-import type { QuestType } from "@prisma/client";
+import type {
+  ClaimQuestRewardResult,
+  QuestItem as UserQuestItem,
+  UserQuestsState,
+} from "./quest-contract";
 
-export interface UserQuestItem {
-  rotationId: string;
-  questId: string;
-  title: string;
-  description: string;
-  type: QuestType;
-  targetType: string;
-  targetCount: number;
-  currentCount: number;
-  isCompleted: boolean;
-  rewardClaimed: boolean;
-  claimedAt: string | null;
-  rewardPokedollars: number;
-  rewardXp: number;
-  startDate: string;
-  endDate: string;
-}
-
-export interface UserQuestsState {
-  dailyPeriodKey: string;
-  weeklyPeriodKey: string;
-  dailyQuests: UserQuestItem[];
-  weeklyQuests: UserQuestItem[];
-  allQuests: UserQuestItem[];
-}
-
-export interface ClaimQuestRewardResult {
-  success: boolean;
-  rotationId: string;
-  rewardPokedollars: number;
-  rewardXp: number;
-  newBalance: number;
-}
+export type {
+  ClaimQuestRewardResult,
+  QuestItem as UserQuestItem,
+  UserQuestsState,
+} from "./quest-contract";
 
 export class QuestNotFoundError extends Error {
   constructor(message = "Quête introuvable pour cette rotation.") {
@@ -46,7 +31,9 @@ export class QuestNotFoundError extends Error {
 }
 
 export class QuestNotCompletedError extends Error {
-  constructor(message = "Les objectifs de la quête ne sont pas encore atteints.") {
+  constructor(
+    message = "Les objectifs de la quête ne sont pas encore atteints.",
+  ) {
     super(message);
     this.name = "QuestNotCompletedError";
   }
@@ -67,7 +54,7 @@ export class QuestRewardAlreadyClaimedError extends Error {
 export async function isQuestProgressPendingForBattle(
   userId: string,
   battleId: string,
-  client: any = prisma,
+  client: QuestDatabaseClient = prisma,
 ): Promise<boolean> {
   const ownBattle = await client.battleRecord.findFirst({
     where: {
@@ -88,12 +75,12 @@ export async function isQuestProgressPendingForBattle(
 }
 
 /**
- * Récupère l'état complet des quêtes actives et de la progression pour un joueur (T-US13-03).
+ * Récupère l'état complet des quêtes actives et de la progression pour un joueur.
  */
 export async function getUserQuests(
   userId: string,
   date: Date = new Date(),
-  client: any = prisma
+  client: QuestDatabaseClient = prisma,
 ): Promise<UserQuestsState> {
   const activeRotations = await getOrGenerateActiveRotations(date, client);
   const rotationIds = activeRotations.allRotations.map((r) => r.id);
@@ -105,13 +92,21 @@ export async function getUserQuests(
     },
   });
 
-  const progressByRotationId = new Map(existingProgress.map((p: any) => [p.rotationId, p]));
+  const progressByRotationId = new Map(
+    existingProgress.map((progress) => [progress.rotationId, progress]),
+  );
 
-  const mapRotationToItem = (rotation: (typeof activeRotations.allRotations)[number]): UserQuestItem => {
-    const progress: any = progressByRotationId.get(rotation.id);
+  const mapRotationToItem = (
+    rotation: (typeof activeRotations.allRotations)[number],
+  ): UserQuestItem => {
+    const progress = progressByRotationId.get(rotation.id);
     const targetCount = rotation.quest.targetCount;
-    const currentCount = progress ? Math.min(progress.currentCount, targetCount) : 0;
-    const isCompleted = progress ? progress.isCompleted || currentCount >= targetCount : false;
+    const currentCount = progress
+      ? Math.min(progress.currentCount, targetCount)
+      : 0;
+    const isCompleted = progress
+      ? progress.isCompleted || currentCount >= targetCount
+      : false;
     const rewardClaimed = progress ? progress.rewardClaimed : false;
 
     return {
@@ -150,7 +145,7 @@ export async function getUserQuests(
  */
 export function calculateQuestIncrement(
   targetType: string,
-  payload: BattleCompletedPayload | TrainingCompletedPayload
+  payload: BattleCompletedPayload | TrainingCompletedPayload,
 ): number {
   const isVictory = payload.winner === "p1";
 
@@ -176,21 +171,27 @@ export function calculateQuestIncrement(
 }
 
 /**
- * Met à jour la progression des quêtes actives d'un joueur suite à un événement de combat (T-US13-03).
+ * Met à jour la progression des quêtes actives d'un joueur suite à un événement de combat.
  */
 export async function handleBattleCompletedForQuests(
   payload: BattleCompletedPayload | TrainingCompletedPayload,
-  client: any = prisma,
+  client: QuestDatabaseClient = prisma,
   occurredAt: Date = new Date(),
 ): Promise<number> {
   const userId = payload.userId;
   if (!userId) return 0;
 
-  const activeRotations = await getOrGenerateActiveRotations(occurredAt, client);
+  const activeRotations = await getOrGenerateActiveRotations(
+    occurredAt,
+    client,
+  );
   let updatedCount = 0;
 
   for (const rotation of activeRotations.allRotations) {
-    const increment = calculateQuestIncrement(rotation.quest.targetType, payload);
+    const increment = calculateQuestIncrement(
+      rotation.quest.targetType,
+      payload,
+    );
     if (increment <= 0) continue;
 
     const targetCount = rotation.quest.targetCount;
@@ -234,9 +235,9 @@ export async function handleBattleCompletedForQuests(
 export async function handleBattleCompletedEventForQuests(
   eventId: string,
   payload: BattleCompletedPayload | TrainingCompletedPayload,
-  client: any = prisma,
+  client: PrismaClient = prisma,
 ): Promise<number> {
-  return client.$transaction(async (tx: any) => {
+  return client.$transaction(async (tx) => {
     const receipt = await tx.processedDomainEvent.createMany({
       // Un combat ne doit faire progresser les quêtes qu'une seule fois, même
       // si un producteur compromis republie son payload avec un nouvel eventId.
@@ -263,9 +264,8 @@ export async function handleBattleCompletedEventForQuests(
         completedAt: true,
       },
     });
-    const completedAt = battle?.completedAt instanceof Date
-      ? battle.completedAt
-      : null;
+    const completedAt =
+      battle?.completedAt instanceof Date ? battle.completedAt : null;
     const eventMatchesRecord =
       completedAt !== null &&
       battle?.userId === payload.userId &&
@@ -289,14 +289,14 @@ export async function handleBattleCompletedEventForQuests(
 }
 
 /**
- * Réclame la récompense d'une quête terminée de manière transactionnelle et idempotente (T-US13-03).
+ * Réclame la récompense d'une quête terminée de manière transactionnelle et idempotente.
  */
 export async function claimQuestReward(
   userId: string,
   rotationId: string,
-  client: any = prisma
+  client: PrismaClient = prisma,
 ): Promise<ClaimQuestRewardResult> {
-  return await client.$transaction(async (tx: any) => {
+  return await client.$transaction(async (tx) => {
     // 1. Récupération de la progression et de la rotation liée
     const progress = await tx.userQuestProgress.findUnique({
       where: {

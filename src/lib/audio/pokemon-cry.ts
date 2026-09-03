@@ -5,9 +5,7 @@ import { getSavedAudioPreferences } from "./audio-preferences";
 let currentCryAudio: HTMLAudioElement | null = null;
 
 function normalizeCrySpeciesId(speciesId: string): string {
-  return speciesId
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+  return speciesId.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 /**

@@ -16,7 +16,7 @@ import {
   computeAverageTeamLevel,
   generateTrainingOpponent,
   type TrainingDifficulty,
-} from "@/lib/combat/training-generator";
+} from "@/lib/training/training-generator";
 import type { Trainer } from "@/lib/content/schemas";
 import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
@@ -83,7 +83,10 @@ export async function POST(req: Request) {
     );
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { success: false, error: "Trop de combats démarrés. Réessayez plus tard." },
+        {
+          success: false,
+          error: "Trop de combats démarrés. Réessayez plus tard.",
+        },
         {
           status: 429,
           headers: { "Retry-After": String(rateLimit.retryAfter) },
@@ -103,8 +106,12 @@ export async function POST(req: Request) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: "Corps de requête invalide", details: parsed.error.issues },
-        { status: 400 }
+        {
+          success: false,
+          error: "Corps de requête invalide",
+          details: parsed.error.issues,
+        },
+        { status: 400 },
       );
     }
 
@@ -123,8 +130,12 @@ export async function POST(req: Request) {
     const validation = validateTeamComposition(activeTeam);
     if (!validation.isValid) {
       return NextResponse.json(
-        { success: false, error: "Équipe invalide", details: validation.errors },
-        { status: 400 }
+        {
+          success: false,
+          error: "Équipe invalide",
+          details: validation.errors,
+        },
+        { status: 400 },
       );
     }
 
@@ -146,16 +157,17 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             success: false,
-            error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
+            error:
+              accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
       if (!accessCheck.trainerId) {
         return NextResponse.json(
           { success: false, error: "Dresseur ou étape introuvable" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -165,7 +177,7 @@ export async function POST(req: Request) {
     if (!opponentTrainer) {
       return NextResponse.json(
         { success: false, error: "Dresseur ou étape introuvable" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -195,9 +207,8 @@ export async function POST(req: Request) {
       {
         battleType: isTraining ? "TRAINING" : "CAMPAIGN",
         difficulty: isTraining ? selectedDifficulty : undefined,
-      }
+      },
     );
-
 
     const initialState = engine.getState();
 
@@ -220,10 +231,14 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     // Aucun détail technique ni identifiant interne n'est renvoyé au navigateur.
-    logger.error("Échec du démarrage du combat", { requestId, action: "battle.start" }, error);
+    logger.error(
+      "Échec du démarrage du combat",
+      { requestId, action: "battle.start" },
+      error,
+    );
     return NextResponse.json(
       { success: false, error: BATTLE_START_FAILED_MESSAGE },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

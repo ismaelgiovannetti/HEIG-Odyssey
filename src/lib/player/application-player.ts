@@ -23,8 +23,7 @@ interface AuthenticatedPlayerContext {
 }
 
 export type PlayerAccessContext =
-  | { state: "anonymous" }
-  | AuthenticatedPlayerContext;
+  { state: "anonymous" } | AuthenticatedPlayerContext;
 
 /**
  * Lit une seule fois la session et l'état d'onboarding pendant un rendu. Le

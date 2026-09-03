@@ -1,3 +1,5 @@
+import "../../dashboard.css";
+
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +16,7 @@ import {
 
 import { ApplicationShell } from "@/components/application/application-shell";
 import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
 import {
   getCampaignStagePoint,
@@ -113,9 +115,8 @@ export default async function DashboardPage() {
       )
     : null;
   const currentWorld = campaign.nextRecommendedStage
-    ? (campaign.worlds.find(
-        (world) => world.id === campaign.currentWorldId,
-      ) ?? campaign.worlds[0])
+    ? (campaign.worlds.find((world) => world.id === campaign.currentWorldId) ??
+      campaign.worlds[0])
     : (campaign.worlds.at(-1) ?? campaign.worlds[0]);
 
   // La première étape accessible est la position actuelle. Une campagne
@@ -137,9 +138,7 @@ export default async function DashboardPage() {
     currentWorld?.stages.length ?? 1,
   );
   const worldBoss = currentWorld?.stages.at(-1) ?? null;
-  const currentMap = getCampaignWorldMap(
-    currentWorld?.id ?? "bachelor-1",
-  );
+  const currentMap = getCampaignWorldMap(currentWorld?.id ?? "bachelor-1");
   const currentWorldProgress = currentWorld?.totalStagesCount
     ? Math.round(
         (currentWorld.completedStagesCount / currentWorld.totalStagesCount) *
@@ -147,9 +146,7 @@ export default async function DashboardPage() {
       )
     : 0;
   const totalCampaignProgress = campaign.totalStages
-    ? Math.round(
-        (campaign.totalCompletedStages / campaign.totalStages) * 100,
-      )
+    ? Math.round((campaign.totalCompletedStages / campaign.totalStages) * 100)
     : 0;
 
   // L'image conserve son ratio natif. Sa translation place les coordonnées
@@ -323,7 +320,8 @@ export default async function DashboardPage() {
                   <div className="dashboard-team-mode__heading-copy">
                     <strong>Gestion d&apos;équipe</strong>
                     <span className="dashboard-team-mode__stats">
-                      <strong>{activePokemon.length}/6</strong> partenaires actifs
+                      <strong>{activePokemon.length}/6</strong> partenaires
+                      actifs
                       <span aria-hidden="true">-</span>
                       Niveau moyen de l&apos;équipe :
                       <strong>{averageTeamLevel ?? "-"}</strong>

@@ -1,28 +1,40 @@
-import type { DomainEventEnvelope, DomainEventType } from "@/lib/events/contracts";
+import "server-only";
+
+import type {
+  DomainEventEnvelope,
+  DomainEventType,
+} from "@/lib/events/contracts";
 import { isPermanentDomainEventError } from "@/lib/events/errors";
 import { logger } from "@/lib/logger";
 
-export type EventHandler<T = any> = (event: DomainEventEnvelope<T>) => Promise<void>;
+export type EventHandler<T = unknown> = (
+  event: DomainEventEnvelope<T>,
+) => Promise<void>;
 
 const eventHandlersMap = new Map<DomainEventType, Set<EventHandler>>();
 
 /**
  * Enregistre un handler pour un type d'événement donné.
  */
-export function registerEventHandler<T = any>(
+export function registerEventHandler<T = unknown>(
   eventType: DomainEventType,
-  handler: EventHandler<T>
+  handler: EventHandler<T>,
 ): () => void {
   let handlers = eventHandlersMap.get(eventType);
   if (!handlers) {
     handlers = new Set();
     eventHandlersMap.set(eventType, handlers);
   }
-  handlers.add(handler);
+  // L'enveloppe a déjà été validée par le worker avant le dispatch. Cet
+  // adaptateur conserve un registre homogène tout en exposant le payload
+  // précis attendu par chaque handler.
+  const storedHandler: EventHandler<unknown> = (event) =>
+    handler(event as DomainEventEnvelope<T>);
+  handlers.add(storedHandler);
 
   // Fonction de désinscription
   return () => {
-    handlers?.delete(handler);
+    handlers?.delete(storedHandler);
   };
 }
 
@@ -53,11 +65,15 @@ export async function dispatchDomainEvent(event: DomainEventEnvelope): Promise<{
       await handler(event);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error("Échec du traitement d'un événement", {
-        eventId: event.eventId,
-        action: "event.dispatch",
-        eventType: event.eventType,
-      }, error);
+      logger.error(
+        "Échec du traitement d'un événement",
+        {
+          eventId: event.eventId,
+          action: "event.dispatch",
+          eventType: event.eventType,
+        },
+        error,
+      );
       errors.push(error);
     }
   }

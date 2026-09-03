@@ -1,0 +1,300 @@
+/* ============================================================
+   Grille des quatre modes de jeu
+   ============================================================ */
+.menu-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.menu-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 3px solid var(--color-outline);
+  clip-path: var(--notch);
+  box-shadow: var(--shadow-pixel);
+  padding: 0;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.menu-card::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto;
+  height: 76px;
+  background: linear-gradient(
+    100deg,
+    var(--mode-dark),
+    var(--mode-color),
+    var(--mode-dark)
+  );
+  border-bottom: 3px solid var(--color-outline);
+  pointer-events: none;
+}
+
+.menu-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 var(--mode-color);
+}
+
+.menu-card:nth-child(1) {
+  --mode-color: #194d9c;
+  --mode-dark: #12366e;
+  --mode-soft: rgba(40, 95, 181, 0.14);
+}
+
+.menu-card:nth-child(2) {
+  --mode-color: #844000;
+  --mode-dark: #5c2d00;
+  --mode-soft: rgba(183, 91, 0, 0.14);
+}
+
+.menu-card:nth-child(3) {
+  --mode-color: #16623b;
+  --mode-dark: #0f452a;
+  --mode-soft: rgba(33, 117, 74, 0.14);
+}
+
+.menu-card:nth-child(4) {
+  --mode-color: #5d348c;
+  --mode-dark: #402460;
+  --mode-soft: rgba(114, 68, 163, 0.14);
+}
+
+.menu-card-icon {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 1;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  clip-path: var(--notch-sm);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  margin: 14px 0 14px var(--space-3);
+}
+
+.menu-card-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff;
+}
+
+.menu-card h3 {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  color: #ffffff;
+  margin: 0;
+  padding: 12px var(--space-3) 12px var(--space-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.menu-card p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: start;
+  margin: 0;
+  padding: var(--space-3);
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+.menu-card-tag {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  background: var(--mode-soft);
+  border-top: 3px solid var(--mode-color);
+  padding: 10px var(--space-3);
+  color: var(--mode-color);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 9px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ============================================================
+   Difficulty table (training AI)
+   ============================================================ */
+.diff-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+  .diff-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.diff-card {
+  --diff-color: var(--color-success);
+  --diff-dark: #155232;
+  --diff-panel: #d7ebdd;
+  --diff-panel-deep: #bbdac6;
+  --diff-text: #173d29;
+  --diff-highlight: #287b4d;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  background: linear-gradient(
+    145deg,
+    var(--diff-panel),
+    var(--diff-panel-deep)
+  );
+  min-height: 340px;
+  border: 4px solid var(--diff-color);
+  clip-path: var(--notch);
+  box-shadow: 7px 7px 0 var(--diff-dark);
+  padding: 0;
+  text-align: left;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.diff-card::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto;
+  height: 98px;
+  background: linear-gradient(
+    112deg,
+    var(--diff-dark) 0 56%,
+    var(--diff-color) 56% 78%,
+    var(--diff-dark) 78% 100%
+  );
+  border-bottom: 3px solid var(--color-outline);
+  pointer-events: none;
+}
+
+.diff-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 var(--diff-color);
+}
+
+.diff-card--easy {
+  --diff-color: var(--color-success);
+  --diff-dark: #155232;
+  --diff-panel: #d7ebdd;
+  --diff-panel-deep: #bbdac6;
+  --diff-text: #173d29;
+  --diff-highlight: #287b4d;
+}
+
+.diff-card--normal {
+  --diff-color: var(--color-champion);
+  --diff-dark: #765006;
+  --diff-panel: #f2e3bc;
+  --diff-panel-deep: #dfc47b;
+  --diff-text: #503500;
+  --diff-highlight: #8a5b00;
+}
+
+.diff-card--hard {
+  --diff-color: var(--color-nightmare);
+  --diff-dark: var(--color-nightmare-dark);
+  --diff-panel: #f0d1cf;
+  --diff-panel-deep: #dfa3a0;
+  --diff-text: #631814;
+  --diff-highlight: #b91f1a;
+}
+
+.diff-stars {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-width: 56px;
+  height: 54px;
+  gap: 4px;
+  margin: 20px 0 20px var(--space-3);
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  clip-path: var(--notch-sm);
+  box-shadow: 3px 3px 0 var(--color-outline);
+}
+
+.rating-star {
+  width: 17px;
+  height: 17px;
+  color: #ffffff;
+}
+
+.diff-card h3 {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  padding: 16px var(--space-3) 16px var(--space-2);
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.diff-card p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: start;
+  margin: 0;
+  padding: 28px var(--space-3);
+  font-size: 17px;
+  color: var(--diff-text);
+  font-weight: 500;
+}
+
+.diff-reward {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  align-self: end;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  padding: 0 var(--space-3) 28px;
+  color: var(--diff-highlight);
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}

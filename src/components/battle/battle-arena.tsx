@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Swords } from "lucide-react";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Coins,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Swords,
-  Trophy,
-  UsersRound,
-} from "lucide-react";
-import { SpriteProvider } from "@/components/SpriteProvider";
-import { SoundtrackPlayer, type SoundtrackPhase } from "@/components/audio/soundtrack-player";
+  SoundtrackPlayer,
+  type SoundtrackPhase,
+} from "@/components/audio/soundtrack-player";
 import { BattleCatchlines } from "@/components/combat/battle-catchlines";
+import { BattleCommandPanel } from "./battle-command-panel";
+import { BattleResult } from "./battle-result";
+import { BattleScene } from "./battle-scene";
+import type {
+  BattleArenaProps,
+  OpponentIntroPhase,
+  PlayerAction,
+} from "./battle-arena-types";
+import type { HpOverride } from "./battle-pokemon-status";
 import {
   BattleRequestError,
   BattleStateConflictError,
@@ -26,54 +27,7 @@ import {
 } from "@/lib/combat/battle-client";
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
 import { publishQuestProgressInvalidated } from "@/lib/quests/quest-progress-events";
-import { formatGameInteger } from "@/lib/format-number";
 import { playBattleSfx } from "@/lib/audio/battle-sfx";
-import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
-import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
-
-type BattleMode = "campaign" | "training";
-type PlayerAction =
-  | { type: "move"; moveIndex: number }
-  | { type: "switch"; targetPokemonIndex: number };
-
-interface BattleArenaProps {
-  initialBattle: BattleStartPayload;
-  mode: BattleMode;
-  onReturn: () => void;
-  /** Étape de campagne qui suit celle jouée, si elle existe. */
-  nextStageId?: string | null;
-  /** Enchaîne directement sur `nextStageId` depuis l'écran de résultat. */
-  onAdvance?: () => void;
-}
-
-const TYPE_LABELS_FR: Record<string, string> = {
-  Normal: "Normal",
-  Fire: "Feu",
-  Water: "Eau",
-  Grass: "Plante",
-  Electric: "Électrik",
-  Ice: "Glace",
-  Fighting: "Combat",
-  Poison: "Poison",
-  Ground: "Sol",
-  Flying: "Vol",
-  Psychic: "Psy",
-  Bug: "Insecte",
-  Rock: "Roche",
-  Ghost: "Spectre",
-  Dragon: "Dragon",
-  Steel: "Acier",
-  Dark: "Ténèbres",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  brn: "Brûlure",
-  par: "Paralysie",
-  slp: "Sommeil",
-  psn: "Poison",
-  tox: "Poison grave",
-  frz: "Gel",
-};
 
 /** Retrouve le combattant visible tout en conservant un repli sûr. */
 function activePokemon(side: BattleStatePayload["p1"]): BattlePokemonPayload {
@@ -84,215 +38,11 @@ function activePokemon(side: BattleStatePayload["p1"]): BattlePokemonPayload {
   );
 }
 
-/** Associe le pourcentage de PV à la couleur de sa jauge. */
-function hpTone(percent: number) {
-  if (percent <= 20) return "critical";
-  if (percent <= 50) return "warning";
-  return "healthy";
-}
-
 /** Normalise un champ `sprite` de dresseur en URL exploitable. */
 function trainerSpriteUrl(sprite?: string): string | null {
   if (!sprite) return null;
   if (sprite.startsWith("/") || sprite.startsWith("http")) return sprite;
   return `/sprites/${sprite}${sprite.endsWith(".png") ? "" : ".png"}`;
-}
-
-type OpponentIntroPhase = "trainer" | "leaving" | "pokemon";
-
-interface HpOverride {
-  currentHp: number;
-  maxHp: number;
-  hpPercent: number;
-}
-
-/** Résumé accessible des PV, types et altérations d'un combattant. */
-function PokemonStatus({
-  pokemon,
-  hpOverride,
-  statusOverride,
-  className = "",
-}: {
-  pokemon: BattlePokemonPayload;
-  hpOverride?: HpOverride | null;
-  statusOverride?: string | null;
-  className?: string;
-}) {
-  const currentHp =
-    hpOverride !== null && hpOverride !== undefined
-      ? hpOverride.currentHp
-      : pokemon.currentHp;
-  const maxHp =
-    hpOverride && hpOverride.maxHp > 0
-      ? hpOverride.maxHp
-      : pokemon.maxHp > 0
-        ? pokemon.maxHp
-        : 1;
-  const hpPercent =
-    hpOverride && typeof hpOverride.hpPercent === "number"
-      ? hpOverride.hpPercent
-      : maxHp > 0
-        ? Math.round((currentHp / maxHp) * 100)
-        : 0;
-
-  const displayName = pokemon.nickname || getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
-  const effectiveStatus = statusOverride !== undefined ? statusOverride : pokemon.status;
-
-  return (
-    <div className={`battle-pokemon-status ${className}`}>
-      <div className="battle-pokemon-status__heading">
-        <strong>{displayName}</strong>
-        <span>Niv. {pokemon.level}</span>
-      </div>
-      <div className="battle-pokemon-status__meta">
-        <span>PV</span>
-        <strong>
-          {currentHp}/{maxHp}
-        </strong>
-      </div>
-      <div
-        className="battle-hp"
-        role="progressbar"
-        aria-label={`Points de vie de ${displayName}`}
-        aria-valuemin={0}
-        aria-valuemax={maxHp}
-        aria-valuenow={currentHp}
-      >
-        <span
-          data-tone={hpTone(hpPercent)}
-          style={{ width: `${Math.max(0, Math.min(100, hpPercent))}%` }}
-        />
-      </div>
-      <div className="battle-pokemon-status__footer">
-        <span>{pokemon.types.map((t) => TYPE_LABELS_FR[t] || t).join(" · ")}</span>
-        {effectiveStatus && (
-          <strong>{STATUS_LABELS[effectiveStatus] ?? effectiveStatus}</strong>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Présente uniquement les gains persistés renvoyés avec le dernier tour. */
-function BattleResult({
-  state,
-  rewards,
-  trainer,
-  mode,
-  onReturn,
-  canAdvance,
-  onAdvance,
-}: {
-  state: BattleStatePayload;
-  rewards?: BattleRewardPayload;
-  trainer: BattleStartPayload["trainer"];
-  mode: BattleMode;
-  onReturn: () => void;
-  canAdvance: boolean;
-  onAdvance?: () => void;
-}) {
-  const won = state.winner === "p1";
-  const showAdvance = won && canAdvance && !!onAdvance;
-  const title = won
-    ? "Victoire confirmée !"
-    : mode === "training"
-      ? "Entraînement terminé"
-      : "Combat terminé";
-  const resultPhase = won ? "victory" : "defeat";
-
-  return (
-    <section
-      className={`battle-result ${won ? "is-victory" : "is-defeat"}`}
-      aria-labelledby="battle-result-title"
-      tabIndex={-1}
-    >
-      <div className="battle-result__summary">
-        <span className="battle-result__icon" aria-hidden="true">
-          {won ? <Trophy size={42} /> : <ShieldCheck size={42} />}
-        </span>
-        <p className="application-eyebrow">
-          {won ? "Combat remporté" : "Défaite enregistrée"}
-        </p>
-        <h1 id="battle-result-title">{title}</h1>
-        <BattleCatchlines
-          trainerName={trainer.name}
-          trainerTitle={trainer.title}
-          trainerSprite={trainer.sprite}
-          introCatchline={trainer.introCatchline || "Le combat commence."}
-          victoryCatchline={trainer.victoryCatchline || `${trainer.name} remporte cette confrontation.`}
-          defeatCatchline={trainer.defeatCatchline || `${trainer.name} reconnaît votre victoire.`}
-          currentPhase={resultPhase}
-        />
-      </div>
-
-      <div className="battle-result__rewards">
-        <p className="application-eyebrow">Résultat persistant</p>
-        <h2>{won ? "Gains appliqués" : "Aucun gain attribué"}</h2>
-        {rewards ? (
-          <>
-            <dl>
-              <div>
-                <dt>Pokédollars</dt>
-                <dd>
-                  <Coins aria-hidden="true" size={18} /> +{rewards.moneyEarned} ₽
-                </dd>
-              </div>
-              <div>
-                <dt>Expérience</dt>
-                <dd>
-                  <Sparkles aria-hidden="true" size={18} /> +{rewards.xpEarned} XP
-                </dd>
-              </div>
-              <div>
-                <dt>Nouveau solde</dt>
-                <dd>{formatGameInteger(rewards.newBalance)} ₽</dd>
-              </div>
-            </dl>
-            {rewards.teamLeveledUp.length > 0 && (
-              <div className="battle-result__levels">
-                <strong>
-                  <Sparkles aria-hidden="true" size={16} />
-                  Montée de niveau
-                </strong>
-                <ul>
-                  {rewards.teamLeveledUp.map((pokemon) => (
-                    <li key={pokemon.pokemonId}>
-                      {pokemon.name} : niv. {pokemon.oldLevel} → {pokemon.newLevel}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="battle-result__missing">
-            Le résultat est terminé, mais le récapitulatif des gains n’est pas
-            disponible. Revenez à l’espace précédent pour actualiser vos données.
-          </p>
-        )}
-        {showAdvance && (
-          <button
-            className="battle-primary-button battle-result__next"
-            type="button"
-            onClick={onAdvance}
-          >
-            <ArrowRight aria-hidden="true" size={18} />
-            Combat suivant
-          </button>
-        )}
-        <button
-          className={
-            showAdvance ? "battle-quiet-button" : "battle-primary-button"
-          }
-          type="button"
-          onClick={onReturn}
-        >
-          <ArrowLeft aria-hidden="true" size={18} />
-          Retour {mode === "training" ? "à l’entraînement" : "à la campagne"}
-        </button>
-      </div>
-    </section>
-  );
 }
 
 function sleep(ms: number) {
@@ -336,8 +86,12 @@ export function BattleArena({
   const [opponentHp, setOpponentHp] = useState<HpOverride | null>(null);
 
   // Statuts instantanés appliqués dès l'apparition du log
-  const [playerStatus, setPlayerStatus] = useState<string | null | undefined>(undefined);
-  const [opponentStatus, setOpponentStatus] = useState<string | null | undefined>(undefined);
+  const [playerStatus, setPlayerStatus] = useState<string | null | undefined>(
+    undefined,
+  );
+  const [opponentStatus, setOpponentStatus] = useState<
+    string | null | undefined
+  >(undefined);
 
   const requestLock = useRef(false);
   const requestController = useRef<AbortController | null>(null);
@@ -349,7 +103,8 @@ export function BattleArena({
   // terminée, jusqu'à ce qu'un remplaçant prenne sa place : son sprite ne doit
   // pas réapparaître pendant le choix du Pokémon suivant.
   const hidePlayerField = player.isFainted && playerAnim !== "is-fainting";
-  const hideOpponentField = opponent.isFainted && opponentAnim !== "is-fainting";
+  const hideOpponentField =
+    opponent.isFainted && opponentAnim !== "is-fainting";
   const finished = state.phase === "finished" && !isAnimating;
   const switchRequired = state.phase === "switch_required" && !isAnimating;
   const soundtrackPhase: SoundtrackPhase = finished
@@ -375,10 +130,7 @@ export function BattleArena({
 
     // Sortie de Pokéball : on repart de "" puis on repose la classe au tick
     // suivant pour forcer le redémarrage de l'animation (utile sous StrictMode).
-    const pokeballEntrance = (
-      setAnim: (value: string) => void,
-      delay = 0,
-    ) => {
+    const pokeballEntrance = (setAnim: (value: string) => void, delay = 0) => {
       timers.push(window.setTimeout(() => setAnim(""), delay));
       timers.push(
         window.setTimeout(() => setAnim("is-entering-pokeball"), delay + 20),
@@ -537,7 +289,8 @@ export function BattleArena({
       // le protocole : on les diffère pour respecter le rythme cinématographique
       // (impact → efficacité → coup critique → suite du tour).
       let pendingCrit = false;
-      let pendingEffectiveness: { multiplier: number; message: string } | null = null;
+      let pendingEffectiveness: { multiplier: number; message: string } | null =
+        null;
       let consecutiveHits = 0;
       // Camps dont le combattant vient d'être mis K.O. ce tour : leur
       // remplacement ne doit pas rejouer l'animation de rappel (le Pokémon a
@@ -585,7 +338,11 @@ export function BattleArena({
           continue;
         }
 
-        if (event.message && type !== "critical_hit" && type !== "effectiveness") {
+        if (
+          event.message &&
+          type !== "critical_hit" &&
+          type !== "effectiveness"
+        ) {
           setCurrentMessage(event.message);
         }
 
@@ -634,7 +391,9 @@ export function BattleArena({
                 ? stateMaxHp
                 : 1;
           const currentHp =
-            typeof event.currentHp === "number" ? Math.max(0, event.currentHp) : 0;
+            typeof event.currentHp === "number"
+              ? Math.max(0, event.currentHp)
+              : 0;
           const hpPercent = Math.round((currentHp / maxHp) * 100);
           const micro = consecutiveHits > 0;
 
@@ -693,7 +452,9 @@ export function BattleArena({
                 ? stateMaxHp
                 : 1;
           const currentHp =
-            typeof event.currentHp === "number" ? Math.max(0, event.currentHp) : 0;
+            typeof event.currentHp === "number"
+              ? Math.max(0, event.currentHp)
+              : 0;
           if (currentHp > 0) {
             const hpPercent = Math.round((currentHp / maxHp) * 100);
             if (playerTarget) setPlayerHp({ currentHp, maxHp, hpPercent });
@@ -714,7 +475,8 @@ export function BattleArena({
           if (status === "par") playBattleSfx("status_par");
           else if (status === "slp") playBattleSfx("status_slp");
           else if (status === "brn") playBattleSfx("status_brn");
-          else if (status === "psn" || status === "tox") playBattleSfx("status_psn");
+          else if (status === "psn" || status === "tox")
+            playBattleSfx("status_psn");
           else if (status === "frz") playBattleSfx("status_frz");
           await sleep(1000);
           continue;
@@ -733,7 +495,12 @@ export function BattleArena({
           continue;
         }
 
-        if (type === "stat_boost" || type === "cant" || type === "fail" || type === "message") {
+        if (
+          type === "stat_boost" ||
+          type === "cant" ||
+          type === "fail" ||
+          type === "message"
+        ) {
           await sleep(900);
           continue;
         }
@@ -803,7 +570,9 @@ export function BattleArena({
             outgoing.isFainted ||
             outgoing.currentHp <= 0;
           if (!outgoingFainted) {
-            setCurrentMessage(`${outgoing.nickname || outgoing.name}, reviens !`);
+            setCurrentMessage(
+              `${outgoing.nickname || outgoing.name}, reviens !`,
+            );
             setAnim("is-recalling");
             await sleep(360);
           }
@@ -906,12 +675,17 @@ export function BattleArena({
         <header className="battle-interface__header">
           <div>
             <p className="application-eyebrow">
-              {mode === "training" ? "Simulation tactique" : "Combat de campagne"}
+              {mode === "training"
+                ? "Simulation tactique"
+                : "Combat de campagne"}
             </p>
             <h1 id="battle-title">{initialBattle.trainer.name}</h1>
             <p>{initialBattle.trainer.title || "Dresseur adverse"}</p>
           </div>
-          <div className="battle-interface__turn" aria-label={`Tour ${state.turn}`}>
+          <div
+            className="battle-interface__turn"
+            aria-label={`Tour ${state.turn}`}
+          >
             <Swords aria-hidden="true" size={20} />
             <span>Tour</span>
             <strong>{state.turn}</strong>
@@ -922,259 +696,70 @@ export function BattleArena({
           trainerName={initialBattle.trainer.name}
           trainerTitle={initialBattle.trainer.title}
           trainerSprite={initialBattle.trainer.sprite}
-          introCatchline={initialBattle.trainer.introCatchline || "Le combat commence."}
+          introCatchline={
+            initialBattle.trainer.introCatchline || "Le combat commence."
+          }
           victoryCatchline={trainerVictoryCatchline(initialBattle.trainer)}
           defeatCatchline={trainerDefeatCatchline(initialBattle.trainer)}
           currentPhase={soundtrackPhase}
         />
 
         <div className="battle-interface__body">
-          <div
-            className="battle-scene"
-            aria-label="Arène de combat"
-            data-arena={
+          <BattleScene
+            arena={
               initialBattle.arena ??
               (mode === "training" ? "training" : "neutral")
             }
-          >
-            {/* Combattant adverse */}
-            {(() => {
-              const effectiveOpponentStatus =
-                opponentStatus !== undefined ? opponentStatus : opponent.status;
-              return (
-                <div className="battle-combatant battle-combatant--opponent">
-                  <PokemonStatus
-                    pokemon={opponent}
-                    hpOverride={opponentHp}
-                    statusOverride={opponentStatus}
-                    className={introPlaying ? "is-intro-hidden" : ""}
-                  />
-                  <div className="battle-combatant__stage">
-                  <div
-                    className="battle-combatant__platform"
-                    aria-hidden="true"
-                  />
-                  {opponentIntro !== "pokemon" && introTrainerUrl && (
-                    <div
-                      className={`battle-combatant__trainer ${
-                        opponentIntro === "leaving" ? "is-trainer-leaving" : ""
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={introTrainerUrl}
-                        alt={initialBattle.trainer.name}
-                        width={210}
-                        height={210}
-                      />
-                    </div>
-                  )}
-                  <div
-                    className={`battle-combatant__sprite ${opponentAnim} ${hideOpponentField ? "is-fainted-hidden" : ""} ${introPlaying ? "is-intro-hidden" : ""}`}
-                  >
-                    {effectiveOpponentStatus && (
-                      <div
-                        className={`status-overlay status-overlay--${effectiveOpponentStatus}`}
-                        aria-hidden="true"
-                      >
-                        {effectiveOpponentStatus === "par" && "⚡"}
-                        {effectiveOpponentStatus === "slp" && "💤"}
-                        {effectiveOpponentStatus === "brn" && "🔥"}
-                        {(effectiveOpponentStatus === "psn" || effectiveOpponentStatus === "tox") && "☠️"}
-                        {effectiveOpponentStatus === "frz" && "❄️"}
-                      </div>
-                    )}
-                    <SpriteProvider
-                      speciesId={opponent.speciesId}
-                      variant={opponent.isShiny ? "front_shiny" : "front"}
-                      alt={opponent.nickname || opponent.name}
-                      width={176}
-                      height={176}
-                      normalizeVisibleSize
-                      priority
-                    />
-                  </div>
-                  </div>
-                </div>
-              );
-            })()}
+            trainer={initialBattle.trainer}
+            introTrainerUrl={introTrainerUrl}
+            opponentIntro={opponentIntro}
+            introPlaying={introPlaying}
+            player={{
+              pokemon: player,
+              hpOverride: playerHp,
+              statusOverride: playerStatus,
+              animation: playerAnim,
+              hideField: hidePlayerField,
+            }}
+            opponent={{
+              pokemon: opponent,
+              hpOverride: opponentHp,
+              statusOverride: opponentStatus,
+              animation: opponentAnim,
+              hideField: hideOpponentField,
+            }}
+          />
 
-            {/* Combattant joueur */}
-            {(() => {
-              const effectivePlayerStatus =
-                playerStatus !== undefined ? playerStatus : player.status;
-              return (
-                <div className="battle-combatant battle-combatant--player">
-                  <div className="battle-combatant__stage">
-                  <div
-                    className="battle-combatant__platform"
-                    aria-hidden="true"
-                  />
-                  <div
-                    className={`battle-combatant__sprite ${playerAnim} ${hidePlayerField ? "is-fainted-hidden" : ""} ${introPlaying ? "is-intro-hidden" : ""}`}
-                  >
-                    {effectivePlayerStatus && (
-                      <div
-                        className={`status-overlay status-overlay--${effectivePlayerStatus}`}
-                        aria-hidden="true"
-                      >
-                        {effectivePlayerStatus === "par" && "⚡"}
-                        {effectivePlayerStatus === "slp" && "💤"}
-                        {effectivePlayerStatus === "brn" && "🔥"}
-                        {(effectivePlayerStatus === "psn" || effectivePlayerStatus === "tox") && "☠️"}
-                        {effectivePlayerStatus === "frz" && "❄️"}
-                      </div>
-                    )}
-                    <SpriteProvider
-                      speciesId={player.speciesId}
-                      variant={player.isShiny ? "back_shiny" : "back"}
-                      alt={player.nickname || player.name}
-                      width={190}
-                      height={190}
-                      normalizeVisibleSize
-                      priority
-                    />
-                  </div>
-                  </div>
-                  <PokemonStatus
-                    pokemon={player}
-                    hpOverride={playerHp}
-                    statusOverride={playerStatus}
-                    className={introPlaying ? "is-intro-hidden" : ""}
-                  />
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* Panneau de commandes et journal rétro */}
-          <aside className="battle-command" aria-label="Commandes de combat">
-            <div className="battle-log" aria-live="polite" aria-atomic="true">
-              <strong>
-                <span>Journal de combat</span>
-                {isAnimating && <span className="battle-log__indicator">▼</span>}
-              </strong>
-              <p>{currentMessage}</p>
-            </div>
-
-            {error && (
-              <p className="battle-feedback is-error" role="alert">
-                {error}
-              </p>
-            )}
-            {pending && (
-              <p className="battle-feedback" role="status">
-                <RefreshCw aria-hidden="true" size={16} /> Résolution du tour…
-              </p>
-            )}
-
-            <div className="battle-command__heading">
-              <div>
-                <span>{switchRequired ? "Remplacement requis" : "À vous de jouer"}</span>
-                <strong>
-                  {switchRequired
-                    ? "Choisissez un Pokémon apte"
-                    : `Que doit faire ${player.nickname || getSpeciesFrenchName(player.speciesId, player.name)} ?`}
-                </strong>
-              </div>
-              <span>
-                {state.p1.team.filter((pokemon) => !pokemon.isFainted).length}/
-                {state.p1.team.length} disponibles
-              </span>
-            </div>
-
-            {!showTeam && !switchRequired ? (
-              <div className="battle-moves">
-                {player.moves.map((move, index) => {
-                  const frenchMoveName = getMoveFrenchName(move.id, move.name);
-                  const frenchType = TYPE_LABELS_FR[move.type] || move.type;
-
-                  return (
-                    <button
-                      key={`${move.id}-${index}`}
-                      type="button"
-                      data-type={move.type}
-                      disabled={controlsDisabled || move.disabled || move.pp === 0}
-                      onClick={() => void submitAction({ type: "move", moveIndex: index })}
-                    >
-                      <strong>{frenchMoveName}</strong>
-                      <span>
-                        {frenchType} · {move.pp}/{move.maxPp} PP
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="battle-switches">
-                {state.p1.team.map((pokemon, index) => {
-                  const switchName = pokemon.nickname || getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
-
-                  return (
-                    <button
-                      key={pokemon.id}
-                      type="button"
-                      disabled={controlsDisabled || pokemon.isActive || pokemon.isFainted}
-                      onClick={() =>
-                        void submitAction({ type: "switch", targetPokemonIndex: index })
-                      }
-                    >
-                      <SpriteProvider
-                        speciesId={pokemon.speciesId}
-                        variant={pokemon.isShiny ? "front_shiny" : "front"}
-                        alt=""
-                        width={42}
-                        height={42}
-                      />
-                      <span>
-                        <strong>{switchName}</strong>
-                        <small>
-                          {pokemon.isFainted
-                            ? "K.O."
-                            : pokemon.isActive
-                              ? "Au combat"
-                              : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
-                        </small>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="battle-command__actions">
-              {!switchRequired && (
-                <button
-                  type="button"
-                  className="battle-secondary-button"
-                  disabled={controlsDisabled || state.p1.team.length < 2}
-                  aria-expanded={showTeam}
-                  onClick={() => setShowTeam((visible) => !visible)}
-                >
-                  <UsersRound aria-hidden="true" size={17} />
-                  {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
-                </button>
-              )}
-              <button
-                type="button"
-                className="battle-quiet-button"
-                disabled={controlsDisabled}
-                onClick={onReturn}
-              >
-                <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
-              </button>
-            </div>
-          </aside>
+          <BattleCommandPanel
+            state={state}
+            player={player}
+            currentMessage={currentMessage}
+            isAnimating={isAnimating}
+            error={error}
+            pending={pending}
+            switchRequired={switchRequired}
+            showTeam={showTeam}
+            controlsDisabled={controlsDisabled}
+            onSubmitAction={submitAction}
+            onToggleTeam={() => setShowTeam((visible) => !visible)}
+            onReturn={onReturn}
+          />
         </div>
       </section>
     </>
   );
 }
 
-function trainerVictoryCatchline(trainer: BattleStartPayload["trainer"]): string {
-  return trainer.victoryCatchline || `${trainer.name} remporte cette confrontation.`;
+function trainerVictoryCatchline(
+  trainer: BattleStartPayload["trainer"],
+): string {
+  return (
+    trainer.victoryCatchline || `${trainer.name} remporte cette confrontation.`
+  );
 }
 
-function trainerDefeatCatchline(trainer: BattleStartPayload["trainer"]): string {
+function trainerDefeatCatchline(
+  trainer: BattleStartPayload["trainer"],
+): string {
   return trainer.defeatCatchline || `${trainer.name} reconnaît votre victoire.`;
 }

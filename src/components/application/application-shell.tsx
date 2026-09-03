@@ -16,11 +16,7 @@ import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
-  | "home"
-  | "campaign"
-  | "training"
-  | "team"
-  | "gacha";
+  "home" | "campaign" | "training" | "team" | "gacha";
 
 interface NavigationItem {
   section: ApplicationSection;
@@ -141,9 +137,7 @@ export function ApplicationShell({
           <div className="application-shell__content">
             {/* Cette surface virtuelle se réduit avec la hauteur disponible :
                 aucune commande ne doit être coupée par le cadre du jeu. */}
-            <div className="application-shell__viewport">
-              {children}
-            </div>
+            <div className="application-shell__viewport">{children}</div>
           </div>
         </section>
       </main>

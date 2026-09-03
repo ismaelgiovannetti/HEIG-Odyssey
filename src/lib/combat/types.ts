@@ -1,6 +1,6 @@
 import type { PokemonType } from "../content/schemas";
 
-export type AIProfile = "random" | "heuristic" | "expectiminimax";
+export type { AIProfile } from "../content/schemas";
 
 export type BattlePhase = "action_selection" | "switch_required" | "finished";
 

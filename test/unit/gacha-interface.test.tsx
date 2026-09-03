@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
 
@@ -26,7 +32,7 @@ vi.mock("@/lib/audio/gacha-sound-effects", () => ({
   },
 }));
 
-vi.mock("@/components/SpriteProvider", () => ({
+vi.mock("@/components/pokemon/sprite-provider", () => ({
   SpriteProvider: ({ alt, speciesId }: { alt: string; speciesId: string }) => (
     <span data-testid="pokemon-sprite">{alt || speciesId}</span>
   ),
@@ -100,7 +106,10 @@ describe("interface des portails gacha", () => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
     vi.stubGlobal("crypto", { randomUUID: vi.fn(() => "pull-request-uuid") });
-    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: false })),
+    );
     HTMLDialogElement.prototype.showModal = function showModal() {
       this.setAttribute("open", "");
     };
@@ -116,28 +125,64 @@ describe("interface des portails gacha", () => {
   });
 
   it("bloque clairement le portail dont le coût dépasse le solde", async () => {
-    render(<GachaShop banners={banners} initialBalance={120} previewSpecies={previewSpecies} />);
+    render(
+      <GachaShop
+        banners={banners}
+        initialBalance={120}
+        previewSpecies={previewSpecies}
+      />,
+    );
 
-    expect(screen.getByRole("heading", { name: "Invocations Pokémon" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Invocations Pokémon" }),
+    ).toBeTruthy();
     const unavailableButtons = screen.getAllByRole("button", {
       name: /Solde insuffisant - ₽ (250|1000)/,
     });
     expect(unavailableButtons).toHaveLength(2);
-    expect(unavailableButtons.every((button) => (button as HTMLButtonElement).disabled)).toBe(true);
-    expect(screen.getByRole("button", { name: "Solde insuffisant - ₽ 250" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Solde insuffisant - ₽ 1000" })).toBeTruthy();
-    expect(screen.getByText("Clairière des Compagnons").closest("article")?.dataset.theme).toBe("standard");
-    expect(screen.getByText("Étoiles de Sinnoh").closest("article")?.dataset.theme).toBe("mid");
-    expect(screen.getByText("Sanctuaire des Légendes").closest("article")?.dataset.theme).toBe("legendary");
+    expect(
+      unavailableButtons.every(
+        (button) => (button as HTMLButtonElement).disabled,
+      ),
+    ).toBe(true);
+    expect(
+      screen.getByRole("button", { name: "Solde insuffisant - ₽ 250" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Solde insuffisant - ₽ 1000" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Clairière des Compagnons").closest("article")?.dataset
+        .theme,
+    ).toBe("standard");
+    expect(
+      screen.getByText("Étoiles de Sinnoh").closest("article")?.dataset.theme,
+    ).toBe("mid");
+    expect(
+      screen.getByText("Sanctuaire des Légendes").closest("article")?.dataset
+        .theme,
+    ).toBe("legendary");
   });
 
   it("affiche le pool du portail choisi dans un aperçu fermé sans défilement", () => {
-    render(<GachaShop banners={banners} initialBalance={120} previewSpecies={previewSpecies} />);
+    render(
+      <GachaShop
+        banners={banners}
+        initialBalance={120}
+        previewSpecies={previewSpecies}
+      />,
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: "Aperçu de Clairière des Compagnons" }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Aperçu de Clairière des Compagnons",
+      }),
+    );
 
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Clairière des Compagnons" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Clairière des Compagnons" }),
+    ).toBeTruthy();
     expect(screen.getByText("2 Pokémon disponibles")).toBeTruthy();
     expect(screen.getAllByText("Riolu").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Étourmi").length).toBeGreaterThan(0);
@@ -164,18 +209,30 @@ describe("interface des portails gacha", () => {
       }),
     );
 
-    render(<GachaShop banners={banners} initialBalance={500} previewSpecies={previewSpecies} />);
+    render(
+      <GachaShop
+        banners={banners}
+        initialBalance={500}
+        previewSpecies={previewSpecies}
+      />,
+    );
     fireEvent.click(screen.getByRole("button", { name: /Invoquer pour 100/i }));
 
     expect(soundPlayerSpies.startPortalSearch).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…")).toBeTruthy();
+    expect(
+      screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…"),
+    ).toBeTruthy();
     await act(async () => vi.advanceTimersByTimeAsync(2_999));
-    expect(screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…")).toBeTruthy();
+    expect(
+      screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…"),
+    ).toBeTruthy();
     await act(async () => vi.advanceTimersByTimeAsync(1));
     expect(screen.getByText("L’œuf est en train d’éclore…")).toBeTruthy();
     expect(soundPlayerSpies.startEggHatching).toHaveBeenCalledTimes(1);
     expect(soundPlayerSpies.preparePokemonCry).toHaveBeenCalledWith("riolu");
-    expect(screen.queryByRole("button", { name: /Passer l’animation/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /Passer l’animation/i }),
+    ).toBeNull();
 
     await act(async () => vi.advanceTimersByTimeAsync(1_999));
     expect(screen.getByText("L’œuf est en train d’éclore…")).toBeTruthy();
@@ -188,7 +245,13 @@ describe("interface des portails gacha", () => {
     expect(screen.getByText("Nouveau Pokémon ajouté au PC")).toBeTruthy();
     expect(screen.getAllByText("400 ₽").length).toBeGreaterThan(0);
     expect(screen.queryByText("Coût du tirage")).toBeNull();
-    expect((screen.getByRole("button", { name: /Tirer à nouveau/i }) as HTMLButtonElement).disabled).toBe(false);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /Tirer à nouveau/i,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
     expect(balanceListener).toHaveBeenCalledTimes(1);
 
     const request = vi.mocked(fetch).mock.calls[0];
@@ -212,21 +275,42 @@ describe("interface des portails gacha", () => {
       }),
     );
 
-    render(<GachaShop banners={banners} initialBalance={500} previewSpecies={previewSpecies} />);
+    render(
+      <GachaShop
+        banners={banners}
+        initialBalance={500}
+        previewSpecies={previewSpecies}
+      />,
+    );
     fireEvent.click(screen.getByRole("button", { name: /Invoquer pour 100/i }));
 
-    expect(screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…")).toBeTruthy();
+    expect(
+      screen.getByText("Un nouveau partenaire Pokémon répond à votre appel…"),
+    ).toBeTruthy();
     await act(async () => vi.advanceTimersByTimeAsync(3_000));
     expect(soundPlayerSpies.stop).toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toContain("Solde de Pokédollars insuffisant");
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Solde de Pokédollars insuffisant",
+    );
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("ignore un second clic tant que le tirage est en cours", () => {
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => undefined)),
+    );
 
-    render(<GachaShop banners={banners} initialBalance={500} previewSpecies={previewSpecies} />);
-    const pullButton = screen.getByRole("button", { name: /Invoquer pour 100/i });
+    render(
+      <GachaShop
+        banners={banners}
+        initialBalance={500}
+        previewSpecies={previewSpecies}
+      />,
+    );
+    const pullButton = screen.getByRole("button", {
+      name: /Invoquer pour 100/i,
+    });
 
     fireEvent.click(pullButton);
     fireEvent.click(pullButton);

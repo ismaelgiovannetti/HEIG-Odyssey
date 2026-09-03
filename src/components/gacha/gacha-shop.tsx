@@ -2,9 +2,20 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleDot, Crown, Dices, Egg, Eye, Sparkles, Star } from "lucide-react";
+import {
+  CircleDot,
+  Crown,
+  Dices,
+  Egg,
+  Eye,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
-import type { GachaExecutionResult } from "@/lib/gacha/gacha-service";
+import {
+  parseGachaPullResponse,
+  type GachaExecutionResult,
+} from "@/lib/gacha/gacha-contract";
 import {
   GACHA_HATCH_DURATION_MS,
   GACHA_SEARCH_DURATION_MS,
@@ -30,12 +41,6 @@ interface PullDialogState {
   result: GachaExecutionResult | null;
 }
 
-interface PullResponse {
-  success?: boolean;
-  error?: string;
-  data?: GachaExecutionResult;
-}
-
 const THEMES = ["standard", "mid", "legendary"] as const;
 type BannerTheme = (typeof THEMES)[number];
 
@@ -56,26 +61,21 @@ function resolveBannerTheme(bannerId: string, index: number): BannerTheme {
 }
 
 function wait(milliseconds: number) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
+  return new Promise<void>((resolve) =>
+    window.setTimeout(resolve, milliseconds),
+  );
 }
 
 function percent(value: number) {
   return `${Math.round(value * 100)} %`;
 }
 
-function hasValidResult(value: PullResponse["data"]): value is GachaExecutionResult {
-  return Boolean(
-    value?.success &&
-      value.pokemon?.id &&
-      value.pokemon.speciesId &&
-      value.pokemon.name &&
-      Number.isSafeInteger(value.newBalance) &&
-      value.newBalance >= 0,
-  );
-}
-
 /** Achat direct depuis chaque portail et restitution sans recharger la page. */
-export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShopProps) {
+export function GachaShop({
+  banners,
+  initialBalance,
+  previewSpecies,
+}: GachaShopProps) {
   const soundPlayerRef = useRef<GachaSoundPlayer | null>(null);
   const lastCryPullIdRef = useRef<string | null>(null);
   const pendingRef = useRef(false);
@@ -87,17 +87,25 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<PullDialogState | null>(null);
-  const [previewBanner, setPreviewBanner] = useState<GachaBannerConfig | null>(null);
+  const [previewBanner, setPreviewBanner] = useState<GachaBannerConfig | null>(
+    null,
+  );
 
-  useEffect(() => () => {
-    soundPlayerRef.current?.destroy();
-    soundPlayerRef.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      soundPlayerRef.current?.destroy();
+      soundPlayerRef.current = null;
+    },
+    [],
+  );
 
   useEffect(() => {
     if (dialog?.phase !== "hatching") return;
     const timer = window.setTimeout(
-      () => setDialog((current) => current ? { ...current, phase: "revealed" } : null),
+      () =>
+        setDialog((current) =>
+          current ? { ...current, phase: "revealed" } : null,
+        ),
       GACHA_HATCH_DURATION_MS,
     );
     return () => window.clearTimeout(timer);
@@ -157,10 +165,15 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
           idempotencyKey: crypto.randomUUID(),
         }),
       });
-      const payload = (await response.json().catch(() => null)) as PullResponse | null;
+      const body: unknown = await response.json().catch(() => null);
+      const payload = parseGachaPullResponse(body);
       await minimumRequestDuration;
-      if (!response.ok || !payload?.success || !hasValidResult(payload.data)) {
-        throw new Error(payload?.error || "Le portail ne répond pas pour le moment.");
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.success
+            ? "Le portail ne répond pas pour le moment."
+            : payload.error || "Le portail ne répond pas pour le moment.",
+        );
       }
 
       setBalance(payload.data.newBalance);
@@ -170,7 +183,11 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
       await minimumRequestDuration;
       soundPlayerRef.current?.stop();
       setDialog(null);
-      setError(cause instanceof Error ? cause.message : "Le tirage a échoué. Réessayez.");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Le tirage a échoué. Réessayez.",
+      );
     } finally {
       pendingRef.current = false;
       setPending(false);
@@ -193,15 +210,22 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
   return (
     <div className={styles.shop}>
       <header className={styles.heading}>
-        <p className={styles.eyebrow}><Dices size={15} aria-hidden="true" /> Recrutement du dresseur</p>
+        <p className={styles.eyebrow}>
+          <Dices size={15} aria-hidden="true" /> Recrutement du dresseur
+        </p>
         <div className={styles.headingLine}>
           <h1>Invocations Pokémon</h1>
           <p>Choisissez votre portail.</p>
         </div>
       </header>
 
-      <section className={styles.portalSection} aria-labelledby="gacha-portals-title">
-        <h2 className="visually-hidden" id="gacha-portals-title">Portails disponibles</h2>
+      <section
+        className={styles.portalSection}
+        aria-labelledby="gacha-portals-title"
+      >
+        <h2 className="visually-hidden" id="gacha-portals-title">
+          Portails disponibles
+        </h2>
         <div className={styles.portalGrid}>
           {banners.map((banner, index) => {
             const affordable = balance >= banner.costPokedollars;
@@ -225,26 +249,60 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
                 </span>
                 <span className={styles.portalCopy}>
                   <span className={styles.portalTitle}>{banner.name}</span>
-                  <span className={styles.portalDescription}>{banner.description}</span>
+                  <span className={styles.portalDescription}>
+                    {banner.description}
+                  </span>
                 </span>
                 <span className={styles.rateBlock}>
                   <span className={styles.rateTitle}>Probabilités</span>
-                  <span className={styles.rateGrid} role="group" aria-label="Probabilités du portail">
+                  <span
+                    className={styles.rateGrid}
+                    role="group"
+                    aria-label="Probabilités du portail"
+                  >
                     <span className={styles.rateItem} data-rarity="common">
-                      <span className={styles.rateIcon}><CircleDot size={24} strokeWidth={2.8} aria-hidden="true" /></span>
-                      <span className={styles.rateCopy}><small>Commun</small><strong>{percent(banner.rates.common)}</strong></span>
+                      <span className={styles.rateIcon}>
+                        <CircleDot
+                          size={24}
+                          strokeWidth={2.8}
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <span className={styles.rateCopy}>
+                        <small>Commun</small>
+                        <strong>{percent(banner.rates.common)}</strong>
+                      </span>
                     </span>
                     <span className={styles.rateItem} data-rarity="rare">
-                      <span className={styles.rateIcon}><Star size={24} strokeWidth={2.8} aria-hidden="true" /></span>
-                      <span className={styles.rateCopy}><small>Rare</small><strong>{percent(banner.rates.rare)}</strong></span>
+                      <span className={styles.rateIcon}>
+                        <Star size={24} strokeWidth={2.8} aria-hidden="true" />
+                      </span>
+                      <span className={styles.rateCopy}>
+                        <small>Rare</small>
+                        <strong>{percent(banner.rates.rare)}</strong>
+                      </span>
                     </span>
                     <span className={styles.rateItem} data-rarity="epic">
-                      <span className={styles.rateIcon}><Crown size={24} strokeWidth={2.8} aria-hidden="true" /></span>
-                      <span className={styles.rateCopy}><small>Épique</small><strong>{percent(banner.rates.epic)}</strong></span>
+                      <span className={styles.rateIcon}>
+                        <Crown size={24} strokeWidth={2.8} aria-hidden="true" />
+                      </span>
+                      <span className={styles.rateCopy}>
+                        <small>Épique</small>
+                        <strong>{percent(banner.rates.epic)}</strong>
+                      </span>
                     </span>
                     <span className={styles.rateItem} data-rarity="shiny">
-                      <span className={styles.rateIcon}><Sparkles size={24} strokeWidth={2.8} aria-hidden="true" /></span>
-                      <span className={styles.rateCopy}><small>Chromatique</small><strong>{percent(banner.rates.shinyRate)}</strong></span>
+                      <span className={styles.rateIcon}>
+                        <Sparkles
+                          size={24}
+                          strokeWidth={2.8}
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <span className={styles.rateCopy}>
+                        <small>Chromatique</small>
+                        <strong>{percent(banner.rates.shinyRate)}</strong>
+                      </span>
                     </span>
                   </span>
                 </span>
@@ -266,9 +324,22 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
                     onClick={() => pull(banner)}
                   >
                     {isCurrentPull ? (
-                      <><span className={styles.buttonSpinner} aria-hidden="true" /><span className={styles.actionLabel}>Invocation en cours…</span></>
+                      <>
+                        <span
+                          className={styles.buttonSpinner}
+                          aria-hidden="true"
+                        />
+                        <span className={styles.actionLabel}>
+                          Invocation en cours…
+                        </span>
+                      </>
                     ) : affordable ? (
-                      <><Egg size={18} aria-hidden="true" /><span className={styles.actionLabel}>Invoquer pour {banner.costPokedollars} ₽</span></>
+                      <>
+                        <Egg size={18} aria-hidden="true" />
+                        <span className={styles.actionLabel}>
+                          Invoquer pour {banner.costPokedollars} ₽
+                        </span>
+                      </>
                     ) : (
                       <span className={styles.actionLabel}>
                         Solde insuffisant - ₽ {banner.costPokedollars}
@@ -282,7 +353,11 @@ export function GachaShop({ banners, initialBalance, previewSpecies }: GachaShop
         </div>
       </section>
 
-      {error ? <div className={styles.errorMessage} role="alert">{error}</div> : null}
+      {error ? (
+        <div className={styles.errorMessage} role="alert">
+          {error}
+        </div>
+      ) : null}
 
       {previewBanner ? (
         <GachaPreviewDialog

@@ -1,7 +1,15 @@
 import { randomUUID } from "node:crypto";
 
 import { hashPassword, verifyPassword } from "better-auth/crypto";
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 // L'e-mail est capturé en mémoire : l'intégration vérifie Better Auth et
 // PostgreSQL sans envoyer de vrai message ni dépendre de Resend.
@@ -12,7 +20,8 @@ const emailMocks = vi.hoisted(() => ({
 vi.hoisted(() => {
   // Le test ne doit dépendre d'aucun secret réel. Ces valeurs servent seulement
   // à initialiser Better Auth sur l'origine locale de la base d'intégration.
-  process.env.BETTER_AUTH_SECRET ??= "integration-only-auth-secret-at-least-32-characters";
+  process.env.BETTER_AUTH_SECRET ??=
+    "integration-only-auth-secret-at-least-32-characters";
   process.env.BETTER_AUTH_URL ??= "http://localhost:3000";
 });
 
@@ -137,7 +146,9 @@ describe("récupération réelle du compte", () => {
     const user = await createRecoveryTestUser();
 
     const knownResponse = await requestRecovery(user.email);
-    const unknownResponse = await requestRecovery(`absent-${randomUUID()}@example.test`);
+    const unknownResponse = await requestRecovery(
+      `absent-${randomUUID()}@example.test`,
+    );
 
     expect(unknownResponse).toEqual(knownResponse);
     expect(emailMocks.deliverPasswordResetEmail).toHaveBeenCalledOnce();
@@ -159,8 +170,15 @@ describe("récupération réelle du compte", () => {
     ).rejects.toThrow();
 
     const storedPassword = await getCredentialPassword(user.id);
-    expect(await verifyPassword({ hash: storedPassword, password: ORIGINAL_PASSWORD })).toBe(true);
-    expect(await verifyPassword({ hash: storedPassword, password: NEW_PASSWORD })).toBe(false);
+    expect(
+      await verifyPassword({
+        hash: storedPassword,
+        password: ORIGINAL_PASSWORD,
+      }),
+    ).toBe(true);
+    expect(
+      await verifyPassword({ hash: storedPassword, password: NEW_PASSWORD }),
+    ).toBe(false);
   });
 
   it("consomme le jeton une seule fois et révoque les sessions existantes", async () => {
@@ -184,8 +202,15 @@ describe("récupération réelle du compte", () => {
     ).rejects.toThrow();
 
     const storedPassword = await getCredentialPassword(user.id);
-    expect(await verifyPassword({ hash: storedPassword, password: NEW_PASSWORD })).toBe(true);
-    expect(await verifyPassword({ hash: storedPassword, password: ORIGINAL_PASSWORD })).toBe(false);
+    expect(
+      await verifyPassword({ hash: storedPassword, password: NEW_PASSWORD }),
+    ).toBe(true);
+    expect(
+      await verifyPassword({
+        hash: storedPassword,
+        password: ORIGINAL_PASSWORD,
+      }),
+    ).toBe(false);
     expect(await prisma.session.count({ where: { userId: user.id } })).toBe(0);
   });
 
@@ -195,7 +220,9 @@ describe("récupération réelle du compte", () => {
     const token = getDeliveredToken();
 
     await expect(
-      auth.api.resetPassword({ body: { token, newPassword: "motdepassefaible" } }),
+      auth.api.resetPassword({
+        body: { token, newPassword: "motdepassefaible" },
+      }),
     ).rejects.toThrow();
 
     await expect(

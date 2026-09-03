@@ -21,10 +21,14 @@ describe("sécurité des e-mails transactionnels", () => {
   // Un jeton ne doit jamais être envoyé vers un domaine choisi par un client.
   it("accepte uniquement les liens appartenant à l'origine configurée", () => {
     expect(() =>
-      assertTrustedApplicationUrl(`${getApplicationOrigin()}/api/auth/reset-password/token`),
+      assertTrustedApplicationUrl(
+        `${getApplicationOrigin()}/api/auth/reset-password/token`,
+      ),
     ).not.toThrow();
     expect(() =>
-      assertTrustedApplicationUrl("https://malicious.example/reset-password/token"),
+      assertTrustedApplicationUrl(
+        "https://malicious.example/reset-password/token",
+      ),
     ).toThrow("UNTRUSTED_EMAIL_URL");
   });
 
@@ -40,7 +44,10 @@ describe("sécurité des e-mails transactionnels", () => {
   // contenant directement le jeton temporaire.
   it("masque le jeton dans la clé d'idempotence", () => {
     const sensitiveUrl = `${getApplicationOrigin()}/reset-password/secret-token`;
-    const idempotencyKey = createEmailIdempotencyKey("password-reset", sensitiveUrl);
+    const idempotencyKey = createEmailIdempotencyKey(
+      "password-reset",
+      sensitiveUrl,
+    );
 
     expect(idempotencyKey).toMatch(/^password-reset\/[a-f0-9]{64}$/);
     expect(idempotencyKey).not.toContain("secret-token");

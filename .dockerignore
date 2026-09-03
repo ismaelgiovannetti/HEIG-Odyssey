@@ -5,9 +5,21 @@
 # Dépendances et fichiers générés
 node_modules
 .next
+.next-playwright
 coverage
 out
 build
+playwright-report
+test-results
+
+# Sources qui ne participent pas aux images applicative et worker
+.github
+docs
+landing-page
+test
+*.md
+compose*.yml
+docker-compose*.yml
 
 # Variables locales et secrets
 .env

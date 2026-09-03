@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { hashPassword } from "better-auth/crypto";
 
-import { prisma } from "../../../src/lib/prisma";
+import { prisma } from "./prisma";
 
 const LOCAL_DATABASE_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 

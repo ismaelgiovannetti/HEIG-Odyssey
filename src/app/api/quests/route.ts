@@ -23,10 +23,7 @@ export async function GET(req: Request) {
     const session = await auth.api.getSession({ headers: req.headers });
 
     if (!session?.user.id) {
-      return json(
-        { success: false, error: "Authentification requise." },
-        401,
-      );
+      return json({ success: false, error: "Authentification requise." }, 401);
     }
 
     const rawBattleId = new URL(req.url).searchParams.get("afterBattleId");
@@ -46,10 +43,7 @@ export async function GET(req: Request) {
     // vérification doit donc précéder leur lecture : un Promise.all pourrait
     // lire un ancien compteur puis observer le reçu après son commit.
     const syncPending = afterBattleId
-      ? await isQuestProgressPendingForBattle(
-          session.user.id,
-          afterBattleId,
-        )
+      ? await isQuestProgressPendingForBattle(session.user.id, afterBattleId)
       : false;
     const questsState = await getUserQuests(session.user.id);
 
@@ -59,7 +53,11 @@ export async function GET(req: Request) {
       syncPending,
     });
   } catch (error) {
-    logger.error("Échec de la récupération des quêtes", { requestId, action: "quests.list" }, error);
+    logger.error(
+      "Échec de la récupération des quêtes",
+      { requestId, action: "quests.list" },
+      error,
+    );
     return json(
       { success: false, error: "Impossible de récupérer les quêtes." },
       500,

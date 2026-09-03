@@ -51,7 +51,8 @@ describe("sons du tirage gacha", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({
           cries: {
-            latest: "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg",
+            latest:
+              "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/25.ogg",
           },
         }),
       }),

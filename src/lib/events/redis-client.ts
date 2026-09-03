@@ -1,3 +1,5 @@
+import "server-only";
+
 import Redis, { type RedisOptions } from "ioredis";
 import { logger } from "@/lib/logger";
 
@@ -22,16 +24,18 @@ export function createRedisClient(customOptions?: RedisOptions): Redis {
 
   // Évite les Unhandled error events lorsque Redis est injoignable hors connexion
   client.on("error", (err: Error) => {
-    logger.warn("Erreur de connexion Redis", {
-      eventId: logger.generateEventId(),
-      action: "redis.connection",
-    }, err);
+    logger.warn(
+      "Erreur de connexion Redis",
+      {
+        eventId: logger.generateEventId(),
+        action: "redis.connection",
+      },
+      err,
+    );
   });
 
   return client;
 }
-
-
 
 /**
  * Singleton Redis pour les opérations régulières de l'application (hors commandes bloquantes).
@@ -47,11 +51,4 @@ export function getRedisClient(): Redis {
     });
   }
   return redisClientInstance;
-}
-
-export async function closeRedisClient(): Promise<void> {
-  if (redisClientInstance) {
-    await redisClientInstance.quit().catch(() => {});
-    redisClientInstance = null;
-  }
 }

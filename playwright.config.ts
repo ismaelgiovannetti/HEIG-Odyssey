@@ -15,6 +15,8 @@ export default defineConfig({
   testDir: "./test/e2e",
   outputDir: "./test-results/playwright",
   fullyParallel: false,
+  forbidOnly: Boolean(process.env.CI),
+  failOnFlakyTests: Boolean(process.env.CI),
   workers: 1,
   retries: process.env.CI ? 1 : 0,
   timeout: 90_000,
@@ -28,13 +30,16 @@ export default defineConfig({
     baseURL,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
+    video: "retain-on-failure",
   },
   webServer: {
     // Un port dédié empêche de tester par erreur un ancien conteneur local
     // qui occuperait déjà le port 3000.
     command: `npm run dev -- --hostname 127.0.0.1 --port ${playwrightPort}`,
     url: `${baseURL}/api/health`,
-    reuseExistingServer: !process.env.CI,
+    // Réutiliser un ancien processus masque les serveurs bloqués et peut faire
+    // attendre Playwright indéfiniment avant même la découverte des tests.
+    reuseExistingServer: false,
     timeout: 120_000,
     env: {
       // Ces valeurs sont réservées au serveur local éphémère. Les données E2E
@@ -44,6 +49,7 @@ export default defineConfig({
         "playwright-only-auth-secret-at-least-32-characters",
       BETTER_AUTH_URL: baseURL,
       NEXT_PUBLIC_APP_URL: baseURL,
+      NEXT_DIST_DIR: ".next-playwright",
       RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_playwright_placeholder",
       RESEND_FROM_EMAIL:
         process.env.RESEND_FROM_EMAIL ??
@@ -54,6 +60,17 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: [/accessibility\.spec\.ts/, /mobile-fallback\.spec\.ts/],
+    },
+    {
+      name: "mobile-fallback",
+      use: { ...devices["Pixel 7"], browserName: "chromium" },
+      testMatch: /mobile-fallback\.spec\.ts/,
+    },
+    {
+      name: "accessibility",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /accessibility\.spec\.ts/,
     },
   ],
 });

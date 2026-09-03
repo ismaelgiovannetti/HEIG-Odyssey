@@ -1,3 +1,5 @@
+import "server-only";
+
 import { Dex } from "@pkmn/sim";
 import type { Move, PokemonType } from "../content/schemas";
 import { getMoveFrenchName } from "./move-names-fr";
@@ -110,16 +112,25 @@ export async function validateAndHydrateSelectedMoves(
   selectedMoveIds: string[],
 ): Promise<{ isValid: boolean; moves?: Move[]; error?: string }> {
   if (!Array.isArray(selectedMoveIds) || selectedMoveIds.length === 0) {
-    return { isValid: false, error: "Vous devez sélectionner au moins 1 capacité." };
+    return {
+      isValid: false,
+      error: "Vous devez sélectionner au moins 1 capacité.",
+    };
   }
 
   if (selectedMoveIds.length > 4) {
-    return { isValid: false, error: "Un Pokémon ne peut pas avoir plus de 4 capacités." };
+    return {
+      isValid: false,
+      error: "Un Pokémon ne peut pas avoir plus de 4 capacités.",
+    };
   }
 
   const uniqueMoveIds = new Set(selectedMoveIds.map((id) => id.toLowerCase()));
   if (uniqueMoveIds.size !== selectedMoveIds.length) {
-    return { isValid: false, error: "Une même capacité ne peut pas être équipée en double." };
+    return {
+      isValid: false,
+      error: "Une même capacité ne peut pas être équipée en double.",
+    };
   }
 
   const learnableMoves = await getLearnableMovesForSpecies(speciesId, level);

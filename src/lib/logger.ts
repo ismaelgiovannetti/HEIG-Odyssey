@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -28,7 +30,7 @@ export interface StructuredLogEntry {
 const REQUEST_ID_HEADER = "x-request-id";
 const SAFE_CORRELATION_ID = /^[A-Za-z0-9._:-]{1,128}$/;
 
-// Clés sensibles à masquer automatiquement dans les logs (T-US20-06)
+// Clés sensibles à masquer automatiquement dans les logs
 const SENSITIVE_KEYS = new Set([
   "password",
   "pass",
@@ -50,7 +52,7 @@ const SENSITIVE_KEYS = new Set([
 ]);
 
 /**
- * Masque récursivement les données sensibles pour éviter toute fuite de secret (T-US20-06).
+ * Masque récursivement les données sensibles pour éviter toute fuite de secret.
  */
 export function sanitizeLogData(obj: unknown, depth = 0): unknown {
   if (depth > 8) return "[MAX_DEPTH]";
@@ -59,7 +61,10 @@ export function sanitizeLogData(obj: unknown, depth = 0): unknown {
   if (typeof obj === "string") {
     // Détection de patterns sensibles dans les chaînes
     if (/bearer\s+[a-zA-Z0-9._~+\/-]+=*/i.test(obj)) {
-      return obj.replace(/bearer\s+[a-zA-Z0-9._~+\/-]+=*/gi, "Bearer [REDACTED]");
+      return obj.replace(
+        /bearer\s+[a-zA-Z0-9._~+\/-]+=*/gi,
+        "Bearer [REDACTED]",
+      );
     }
     if (/[a-z][a-z0-9+.-]*:\/\/[^:\s/@]+:[^@\s]+@/i.test(obj)) {
       return obj.replace(
@@ -82,7 +87,12 @@ export function sanitizeLogData(obj: unknown, depth = 0): unknown {
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
     const lowerKey = key.toLowerCase();
-    if (SENSITIVE_KEYS.has(lowerKey) || lowerKey.includes("password") || lowerKey.includes("secret") || lowerKey.includes("token")) {
+    if (
+      SENSITIVE_KEYS.has(lowerKey) ||
+      lowerKey.includes("password") ||
+      lowerKey.includes("secret") ||
+      lowerKey.includes("token")
+    ) {
       sanitized[key] = "[REDACTED]";
     } else {
       sanitized[key] = sanitizeLogData(value, depth + 1);
@@ -105,17 +115,20 @@ export function getRequestId(request?: Pick<Request, "headers">): string {
 }
 
 /**
- * Formate et émet un log structuré JSON corrélable (T-US20-06).
+ * Formate et émet un log structuré JSON corrélable.
  */
 export function createStructuredLog(
   level: LogLevel,
   message: string,
   context?: LogContext,
-  err?: unknown
+  err?: unknown,
 ): StructuredLogEntry {
-  const sanitizedContext = context ? (sanitizeLogData(context) as Record<string, unknown>) : undefined;
+  const sanitizedContext = context
+    ? (sanitizeLogData(context) as Record<string, unknown>)
+    : undefined;
 
-  const { requestId, eventId, userId, ...remainingData } = (sanitizedContext || {}) as LogContext;
+  const { requestId, eventId, userId, ...remainingData } = (sanitizedContext ||
+    {}) as LogContext;
 
   const entry: StructuredLogEntry = {
     timestamp: new Date().toISOString(),

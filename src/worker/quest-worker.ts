@@ -1,3 +1,5 @@
+import "server-only";
+
 import type Redis from "ioredis";
 import { randomUUID } from "node:crypto";
 import {
@@ -40,7 +42,7 @@ export function parseStreamFields(rawFields: string[]): Record<string, string> {
  */
 export function parseStreamEnvelope(
   messageId: string,
-  rawFields: string[]
+  rawFields: string[],
 ): DomainEventEnvelope | null {
   try {
     const fields = parseStreamFields(rawFields);
@@ -77,11 +79,15 @@ export function parseStreamEnvelope(
 
     return parsed.data as DomainEventEnvelope;
   } catch (err) {
-    logger.error("Impossible de désérialiser un événement Redis", {
-      eventId: logger.generateEventId(),
-      action: "quest-worker.parse",
-      messageId,
-    }, err);
+    logger.error(
+      "Impossible de désérialiser un événement Redis",
+      {
+        eventId: logger.generateEventId(),
+        action: "quest-worker.parse",
+        messageId,
+      },
+      err,
+    );
     return null;
   }
 }
@@ -92,15 +98,15 @@ export function parseStreamEnvelope(
 export async function initConsumerGroup(
   redis: Redis,
   streamKey: string = EVENTS_STREAM_KEY,
-  groupName: string = DEFAULT_GROUP_NAME
+  groupName: string = DEFAULT_GROUP_NAME,
 ): Promise<void> {
   try {
     // 0 signifie que le groupe démarre depuis le début du stream s'il est nouveau
     // MKSTREAM crée automatiquement le stream s'il n'existe pas encore
     await redis.xgroup("CREATE", streamKey, groupName, "0", "MKSTREAM");
-  } catch (err: any) {
+  } catch (err: unknown) {
     // BUSYGROUP signifie que le groupe existe déjà, ce qui est attendu
-    if (err?.message && err.message.includes("BUSYGROUP")) {
+    if (err instanceof Error && err.message.includes("BUSYGROUP")) {
       return;
     }
     throw err;
@@ -160,18 +166,24 @@ export async function processAndAckStreamMessage(
   streamKey: string,
   groupName: string,
   messageId: string,
-  rawFields: string[]
+  rawFields: string[],
 ): Promise<boolean> {
   const envelope = parseStreamEnvelope(messageId, rawFields);
 
   // Un message corrompu est mis en quarantaine puis acquitté pour ne pas bloquer la file.
   if (!envelope) {
     const fields = parseStreamFields(rawFields);
-    await deadLetterAndAckStreamMessage(redis, streamKey, groupName, messageId, {
-      eventId: fields.eventId,
-      eventType: fields.eventType,
-      reasonCode: "INVALID_ENVELOPE",
-    });
+    await deadLetterAndAckStreamMessage(
+      redis,
+      streamKey,
+      groupName,
+      messageId,
+      {
+        eventId: fields.eventId,
+        eventType: fields.eventType,
+        reasonCode: "INVALID_ENVELOPE",
+      },
+    );
     return false;
   }
 
@@ -182,12 +194,20 @@ export async function processAndAckStreamMessage(
     await redis.xack(streamKey, groupName, messageId);
     return true;
   } else if (!dispatchResult.retryable) {
-    const permanentError = dispatchResult.errors.find(isPermanentDomainEventError);
-    await deadLetterAndAckStreamMessage(redis, streamKey, groupName, messageId, {
-      eventId: envelope.eventId,
-      eventType: envelope.eventType,
-      reasonCode: permanentError?.code ?? "PERMANENT_HANDLER_FAILURE",
-    });
+    const permanentError = dispatchResult.errors.find(
+      isPermanentDomainEventError,
+    );
+    await deadLetterAndAckStreamMessage(
+      redis,
+      streamKey,
+      groupName,
+      messageId,
+      {
+        eventId: envelope.eventId,
+        eventType: envelope.eventType,
+        reasonCode: permanentError?.code ?? "PERMANENT_HANDLER_FAILURE",
+      },
+    );
     logger.warn("Événement Redis irrécupérable déplacé en quarantaine", {
       eventId: envelope.eventId,
       action: "quest-worker.dead-letter",
@@ -215,7 +235,7 @@ export async function claimAndProcessStaleMessages(
   streamKey: string = EVENTS_STREAM_KEY,
   groupName: string = DEFAULT_GROUP_NAME,
   consumerName: string,
-  minIdleMs: number = 60000
+  minIdleMs: number = 60000,
 ): Promise<number> {
   let processedCount = 0;
   try {
@@ -227,7 +247,7 @@ export async function claimAndProcessStaleMessages(
       minIdleMs,
       "0-0",
       "COUNT",
-      20
+      20,
     )) as [string, Array<[string, string[]]>];
 
     if (claimResult && Array.isArray(claimResult[1])) {
@@ -239,20 +259,24 @@ export async function claimAndProcessStaleMessages(
             streamKey,
             groupName,
             msgId,
-            fields
+            fields,
           );
           if (success) processedCount++;
         }
       }
     }
   } catch (err) {
-    logger.error("Échec de récupération des événements Redis abandonnés", {
-      eventId: logger.generateEventId(),
-      action: "quest-worker.claim-stale",
-      streamKey,
-      groupName,
-      consumerName,
-    }, err);
+    logger.error(
+      "Échec de récupération des événements Redis abandonnés",
+      {
+        eventId: logger.generateEventId(),
+        action: "quest-worker.claim-stale",
+        streamKey,
+        groupName,
+        consumerName,
+      },
+      err,
+    );
   }
 
   return processedCount;
@@ -310,7 +334,7 @@ export class QuestWorker {
             this.streamKey,
             this.groupName,
             this.consumerName,
-            this.claimMinIdleMs
+            this.claimMinIdleMs,
           );
         }
 
@@ -326,9 +350,8 @@ export class QuestWorker {
           this.blockTimeoutMs,
           "STREAMS",
           this.streamKey,
-          ">"
+          ">",
         )) as Array<[string, Array<[string, string[]]>]> | null;
-
 
         if (response && response.length > 0) {
           for (const [, messages] of response) {
@@ -338,19 +361,23 @@ export class QuestWorker {
                 this.streamKey,
                 this.groupName,
                 messageId,
-                rawFields
+                rawFields,
               );
             }
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (!this.shouldStop) {
-          logger.error("Erreur dans la boucle du worker de quêtes", {
-            eventId: logger.generateEventId(),
-            action: "quest-worker.consume",
-            consumerName: this.consumerName,
-            groupName: this.groupName,
-          }, error);
+          logger.error(
+            "Erreur dans la boucle du worker de quêtes",
+            {
+              eventId: logger.generateEventId(),
+              action: "quest-worker.consume",
+              consumerName: this.consumerName,
+              groupName: this.groupName,
+            },
+            error,
+          );
           await new Promise((res) => setTimeout(res, this.pollIntervalMs));
         }
       }
@@ -369,7 +396,11 @@ export class QuestWorker {
     this.shouldStop = true;
   }
 
-  public getStatus(): { isRunning: boolean; consumerName: string; groupName: string } {
+  public getStatus(): {
+    isRunning: boolean;
+    consumerName: string;
+    groupName: string;
+  } {
     return {
       isRunning: this.isRunning,
       consumerName: this.consumerName,

@@ -101,7 +101,10 @@ export function UiSoundEffects() {
 
     document.addEventListener("pointerover", onPointerOver, { passive: true });
     document.addEventListener("pointerout", onPointerOut, { passive: true });
-    document.addEventListener("click", onClick, { passive: true, capture: true });
+    document.addEventListener("click", onClick, {
+      passive: true,
+      capture: true,
+    });
 
     return () => {
       document.removeEventListener("pointerover", onPointerOver);

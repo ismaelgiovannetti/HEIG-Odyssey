@@ -2,9 +2,9 @@
 
 import { useEffect, useId, useRef } from "react";
 import { LoaderCircle, RefreshCw, Sparkles, X } from "lucide-react";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
-import type { GachaExecutionResult } from "@/lib/gacha/gacha-service";
+import type { GachaExecutionResult } from "@/lib/gacha/gacha-contract";
 import { GachaEgg } from "./gacha-egg";
 import styles from "./gacha-shop.module.css";
 
@@ -56,7 +56,8 @@ export function GachaPullDialog({
     return () => {
       if (dialog.open) dialog.close();
       document.documentElement.style.overflow = previousOverflow;
-      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
+      if (trigger instanceof HTMLElement && trigger.isConnected)
+        trigger.focus();
     };
   }, []);
 
@@ -83,7 +84,8 @@ export function GachaPullDialog({
       }}
       onKeyDown={(event) => event.stopPropagation()}
       onClick={(event) => {
-        if (phase !== "revealed" || event.target !== event.currentTarget) return;
+        if (phase !== "revealed" || event.target !== event.currentTarget)
+          return;
         const bounds = event.currentTarget.getBoundingClientRect();
         const outside =
           event.clientX < bounds.left ||
@@ -101,7 +103,12 @@ export function GachaPullDialog({
           </h2>
         </div>
         {isRevealed ? (
-          <button ref={closeButtonRef} type="button" aria-label="Fermer le résultat" onClick={onClose}>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            aria-label="Fermer le résultat"
+            onClick={onClose}
+          >
             <X size={20} aria-hidden="true" />
           </button>
         ) : null}
@@ -130,8 +137,14 @@ export function GachaPullDialog({
         <div className={styles.dialogCopy} aria-live="polite">
           {phase === "requesting" ? (
             <>
-              <LoaderCircle className={styles.spinner} size={24} aria-hidden="true" />
-              <p id={descriptionId}>Un nouveau partenaire Pokémon répond à votre appel…</p>
+              <LoaderCircle
+                className={styles.spinner}
+                size={24}
+                aria-hidden="true"
+              />
+              <p id={descriptionId}>
+                Un nouveau partenaire Pokémon répond à votre appel…
+              </p>
             </>
           ) : phase === "hatching" ? (
             <>
@@ -152,7 +165,9 @@ export function GachaPullDialog({
                 Niveau {result.pokemon.level} · Nature {result.pokemon.nature}
               </p>
               <span className={styles.collectionNotice}>
-                {result.isDuplicate ? "Pokémon ajouté automatiquement au PC" : "Nouveau Pokémon ajouté au PC"}
+                {result.isDuplicate
+                  ? "Pokémon ajouté automatiquement au PC"
+                  : "Nouveau Pokémon ajouté au PC"}
               </span>
               <dl>
                 <div>
@@ -167,13 +182,25 @@ export function GachaPullDialog({
 
       {isRevealed ? (
         <footer className={styles.dialogActions}>
-          <button ref={primaryButtonRef} type="button" className={styles.primaryButton} disabled={!canPullAgain} onClick={onPullAgain}>
+          <button
+            ref={primaryButtonRef}
+            type="button"
+            className={styles.primaryButton}
+            disabled={!canPullAgain}
+            onClick={onPullAgain}
+          >
             <RefreshCw size={17} aria-hidden="true" /> Tirer à nouveau
           </button>
-          <button type="button" className={styles.secondaryButton} onClick={onClose}>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={onClose}
+          >
             Retour aux portails
           </button>
-          {!canPullAgain ? <p>Solde insuffisant pour un nouveau tirage sur ce portail.</p> : null}
+          {!canPullAgain ? (
+            <p>Solde insuffisant pour un nouveau tirage sur ce portail.</p>
+          ) : null}
         </footer>
       ) : null}
     </dialog>

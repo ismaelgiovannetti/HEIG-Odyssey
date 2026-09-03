@@ -1,0 +1,152 @@
+/* ============================================================
+   CTA band
+   ============================================================ */
+.cta-band {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: var(--space-6) var(--space-3);
+  background: var(--color-bg);
+  border: 0;
+}
+
+.cta-band .container {
+  position: relative;
+  overflow: hidden;
+  max-width: 1040px;
+  padding: clamp(36px, 5vw, 56px) clamp(24px, 6vw, 72px);
+  background: linear-gradient(
+    105deg,
+    #76221d 0%,
+    var(--color-primary) 50%,
+    #76221d 100%
+  );
+  border: 3px solid var(--color-outline);
+  clip-path: var(--notch);
+  box-shadow: 7px 7px 0 var(--color-outline);
+}
+
+.cta-band .container::before {
+  content: "";
+  position: absolute;
+  width: 230px;
+  height: 230px;
+  right: -70px;
+  top: -105px;
+  border: 22px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cta-band .container > * {
+  position: relative;
+  z-index: 1;
+}
+
+.cta-kicker {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  margin-bottom: var(--space-3);
+  padding: 7px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.cta-band h2 {
+  font-size: clamp(19px, 2.4vw, 27px);
+  color: #ffffff;
+  margin-bottom: var(--space-3);
+}
+
+.cta-band p {
+  font-size: 17px;
+  color: #fbecea;
+  max-width: 66ch;
+  margin: 0 auto var(--space-4);
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.cta-band .btn-accent {
+  background: #ffffff;
+  color: var(--color-primary-dark);
+  border-color: var(--color-outline);
+  box-shadow: 5px 5px 0 var(--color-outline);
+}
+
+.cta-band .btn-accent:hover {
+  background: #f8e8e6;
+  box-shadow: 7px 7px 0 var(--color-outline);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  position: relative;
+  z-index: 2;
+  padding: var(--space-4) 0 var(--space-3);
+  border-top: 0;
+  background: var(--color-footer-bg);
+  color: var(--color-footer-text);
+}
+
+.footer-grid {
+  display: grid;
+  align-items: center;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+.footer-brand {
+  position: relative;
+  width: 220px;
+  max-width: 100%;
+  height: 46px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.footer-logo {
+  position: absolute;
+  width: 220px;
+  max-width: none;
+  height: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+}
+
+.footer-credits {
+  margin: 0;
+  color: var(--color-footer-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+@media (min-width: 1024px) {
+  .footer-credits {
+    justify-self: end;
+    text-align: right;
+  }
+}

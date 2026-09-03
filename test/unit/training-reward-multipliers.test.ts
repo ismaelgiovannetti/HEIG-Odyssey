@@ -36,6 +36,10 @@ describe("Multiplicateurs de récompense d'entraînement (T-US10-04)", () => {
 
   it("ne duplique pas la configuration : un seul multiplicateur par difficulté et par ressource", () => {
     // Une difficulté = exactement une entrée dans la table, jamais recalculée ailleurs.
-    expect(Object.keys(DIFFICULTY_REWARD_MULTIPLIERS)).toEqual(["easy", "normal", "hard"]);
+    expect(Object.keys(DIFFICULTY_REWARD_MULTIPLIERS)).toEqual([
+      "easy",
+      "normal",
+      "hard",
+    ]);
   });
 });

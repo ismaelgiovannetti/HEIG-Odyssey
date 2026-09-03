@@ -9,7 +9,8 @@ const createdUserIds = new Set<string>();
 
 function assertLocalDatabase(): void {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("DATABASE_URL_MISSING_FOR_INTEGRATION_TEST");
+  if (!databaseUrl)
+    throw new Error("DATABASE_URL_MISSING_FOR_INTEGRATION_TEST");
   const hostname = new URL(databaseUrl).hostname;
   if (!["localhost", "127.0.0.1", "[::1]"].includes(hostname)) {
     throw new Error("INTEGRATION_DATABASE_MUST_BE_LOCAL");
@@ -38,7 +39,9 @@ async function createFundedUser(): Promise<string> {
 
 afterEach(async () => {
   assertLocalDatabase();
-  await prisma.user.deleteMany({ where: { id: { in: Array.from(createdUserIds) } } });
+  await prisma.user.deleteMany({
+    where: { id: { in: Array.from(createdUserIds) } },
+  });
   createdUserIds.clear();
 });
 
@@ -78,7 +81,11 @@ describe("cycle de vie réel d'un tirage gacha", () => {
     });
     expect(Array.isArray(pokemon[0].moves)).toBe(true);
     expect(pokemon[0].moves).not.toHaveLength(0);
-    expect(pull).toMatchObject({ userId, bannerId: "banner-standard", costPaid: 300 });
+    expect(pull).toMatchObject({
+      userId,
+      bannerId: "banner-standard",
+      costPaid: 300,
+    });
 
     const replay = await executeGachaPull({
       userId,
@@ -87,6 +94,8 @@ describe("cycle de vie réel d'un tirage gacha", () => {
     });
     expect(replay.isCachedPull).toBe(true);
     expect(await prisma.userPokemon.count({ where: { userId } })).toBe(1);
-    expect((await prisma.userProfile.findUnique({ where: { userId } }))?.pokedollars).toBe(200);
+    expect(
+      (await prisma.userProfile.findUnique({ where: { userId } }))?.pokedollars,
+    ).toBe(200);
   });
 });

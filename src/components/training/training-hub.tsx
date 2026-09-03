@@ -14,10 +14,7 @@ import {
 import { BattleArena } from "@/components/battle/battle-arena";
 import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
 import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
-import {
-  PokemonSprite,
-  PokemonTypes,
-} from "@/components/team/pokemon-summary";
+import { PokemonSprite, PokemonTypes } from "@/components/team/pokemon-summary";
 import {
   BattleRequestError,
   readBattleStartResponse,
@@ -43,13 +40,7 @@ const DIFFICULTY_ORDER: readonly TrainingDifficulty[] = [
 type TeamPokemon = CollectionSnapshot["pokemon"][number];
 
 /** Reprise en lecture seule d'une case de l'équipe, sans action de gestion. */
-function TeamCard({
-  pokemon,
-  slot,
-}: {
-  pokemon?: TeamPokemon;
-  slot: number;
-}) {
+function TeamCard({ pokemon, slot }: { pokemon?: TeamPokemon; slot: number }) {
   if (!pokemon) {
     return (
       <li className="training-team-card is-empty">
@@ -120,8 +111,7 @@ export function TrainingHub() {
   const [snapshot, setSnapshot] = useState<CollectionSnapshot | null>(null);
   const [teamPending, setTeamPending] = useState(true);
   const [teamError, setTeamError] = useState("");
-  const [difficulty, setDifficulty] =
-    useState<TrainingDifficulty>("normal");
+  const [difficulty, setDifficulty] = useState<TrainingDifficulty>("normal");
   const [preparedBattle, setPreparedBattle] =
     useState<BattleStartPayload | null>(null);
   const [preparing, setPreparing] = useState(false);
@@ -181,7 +171,8 @@ export function TrainingHub() {
     pokemon: activeTeam.find((pokemon) => pokemon.teamPosition === index + 1),
   }));
   const canPrepare =
-    activeTeam.length > 0 && activeTeam.some((pokemon) => pokemon.currentHp > 0);
+    activeTeam.length > 0 &&
+    activeTeam.some((pokemon) => pokemon.currentHp > 0);
 
   async function prepareOpponent() {
     if (!canPrepare || prepareLock.current) return;
@@ -289,7 +280,9 @@ export function TrainingHub() {
               <div className="training-empty-team">
                 <UsersRound aria-hidden="true" size={28} />
                 <strong>Aucune équipe active</strong>
-                <span>Ajoutez au moins un Pokémon apte avant de continuer.</span>
+                <span>
+                  Ajoutez au moins un Pokémon apte avant de continuer.
+                </span>
               </div>
             )}
           </section>
@@ -305,7 +298,9 @@ export function TrainingHub() {
               <div className="training-section__heading">
                 <div>
                   <span>Configuration du combat</span>
-                  <h2 id="training-difficulty-title">Choisissez la difficulté</h2>
+                  <h2 id="training-difficulty-title">
+                    Choisissez la difficulté
+                  </h2>
                 </div>
               </div>
               <div className="training-difficulty-grid">
@@ -363,7 +358,8 @@ export function TrainingHub() {
               >
                 {preparing ? (
                   <>
-                    <RefreshCw aria-hidden="true" size={18} /> Préparation du combat…
+                    <RefreshCw aria-hidden="true" size={18} /> Préparation du
+                    combat…
                   </>
                 ) : (
                   <>

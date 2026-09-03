@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
@@ -9,10 +8,7 @@ import {
   QuestNotCompletedError,
   QuestRewardAlreadyClaimedError,
 } from "@/lib/quests/quest-progress-service";
-
-const ClaimQuestBodySchema = z.object({
-  rotationId: z.string().trim().min(1).max(128),
-}).strict();
+import { ClaimQuestBodySchema } from "@/lib/quests/quest-contract";
 
 // Une réclamation modifie le solde du joueur : aucune réponse ne doit être cachée.
 function json(body: unknown, status = 200) {
@@ -28,10 +24,7 @@ export async function POST(req: Request) {
     const session = await auth.api.getSession({ headers: req.headers });
 
     if (!session?.user.id) {
-      return json(
-        { success: false, error: "Authentification requise." },
-        401,
-      );
+      return json({ success: false, error: "Authentification requise." }, 401);
     }
 
     const body = await readProtectedJsonBody(req, 8 * 1024);
@@ -48,7 +41,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await claimQuestReward(session.user.id, parsed.data.rotationId);
+    const result = await claimQuestReward(
+      session.user.id,
+      parsed.data.rotationId,
+    );
 
     return json({
       success: true,
@@ -56,20 +52,21 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     if (error instanceof QuestNotFoundError) {
-      return json(
-        { success: false, error: error.message },
-        404,
-      );
+      return json({ success: false, error: error.message }, 404);
     }
 
-    if (error instanceof QuestNotCompletedError || error instanceof QuestRewardAlreadyClaimedError) {
-      return json(
-        { success: false, error: error.message },
-        400,
-      );
+    if (
+      error instanceof QuestNotCompletedError ||
+      error instanceof QuestRewardAlreadyClaimedError
+    ) {
+      return json({ success: false, error: error.message }, 400);
     }
 
-    logger.error("Échec de la réclamation d'une quête", { requestId, action: "quests.claim" }, error);
+    logger.error(
+      "Échec de la réclamation d'une quête",
+      { requestId, action: "quests.claim" },
+      error,
+    );
     return json(
       { success: false, error: "Impossible de réclamer la récompense." },
       500,

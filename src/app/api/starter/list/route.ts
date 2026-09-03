@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadStarters, getSpecies } from "@/lib/content/loader";
 import { getRequestId, logger } from "@/lib/logger";
+import { StarterCatalogResponseSchema } from "@/lib/starter/starter-contract";
 
 export async function GET(req: Request) {
   const requestId = getRequestId(req);
@@ -22,19 +23,24 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({
+    const response = StarterCatalogResponseSchema.parse({
       success: true,
       count: formatted.length,
       starters: formatted,
     });
+    return NextResponse.json(response);
   } catch (error) {
-    logger.error("Échec du chargement des starters", { requestId, action: "starter.list" }, error);
+    logger.error(
+      "Échec du chargement des starters",
+      { requestId, action: "starter.list" },
+      error,
+    );
     return NextResponse.json(
       {
         success: false,
         error: "Impossible de récupérer les starters.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

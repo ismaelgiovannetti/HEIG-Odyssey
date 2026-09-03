@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { FormAlert } from "@/components/auth/form-alert";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { requestPasswordRecovery } from "@/lib/auth-client";
+import { requestPasswordRecovery } from "@/lib/auth/client";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NEUTRAL_CONFIRMATION_MESSAGE =
@@ -38,13 +38,17 @@ export function ForgotPasswordForm() {
 
       if (result.error) {
         // Un incident global peut être signalé sans révéler l'existence du compte.
-        setFormError("Impossible de traiter la demande maintenant. Réessayez plus tard.");
+        setFormError(
+          "Impossible de traiter la demande maintenant. Réessayez plus tard.",
+        );
         return;
       }
 
       setIsSubmitted(true);
     } catch {
-      setFormError("Impossible de traiter la demande maintenant. Réessayez plus tard.");
+      setFormError(
+        "Impossible de traiter la demande maintenant. Réessayez plus tard.",
+      );
     } finally {
       setIsPending(false);
     }
@@ -59,7 +63,8 @@ export function ForgotPasswordForm() {
           votre dossier de courriers indésirables.
         </p>
         <p className="auth-switch">
-          Vous connaissez votre mot de passe ? <Link href="/login">Se connecter</Link>
+          Vous connaissez votre mot de passe ?{" "}
+          <Link href="/login">Se connecter</Link>
         </p>
       </div>
     );

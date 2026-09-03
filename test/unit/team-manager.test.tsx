@@ -22,7 +22,7 @@ import {
 
 const navigation = vi.hoisted(() => ({ refresh: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
-vi.mock("@/components/SpriteProvider", () => ({
+vi.mock("@/components/pokemon/sprite-provider", () => ({
   SpriteProvider: ({
     speciesId,
     variant,
@@ -188,9 +188,9 @@ describe("interface de gestion d'équipe", () => {
     const tips = await screen.findByRole("dialog", { name: "Tips" });
     // Les trois rubriques suivent le même ordre visuel et accessible.
     expect(
-      within(tips).getAllByRole("heading", { level: 3 }).map((heading) =>
-        heading.textContent?.trim(),
-      ),
+      within(tips)
+        .getAllByRole("heading", { level: 3 })
+        .map((heading) => heading.textContent?.trim()),
     ).toEqual(["Souris", "Clavier", "Général"]);
     expect(within(tips).getAllByRole("list")).toHaveLength(3);
     for (const [name, count] of [
@@ -202,9 +202,9 @@ describe("interface de gestion d'équipe", () => {
       expect(within(group).getAllByRole("listitem")).toHaveLength(count);
     }
     expect(
-      within(tips).getAllByRole("listitem").map((item) =>
-        item.querySelector("strong")?.textContent,
-      ),
+      within(tips)
+        .getAllByRole("listitem")
+        .map((item) => item.querySelector("strong")?.textContent),
     ).toEqual([
       "Clic ou glisser-déposer :",
       "Cadre de la boîte :",
@@ -224,9 +224,7 @@ describe("interface de gestion d'équipe", () => {
     ).toBeDefined();
     expect(within(tips).getByText("Case occupée :")).toBeDefined();
     expect(
-      within(tips).getByText(
-        /sont enregistrés après chaque déplacement/,
-      ),
+      within(tips).getByText(/sont enregistrés après chaque déplacement/),
     ).toBeDefined();
     expect(
       pcSlot(2).querySelector('[data-variant="front_shiny"]'),
@@ -235,9 +233,7 @@ describe("interface de gestion d'équipe", () => {
     expect(
       teamSlot(1).querySelector('[data-normalized="true"]'),
     ).not.toBeNull();
-    expect(
-      pcSlot(1).querySelector('[data-normalized="true"]'),
-    ).not.toBeNull();
+    expect(pcSlot(1).querySelector('[data-normalized="true"]')).not.toBeNull();
   });
 
   it("ouvre les Tips dans une fenêtre et restaure le focus à la fermeture", async () => {
@@ -594,7 +590,11 @@ describe("interface de gestion d'équipe", () => {
     const user = userEvent.setup();
     await openPc();
     await user.click(screen.getByRole("button", { name: "Boîte précédente" }));
-    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    const dataTransfer = {
+      setData: vi.fn(),
+      effectAllowed: "",
+      dropEffect: "",
+    };
     fireEvent.dragStart(teamSlot(1), { dataTransfer });
     fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
       dataTransfer,
@@ -617,7 +617,11 @@ describe("interface de gestion d'équipe", () => {
     api.mockResolvedValueOnce(response(data));
     await openPc();
     const source = teamSlot(1);
-    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    const dataTransfer = {
+      setData: vi.fn(),
+      effectAllowed: "",
+      dropEffect: "",
+    };
     fireEvent.dragStart(source, { dataTransfer });
     fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
       dataTransfer,
@@ -659,7 +663,11 @@ describe("interface de gestion d'équipe", () => {
     data.count = 1;
     api.mockResolvedValueOnce(response(data));
     await openPc();
-    const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+    const dataTransfer = {
+      setData: vi.fn(),
+      effectAllowed: "",
+      dropEffect: "",
+    };
     fireEvent.dragStart(teamSlot(1), { dataTransfer });
     fireEvent.drop(screen.getByRole("region", { name: "PC de tiago2" }), {
       dataTransfer,

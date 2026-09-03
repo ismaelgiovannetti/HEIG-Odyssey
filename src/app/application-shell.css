@@ -1,0 +1,1067 @@
+/* ============================================================
+   Application - navigation persistante et accueil du jeu
+   ============================================================ */
+
+.application-background-mark {
+  position: fixed;
+  z-index: -2;
+  width: 270px;
+  aspect-ratio: 1;
+  background: url("/pokeball-pixel.svg") center / contain no-repeat;
+  image-rendering: pixelated;
+  opacity: var(--color-orb-opacity);
+}
+
+.application-background-mark--one {
+  top: 10%;
+  left: max(-115px, calc(50% - 860px));
+  transform: rotate(-14deg);
+}
+
+.application-background-mark--two {
+  right: max(-125px, calc(50% - 870px));
+  bottom: 4%;
+  transform: rotate(17deg) scale(0.86);
+}
+
+.application-navigation a:hover {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.application-navigation a.is-active {
+  color: var(--color-text);
+}
+
+.application-navigation a.is-active::after {
+  background: var(--color-primary);
+}
+
+/* Le compteur compact ouvre les missions au survol. Une zone invisible
+   comble l'espace avec le panneau afin que le pointeur puisse l'atteindre. */
+.quest-menu {
+  --quest-panel-right: -175px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.quest-menu.is-open::after {
+  position: absolute;
+  z-index: 49;
+  top: 100%;
+  right: var(--quest-panel-right);
+  width: min(690px, calc(100vw - 32px));
+  height: 18px;
+  content: "";
+}
+
+.quest-menu__trigger {
+  position: relative;
+  display: inline-flex;
+  min-width: 48px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 5px;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.quest-menu__trigger strong {
+  color: var(--color-text);
+  font-weight: 700;
+  transition: color 130ms ease;
+}
+
+.quest-menu__trigger svg {
+  color: var(--color-primary-light);
+  fill: rgb(201 64 54 / 12%);
+}
+
+.quest-menu__trigger:hover strong,
+.quest-menu__trigger.is-open strong {
+  color: var(--color-primary-light);
+}
+
+/* Tous les contrôles du shell partagent un focus contrasté et indépendant de
+   leur couleur de mode afin de rester repérables au clavier. */
+.application-navigation a:focus-visible,
+.application-brand:focus-visible,
+.application-player__logout:focus-visible,
+.dashboard-mode-card:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+.quest-menu__trigger:focus-visible,
+.quest-panel__error button:focus-visible,
+.quest-card__claim:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 3px;
+}
+
+/* Le panneau reste rattaché au compteur placé près du solde et présente
+   uniquement les deux rotations du MVP : quotidienne et hebdomadaire. */
+
+.quest-panel__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  padding: 13px;
+  /* Les halos rouges soulignent le centre de chaque côté ; les reflets acier
+     éclairent les coins sans réintroduire d'ombre portée autour du panneau. */
+  background:
+    radial-gradient(circle at 50% 0%, rgb(201 64 54 / 34%), transparent 43%),
+    radial-gradient(circle at 50% 100%, rgb(201 64 54 / 30%), transparent 43%),
+    radial-gradient(circle at 0% 50%, rgb(201 64 54 / 28%), transparent 39%),
+    radial-gradient(circle at 100% 50%, rgb(201 64 54 / 28%), transparent 39%),
+    radial-gradient(circle at 0% 0%, rgb(207 218 230 / 24%), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgb(207 218 230 / 24%), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgb(207 218 230 / 22%), transparent 34%),
+    radial-gradient(
+      circle at 100% 100%,
+      rgb(207 218 230 / 22%),
+      transparent 34%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      var(--color-scanline) 8px
+    ),
+    var(--color-bg);
+}
+
+.quest-group {
+  min-width: 0;
+  border: 2px solid #000;
+  background: var(--color-bg-alt);
+}
+
+.quest-group__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 10px;
+  border: 0;
+  border-bottom: 2px solid #000;
+  background: var(--color-quest-header-bg);
+  color: var(--color-quest-header-text);
+}
+
+.quest-group__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.quest-group__identity > div {
+  min-width: 0;
+}
+
+.quest-group__icon {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid currentColor;
+  background: rgb(16 24 36 / 32%);
+  color: var(--color-quest-daily-icon);
+  box-shadow: none;
+}
+
+.quest-group:nth-child(2) .quest-group__icon {
+  color: var(--color-quest-weekly-icon);
+}
+
+.quest-group__header h3 {
+  margin: 0 0 4px;
+  color: var(--color-quest-header-text);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.quest-group__summary {
+  justify-self: end;
+  color: var(--color-quest-header-text);
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 9px;
+}
+
+.quest-group__remaining {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 5px 0 0;
+  color: var(--color-quest-timer);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.quest-group__remaining.is-urgent {
+  padding: 2px 5px;
+  background: #fff4f2;
+  color: var(--color-quest-timer-urgent);
+}
+
+.quest-group__list {
+  display: grid;
+  gap: 7px;
+  padding: 8px;
+}
+
+.quest-group__empty {
+  margin: 0;
+  padding: 25px 12px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.quest-card {
+  padding: 9px 10px;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.quest-card.is-completed {
+  border-color: #4b9b69;
+  background:
+    linear-gradient(110deg, rgb(75 155 105 / 13%), transparent 62%),
+    var(--color-surface);
+}
+
+.quest-card.is-claimed {
+  border-color: #4b9b69;
+  opacity: 0.82;
+}
+
+.quest-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quest-card__heading h4 {
+  margin: 0 0 4px;
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.quest-card__heading p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.quest-card__progress-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.quest-card__progress-line strong {
+  color: var(--color-text);
+  font-size: 9px;
+}
+
+.quest-card__progress {
+  height: 7px;
+  overflow: hidden;
+  border: 2px solid var(--color-outline);
+  background: var(--color-bg);
+}
+
+.quest-card__progress span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 180ms ease;
+}
+
+.quest-card.is-completed .quest-card__progress span,
+.quest-card.is-claimed .quest-card__progress span {
+  background: #4b9b69;
+}
+
+.quest-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+}
+
+.quest-card__rewards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+}
+
+.quest-card__reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.quest-card__reward strong {
+  color: #fff;
+  white-space: nowrap;
+}
+
+.quest-card__reward--money {
+  color: #e5bd4f;
+}
+.quest-card__reward--xp {
+  color: #63e6a2;
+}
+
+.quest-card__currency-mark {
+  color: #e5bd4f;
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.quest-card__reward--xp svg {
+  flex: 0 0 auto;
+}
+
+.quest-card__claim,
+.quest-panel__error button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.quest-card__claim {
+  padding: 4px 7px;
+}
+.quest-card__claim:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.quest-card.is-completed .quest-card__claim {
+  background: #3f8c5d;
+}
+
+.quest-panel__loading {
+  display: flex;
+  min-height: 250px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.quest-panel__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 18px 0;
+  padding: 12px 14px;
+  border: 2px solid var(--color-primary);
+  background: rgb(201 64 54 / 10%);
+  color: var(--color-text);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.quest-panel__error button {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+}
+
+.quest-panel .is-spinning {
+  animation: quest-spin 850ms linear infinite;
+}
+
+@keyframes quest-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.application-player__logout:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+}
+
+/* Le shell se réorganise sur les petits écrans d'ordinateur, sans activer le
+   support mobile qui reste volontairement hors périmètre du MVP. */
+@media (max-width: 1260px) {
+  .application-brand {
+    width: 165px;
+  }
+  .application-navigation a {
+    padding-inline: 7px;
+    font-size: 10px;
+  }
+  .quest-menu {
+    --quest-panel-right: -105px;
+  }
+  .quest-menu__trigger {
+    min-width: 44px;
+    padding-inline: 4px;
+  }
+  .application-player__name {
+    display: none;
+  }
+  /* On garde le bouton muet, on retire le curseur faute de place. */
+  .audio-controls__slider {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .application-page {
+    padding-inline: 20px;
+  }
+
+  .application-brand {
+    width: 145px;
+  }
+  .quest-menu {
+    --quest-panel-right: 0;
+  }
+
+  .application-navigation {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .application-navigation ul {
+    justify-content: space-between;
+  }
+  .quest-panel {
+    width: min(680px, calc(100vw - 40px));
+  }
+  .application-player {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .application-navigation a,
+  .dashboard-mode-card {
+    transition: none;
+  }
+
+  .quest-card__progress span {
+    transition: none;
+  }
+  .quest-panel .is-spinning {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Navigation applicative externe et viewport fixe
+   ========================================================================== */
+
+/* Le jeu occupe exactement le viewport. Le défilement reste disponible sur
+   les pages publiques, qui n'utilisent pas ce conteneur. */
+.application-page {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgb(201 64 54 / 9%), transparent 28%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 7px,
+      var(--color-scanline) 8px
+    ),
+    var(--color-bg);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Le dégradé, le flou et le soulignement animé reprennent les repères de la
+   landing page, sans partager son code ni modifier son déploiement statique. */
+.application-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 3px solid var(--color-outline);
+  background: linear-gradient(
+    90deg,
+    #7c241f 0%,
+    var(--color-nav-bg) 28%,
+    #b83b33 50%,
+    var(--color-nav-bg) 72%,
+    #7c241f 100%
+  );
+  backdrop-filter: blur(14px);
+}
+
+.application-navbar {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(14px, 2vw, 34px);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: clamp(1180px, 72vw, 1680px);
+  min-height: 68px;
+  margin: 0 auto;
+  padding-block: 9px;
+  padding-inline: clamp(16px, 1.5vw, 24px);
+}
+
+.application-brand {
+  position: relative;
+  display: block;
+  width: 205px;
+  height: 44px;
+  overflow: hidden;
+}
+
+.application-brand img {
+  display: block;
+  position: absolute;
+  top: calc(50% + 3px);
+  left: 50%;
+  width: 205px;
+  max-width: none;
+  height: auto;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+}
+
+.application-navigation {
+  min-width: 0;
+}
+
+.application-navigation ul {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  list-style: none;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 5px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 8%);
+  clip-path: none;
+}
+
+.application-navigation a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  min-height: 40px;
+  padding: 8px 10px;
+  color: var(--color-nav-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.application-navigation a::after {
+  position: absolute;
+  content: "";
+  right: 10px;
+  bottom: 3px;
+  left: 10px;
+  height: 2px;
+  background: var(--color-nav-text);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 150ms ease;
+}
+
+.application-navigation a:hover,
+.application-navigation a:focus-visible,
+.application-navigation a.is-active {
+  background: transparent;
+  color: var(--color-nav-text);
+}
+
+.application-navigation a:hover::after,
+.application-navigation a:focus-visible::after,
+.application-navigation a.is-active::after {
+  background: var(--color-nav-text);
+  transform: scaleX(1);
+}
+
+.application-player {
+  display: flex;
+  white-space: nowrap;
+  --application-status-icon-size: clamp(10px, 1vw, 15px);
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-menu__trigger {
+  min-height: 40px;
+  padding-block: 0;
+  line-height: 1;
+}
+
+.quest-menu__trigger strong {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.quest-menu__trigger svg {
+  flex: 0 0 auto;
+  width: var(--application-status-icon-size);
+  height: var(--application-status-icon-size);
+}
+
+.application-player__balance > span {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--application-status-icon-size);
+  font-weight: 850;
+  line-height: 1;
+}
+
+.quest-menu__trigger {
+  color: var(--color-nav-text);
+}
+
+.application-player__name {
+  max-width: 145px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  color: var(--color-nav-text);
+}
+
+.quest-menu__trigger strong {
+  color: var(--color-nav-text);
+}
+
+.application-player__balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  min-height: 40px;
+  padding-block: 0;
+  line-height: 1;
+  color: #f4c95d;
+}
+
+.application-player__balance strong {
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  color: #f4c95d;
+}
+
+.application-player__logout {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid var(--color-border);
+  border-color: rgb(255 255 255 / 32%);
+  background: rgb(8 11 16 / 30%);
+  color: var(--color-nav-muted);
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.application-player__logout:hover {
+  border-color: var(--color-nav-text);
+  background: rgb(255 255 255 / 10%);
+  color: var(--color-nav-text);
+  transform: translateY(-1px);
+}
+
+/* Barre de son unique du jeu, intégrée à la navbar. */
+.application-player__audio,
+.audio-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-controls__toggle {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 32%);
+  background: rgb(8 11 16 / 30%);
+  color: var(--color-nav-muted);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.audio-controls__toggle:hover {
+  border-color: var(--color-nav-text);
+  background: rgb(255 255 255 / 10%);
+  color: var(--color-nav-text);
+}
+
+.audio-controls__toggle:focus-visible {
+  outline: 2px solid var(--color-nav-text);
+  outline-offset: 2px;
+}
+
+.audio-controls__toggle[aria-pressed="true"] {
+  border-color: #ff8a80;
+  color: #ff8a80;
+}
+
+.audio-controls__slider {
+  width: 82px;
+  height: 6px;
+  flex: 0 0 auto;
+  border: 2px solid rgb(255 255 255 / 32%);
+  background: rgb(8 11 16 / 40%);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.audio-controls__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgb(8 11 16 / 60%);
+  background: var(--color-nav-text);
+  cursor: pointer;
+}
+
+.audio-controls__slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgb(8 11 16 / 60%);
+  border-radius: 0;
+  background: var(--color-nav-text);
+  cursor: pointer;
+}
+
+.audio-controls__slider:focus-visible {
+  outline: 2px solid var(--color-nav-text);
+  outline-offset: 2px;
+}
+
+/* Le panneau s'ouvre vers la gauche du compteur afin de ne jamais dépasser
+   du viewport lorsque les contrôles du joueur sont proches du bord droit. */
+.quest-panel {
+  position: absolute;
+  z-index: 50;
+  overflow: visible;
+  border: 1px solid var(--color-nav-text);
+  outline: 3px solid #080b10;
+  outline-offset: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: none;
+  top: calc(100% + 18px);
+  right: var(--quest-panel-right);
+  width: min(690px, calc(100vw - 32px));
+}
+
+.application-stage {
+  display: grid;
+  --application-shell-gap: clamp(14px, 2.1vh, 24px);
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+  padding: var(--application-shell-gap) clamp(24px, 4vw, 70px);
+}
+
+.application-shell {
+  display: grid;
+  overflow: hidden;
+  border: 3px solid var(--color-outline);
+  background: var(--color-surface);
+  box-shadow: 9px 9px 0 var(--color-outline);
+  grid-template-rows: auto minmax(0, 1fr);
+  width: max(min(100%, 1420px), min(72vw, 2400px));
+  box-sizing: border-box;
+  height: min(calc(100% - 9px), 1050px);
+  min-height: 0;
+  max-height: none;
+  margin: 0 auto 9px;
+}
+
+.application-shell__topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 15px;
+  border-bottom: 3px solid var(--color-outline);
+  background: var(--color-primary);
+  color: #fff;
+  font-family: "Press Start 2P", "Courier New", monospace;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+}
+
+.application-shell__content {
+  --application-content-scale: 0.88;
+  --application-content-ratio: 1.137;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: clamp(22px, 2.7vw, 42px);
+}
+
+/* Le contenu utilise une surface virtuelle plus grande que sa fenêtre, puis
+   est réduit uniformément. Les proportions et les zones de clic restent donc
+   identiques sur le dashboard, la campagne, l'entraînement et le PC. */
+.application-shell__viewport {
+  width: calc(100% * var(--application-content-ratio));
+  height: calc(100% * var(--application-content-ratio));
+  min-width: 0;
+  min-height: 0;
+  transform: scale(var(--application-content-scale));
+  transform-origin: top left;
+}
+
+/* Les crédits constituent l'unique contenu du pied de page et restent centrés
+   quelle que soit la largeur du shell. */
+.application-footer {
+  position: relative;
+  z-index: 40;
+  border-top: 1px solid #f4f7fa;
+  background: rgb(8 11 16 / 96%);
+  color: var(--color-text-muted);
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.application-footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(calc(100% - clamp(32px, 5vw, 96px)), 1800px);
+  min-height: 36px;
+  margin: 0 auto;
+  padding-block: 6px;
+  text-align: center;
+}
+
+.application-footer__copyright {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1400px) {
+  .application-navbar {
+    grid-template-columns: 180px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .application-brand,
+  .application-brand img {
+    width: 175px;
+  }
+
+  .application-navigation a {
+    gap: 5px;
+    padding-inline: 7px;
+    font-size: 9px;
+  }
+
+  .application-player__name {
+    display: none;
+  }
+}
+
+@media (max-width: 1040px) {
+  .application-navbar {
+    grid-template-columns: 155px minmax(0, 1fr);
+    gap: 5px 14px;
+    padding-block: 6px;
+  }
+
+  .application-brand,
+  .application-brand img {
+    width: 150px;
+  }
+
+  .application-player {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .application-navigation {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-top: 0;
+  }
+
+  .application-navigation ul {
+    width: min(100%, 720px);
+    justify-content: space-between;
+  }
+
+  .application-navigation a {
+    padding-block: 6px;
+  }
+
+  .application-stage {
+    padding-inline: 20px;
+  }
+
+  .application-footer__inner {
+    width: calc(100% - 32px);
+  }
+}
+
+/* Les écrans d'ordinateur peu hauts gagnent de la place sur les marges, sans
+   réduire ni masquer les commandes à l'intérieur du jeu. */
+@media (min-width: 768px) and (max-height: 780px) {
+  .application-navbar {
+    min-height: 56px;
+    padding-block: 5px;
+  }
+
+  .application-brand {
+    height: 38px;
+  }
+
+  .application-navigation a {
+    min-height: 34px;
+    padding-block: 5px;
+  }
+
+  .application-stage {
+    --application-shell-gap: 10px;
+  }
+
+  .application-shell__topbar {
+    padding-block: 6px;
+  }
+
+  .application-shell__content {
+    padding: clamp(14px, 2vw, 28px);
+  }
+
+  .application-footer__inner {
+    min-height: 30px;
+    padding-block: 4px;
+  }
+}
+
+/* Le cadre conserve une proportion confortable sur les moniteurs 21:9 sans
+   s'étirer indéfiniment sur les très grandes définitions. */
+@media (min-aspect-ratio: 21 / 9) and (min-width: 1800px) {
+  .application-navbar,
+  .application-footer__inner {
+    width: min(78vw, 2100px);
+  }
+
+  .application-shell {
+    width: min(72vw, 2400px);
+  }
+}
+
+/* L'interface vise une surface virtuelle commune. Réduire l'ensemble évite
+   des adaptations différentes et incohérentes pour chaque page du jeu. */
+@media (min-height: 1200px) {
+  .application-shell__content {
+    --application-content-scale: 1;
+    --application-content-ratio: 1;
+  }
+}
+
+@media (max-height: 1000px) {
+  .application-shell__content {
+    --application-content-scale: 0.78;
+    --application-content-ratio: 1.283;
+  }
+}
+
+@media (max-height: 850px) {
+  .application-shell__content {
+    --application-content-scale: 0.64;
+    --application-content-ratio: 1.563;
+  }
+}
+
+@media (max-width: 1040px) and (min-height: 721px) and (max-height: 850px) {
+  .application-shell__content {
+    --application-content-scale: 0.58;
+    --application-content-ratio: 1.725;
+  }
+}
+
+@media (max-height: 720px) {
+  .application-shell__content {
+    --application-content-scale: 0.52;
+    --application-content-ratio: 1.924;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .application-navigation a,
+  .application-navigation a::after,
+  .application-player__logout {
+    transition: none;
+  }
+}

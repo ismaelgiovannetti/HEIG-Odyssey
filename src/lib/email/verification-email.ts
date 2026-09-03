@@ -28,12 +28,12 @@ export async function deliverVerificationEmail({
     recipient,
     subject: "Vérifiez votre adresse e-mail - HEIG Odyssey",
     text: [
-        `Bonjour ${username},`,
-        "",
-        "Vérifiez votre adresse e-mail pour activer votre compte HEIG Odyssey :",
-        verificationUrl,
-        "",
-        "Ce lien expire dans une heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
+      `Bonjour ${username},`,
+      "",
+      "Vérifiez votre adresse e-mail pour activer votre compte HEIG Odyssey :",
+      verificationUrl,
+      "",
+      "Ce lien expire dans une heure. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.",
     ].join("\n"),
     html: `
         <main style="font-family:Arial,sans-serif;line-height:1.6;color:#172033;max-width:560px;margin:auto">

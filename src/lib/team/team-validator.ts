@@ -1,9 +1,9 @@
-import { Dex } from "@pkmn/sim";
 import type { UserPokemon } from "@prisma/client";
-import type { TrainerPokemon, Move, PokemonType } from "../content/schemas";
+import { MoveSchema, type TrainerPokemon } from "../content/schemas";
 import { getSpecies } from "../content/loader";
+import { readStoredStat } from "../pokemon/stored-stat";
 
-const dex = Dex.forGen(4);
+const StoredTeamMovesSchema = MoveSchema.array().min(1).max(4);
 
 export interface ValidationResult {
   isValid: boolean;
@@ -14,7 +14,9 @@ export function validateTeamComposition(team: UserPokemon[]): ValidationResult {
   const errors: string[] = [];
 
   if (!team || team.length === 0) {
-    errors.push("L'équipe active ne peut pas être vide (1 à 6 Pokémon requis).");
+    errors.push(
+      "L'équipe active ne peut pas être vide (1 à 6 Pokémon requis).",
+    );
     return { isValid: false, errors };
   }
 
@@ -25,16 +27,22 @@ export function validateTeamComposition(team: UserPokemon[]): ValidationResult {
   const positions = new Set<number>();
   for (const member of team) {
     if (member.teamPosition === null || member.teamPosition === undefined) {
-      errors.push(`Le Pokémon ${member.id} n'a pas de position d'équipe définie.`);
+      errors.push(
+        `Le Pokémon ${member.id} n'a pas de position d'équipe définie.`,
+      );
       continue;
     }
 
     if (member.teamPosition < 1 || member.teamPosition > 6) {
-      errors.push(`Position invalide (${member.teamPosition}) pour le Pokémon ${member.id}.`);
+      errors.push(
+        `Position invalide (${member.teamPosition}) pour le Pokémon ${member.id}.`,
+      );
     }
 
     if (positions.has(member.teamPosition)) {
-      errors.push(`Position d'équipe en doublon : slot ${member.teamPosition}.`);
+      errors.push(
+        `Position d'équipe en doublon : slot ${member.teamPosition}.`,
+      );
     }
     positions.add(member.teamPosition);
   }
@@ -43,7 +51,9 @@ export function validateTeamComposition(team: UserPokemon[]): ValidationResult {
   const sortedPositions = Array.from(positions).sort((a, b) => a - b);
   for (let i = 0; i < sortedPositions.length; i++) {
     if (sortedPositions[i] !== i + 1) {
-      errors.push(`Les positions d'équipe doivent être consécutives de 1 à ${sortedPositions.length}.`);
+      errors.push(
+        `Les positions d'équipe doivent être consécutives de 1 à ${sortedPositions.length}.`,
+      );
       break;
     }
   }
@@ -51,7 +61,9 @@ export function validateTeamComposition(team: UserPokemon[]): ValidationResult {
   // At least 1 Pokémon must have currentHp > 0
   const hasConsciousPokemon = team.some((p) => p.currentHp > 0);
   if (!hasConsciousPokemon) {
-    errors.push("L'équipe ne contient aucun Pokémon en état de combattre (tous K.O.).");
+    errors.push(
+      "L'équipe ne contient aucun Pokémon en état de combattre (tous K.O.).",
+    );
   }
 
   return {
@@ -64,11 +76,15 @@ export function calculateMaxHp(
   baseHp: number,
   level: number,
   ivHp = 15,
-  evHp = 0
+  evHp = 0,
 ): number {
   // Official Gen 4 HP formula (except Shedinja which has 1 HP)
   if (baseHp === 1) return 1;
-  return Math.floor(((2 * baseHp + ivHp + Math.floor(evHp / 4)) * level) / 100) + level + 10;
+  return (
+    Math.floor(((2 * baseHp + ivHp + Math.floor(evHp / 4)) * level) / 100) +
+    level +
+    10
+  );
 }
 
 export function calculateStat(
@@ -76,18 +92,19 @@ export function calculateStat(
   level: number,
   iv = 15,
   ev = 0,
-  natureMultiplier = 1.0
+  natureMultiplier = 1.0,
 ): number {
   // Official Gen 4 standard stat formula
-  const val = Math.floor(((2 * baseStat + iv + Math.floor(ev / 4)) * level) / 100) + 5;
+  const val =
+    Math.floor(((2 * baseStat + iv + Math.floor(ev / 4)) * level) / 100) + 5;
   return Math.floor(val * natureMultiplier);
 }
 
-export function userPokemonToTrainerPokemon(userPkmn: UserPokemon): TrainerPokemon {
+export function userPokemonToTrainerPokemon(
+  userPkmn: UserPokemon,
+): TrainerPokemon {
   const spec = getSpecies(userPkmn.speciesId);
-  const moves = (userPkmn.moves as unknown as Move[]) || [];
-
-  const ivsObj = (userPkmn.ivs as any) || { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 };
+  const moves = StoredTeamMovesSchema.parse(userPkmn.moves);
 
   return {
     speciesId: userPkmn.speciesId,
@@ -96,12 +113,12 @@ export function userPokemonToTrainerPokemon(userPkmn: UserPokemon): TrainerPokem
     isShiny: userPkmn.isShiny,
     moves,
     ivs: {
-      hp: ivsObj.hp ?? 15,
-      atk: ivsObj.atk ?? 15,
-      def: ivsObj.def ?? 15,
-      spa: ivsObj.spa ?? 15,
-      spd: ivsObj.spd ?? 15,
-      spe: ivsObj.spe ?? 15,
+      hp: readStoredStat(userPkmn.ivs, "hp", 15),
+      atk: readStoredStat(userPkmn.ivs, "atk", 15),
+      def: readStoredStat(userPkmn.ivs, "def", 15),
+      spa: readStoredStat(userPkmn.ivs, "spa", 15),
+      spd: readStoredStat(userPkmn.ivs, "spd", 15),
+      spe: readStoredStat(userPkmn.ivs, "spe", 15),
     },
     nature: userPkmn.nature || "Hardy",
   };

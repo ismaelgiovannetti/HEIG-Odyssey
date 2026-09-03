@@ -301,10 +301,12 @@ describe("CampaignMap Component (US-07)", () => {
 
   it("lance un combat lors du clic sur le bouton défier d'une étape accessible", async () => {
     const user = userEvent.setup();
-    (globalThis.fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => startedBattle,
-    });
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(startedBattle), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
 
     render(<CampaignMap overview={sampleOverview} />);
 

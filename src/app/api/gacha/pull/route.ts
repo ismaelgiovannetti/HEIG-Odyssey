@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
@@ -10,13 +9,7 @@ import {
   GachaPcFullError,
   InsufficientFundsError,
 } from "@/lib/gacha/gacha-service";
-
-const GachaPullBodySchema = z
-  .object({
-    bannerId: z.string().trim().min(1).max(128),
-    idempotencyKey: z.string().trim().min(8).max(128),
-  })
-  .strict();
+import { GachaPullBodySchema } from "@/lib/gacha/gacha-contract";
 
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, {
@@ -34,7 +27,10 @@ export async function POST(req: Request) {
       return json({ success: false, error: "Authentification requise." }, 401);
     }
     if (!session.user.emailVerified) {
-      return json({ success: false, error: "Vérifiez votre adresse e-mail." }, 403);
+      return json(
+        { success: false, error: "Vérifiez votre adresse e-mail." },
+        403,
+      );
     }
     const body = await readProtectedJsonBody(req, 8 * 1024);
     if (!body.ok) {
@@ -43,7 +39,10 @@ export async function POST(req: Request) {
     const parsed = GachaPullBodySchema.safeParse(body.value);
 
     if (!parsed.success) {
-      return json({ success: false, error: "Paramètres de tirage invalides." }, 400);
+      return json(
+        { success: false, error: "Paramètres de tirage invalides." },
+        400,
+      );
     }
 
     const result = await executeGachaPull({
@@ -66,14 +65,24 @@ export async function POST(req: Request) {
     }
 
     if (error instanceof GachaPcFullError) {
-      return json({ success: false, code: "PC_FULL", error: error.message }, 409);
+      return json(
+        { success: false, code: "PC_FULL", error: error.message },
+        409,
+      );
     }
 
     if (error instanceof GachaIdempotencyConflictError) {
-      return json({ success: false, code: "IDEMPOTENCY_CONFLICT", error: error.message }, 409);
+      return json(
+        { success: false, code: "IDEMPOTENCY_CONFLICT", error: error.message },
+        409,
+      );
     }
 
-    logger.error("Échec du tirage gacha", { requestId, action: "gacha.pull" }, error);
+    logger.error(
+      "Échec du tirage gacha",
+      { requestId, action: "gacha.pull" },
+      error,
+    );
     return json({ success: false, error: "Échec du tirage gacha." }, 500);
   }
 }

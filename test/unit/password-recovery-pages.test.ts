@@ -7,8 +7,14 @@ describe("métadonnées des pages de récupération", () => {
   // Les pages liées à un compte ne doivent pas apparaître dans les moteurs de
   // recherche, même si elles restent accessibles sans session.
   it("interdit l'indexation du parcours de récupération", () => {
-    expect(forgotPasswordMetadata.robots).toEqual({ index: false, follow: false });
-    expect(resetPasswordMetadata.robots).toEqual({ index: false, follow: false });
+    expect(forgotPasswordMetadata.robots).toEqual({
+      index: false,
+      follow: false,
+    });
+    expect(resetPasswordMetadata.robots).toEqual({
+      index: false,
+      follow: false,
+    });
   });
 
   // Le navigateur ne transmet pas l'URL contenant le jeton lorsqu'une ressource

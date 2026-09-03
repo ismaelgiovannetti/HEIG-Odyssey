@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 import { selectStarter } from "@/lib/starter/starter-service";
-
-// L'identité du joueur vient uniquement de la session. Le navigateur ne peut
-// transmettre que les informations nécessaires au choix du starter.
-const StarterChooseBodySchema = z
-  .object({
-    speciesId: z.string().min(1),
-    nickname: z.string().trim().min(1).max(20).optional(),
-  })
-  .strict();
+import { StarterChooseBodySchema } from "@/lib/starter/starter-contract";
 
 const AUTHENTICATION_REQUIRED_MESSAGE = "Authentification requise.";
 const STARTER_SELECTION_FAILED_MESSAGE =
@@ -33,7 +24,7 @@ export async function POST(req: Request) {
           success: false,
           error: AUTHENTICATION_REQUIRED_MESSAGE,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -54,7 +45,7 @@ export async function POST(req: Request) {
           error: "Requête invalide",
           details: parsed.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,11 +68,13 @@ export async function POST(req: Request) {
           success: false,
           error: message,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
-    const isInvalidStarter = message.includes("n'est pas éligible comme starter");
+    const isInvalidStarter = message.includes(
+      "n'est pas éligible comme starter",
+    );
 
     if (isInvalidStarter) {
       return NextResponse.json(
@@ -89,19 +82,23 @@ export async function POST(req: Request) {
           success: false,
           error: message,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Les détails des erreurs internes ne sont jamais renvoyés au navigateur.
-    logger.error("Échec de la sélection du starter", { requestId, action: "starter.choose" }, error);
+    logger.error(
+      "Échec de la sélection du starter",
+      { requestId, action: "starter.choose" },
+      error,
+    );
 
     return NextResponse.json(
       {
         success: false,
         error: STARTER_SELECTION_FAILED_MESSAGE,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -4,7 +4,9 @@ import { getTrainingSpeciesPool } from "@/lib/training/opponent-generator";
 describe("Pool d'espèces pour l'entraînement (T-US09-02)", () => {
   it("exclut toutes les espèces légendaires et mythiques", () => {
     const pool = getTrainingSpeciesPool();
-    expect(pool.every((species) => !species.isLegendary && !species.isMythical)).toBe(true);
+    expect(
+      pool.every((species) => !species.isLegendary && !species.isMythical),
+    ).toBe(true);
   });
 
   it("conserve un pool non vide et strictement plus petit que le contenu total", () => {

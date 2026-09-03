@@ -22,7 +22,11 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -44,7 +48,7 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD", "node", "scripts/worker-healthcheck.mjs"]
+      test: ["CMD", "node", "scripts/ops/worker-healthcheck.mjs"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -57,7 +61,11 @@ services:
     networks:
       - heig-odyssey-ci-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 10

@@ -24,7 +24,13 @@ const PASSWORD_UPPERCASE_PATTERN = /[A-Z]/;
 const PASSWORD_DIGIT_PATTERN = /[0-9]/;
 const PASSWORD_SPECIAL_CHARACTER_PATTERN = /[!@#$%^&*._-]/;
 // Ces noms pourraient laisser croire à un compte officiel ou technique.
-const RESERVED_USERNAMES = new Set(["admin", "api", "auth", "support", "system"]);
+const RESERVED_USERNAMES = new Set([
+  "admin",
+  "api",
+  "auth",
+  "support",
+  "system",
+]);
 // Ces motifs servent à bloquer les formes ambiguës de redirection.
 const CALLBACK_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f]/;
 const ENCODED_PATH_SEPARATOR_PATTERN = /%(?:2f|5c)/i;
@@ -88,8 +94,15 @@ export function isValidPassword(password: string): boolean {
 }
 
 // Accepte uniquement une destination relative appartenant à l'application.
-export function sanitizeCallbackPath(callbackPath: string | undefined, fallback = "/"): string {
-  if (!callbackPath || !callbackPath.startsWith("/") || callbackPath.startsWith("//")) {
+export function sanitizeCallbackPath(
+  callbackPath: string | undefined,
+  fallback = "/",
+): string {
+  if (
+    !callbackPath ||
+    !callbackPath.startsWith("/") ||
+    callbackPath.startsWith("//")
+  ) {
     return fallback;
   }
 

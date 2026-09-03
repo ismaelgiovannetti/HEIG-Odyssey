@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { prisma } from "../../src/lib/prisma";
+import { prisma } from "./helpers/prisma";
 import {
   createApplicationTestUser,
   deleteApplicationTestUser,
@@ -11,7 +11,7 @@ import {
 /** Connecte un joueur de test sans dépendre de l'envoi d'e-mail. */
 async function loginApplicationUser(
   page: Page,
-  user: ApplicationTestUser
+  user: ApplicationTestUser,
 ): Promise<void> {
   // Cette suite vérifie l'accessibilité des écrans protégés, pas le formulaire
   // de connexion. Passer par l'API évite une soumission native avant que React
@@ -42,7 +42,6 @@ test.describe("Contrôles d'accessibilité automatisés avec axe-core (T-US14-03
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .disableRules(["color-contrast"]) // Exclu pour les thèmes rétro Pokémon personnalisés
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
@@ -56,7 +55,6 @@ test.describe("Contrôles d'accessibilité automatisés avec axe-core (T-US14-03
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .disableRules(["color-contrast"])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
@@ -70,7 +68,6 @@ test.describe("Contrôles d'accessibilité automatisés avec axe-core (T-US14-03
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .disableRules(["color-contrast"])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
@@ -112,7 +109,6 @@ test.describe("Contrôles d'accessibilité automatisés avec axe-core (T-US14-03
 
         const accessibilityScanResults = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-          .disableRules(["color-contrast"])
           .analyze();
 
         expect(accessibilityScanResults.violations).toEqual([]);

@@ -3,12 +3,54 @@ import {
   calculateQuestIncrement,
   claimQuestReward,
   handleBattleCompletedEventForQuests,
-  getUserQuests,
   isQuestProgressPendingForBattle,
   QuestNotFoundError,
   QuestNotCompletedError,
   QuestRewardAlreadyClaimedError,
 } from "@/lib/quests/quest-progress-service";
+import type {
+  BattleCompletedPayload,
+  TrainingCompletedPayload,
+} from "@/lib/events/contracts";
+import { asPrismaClient } from "../helpers/mock-clients";
+
+function campaignBattlePayload(
+  overrides: Partial<BattleCompletedPayload> = {},
+): BattleCompletedPayload {
+  return {
+    userId: "user-1",
+    battleId: "battle-1",
+    battleType: "CAMPAIGN",
+    stageId: "bachelor-1-stage-1",
+    worldId: "bachelor-1",
+    opponentId: "trainer-jean",
+    result: "VICTORY",
+    winner: "p1",
+    turnsCount: 4,
+    xpGained: 100,
+    moneyGained: 50,
+    playerPokemonIds: ["pokemon-1"],
+    ...overrides,
+  };
+}
+
+function trainingBattlePayload(
+  overrides: Partial<TrainingCompletedPayload> = {},
+): TrainingCompletedPayload {
+  return {
+    userId: "user-1",
+    battleId: "training-1",
+    battleType: "TRAINING",
+    opponentId: "training-normal",
+    result: "VICTORY",
+    winner: "p1",
+    turnsCount: 4,
+    xpGained: 100,
+    moneyGained: 50,
+    playerPokemonIds: ["pokemon-1"],
+    ...overrides,
+  };
+}
 
 describe("Quest Progress & Claim Service (T-US13-03)", () => {
   beforeEach(() => {
@@ -17,23 +59,36 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
 
   describe("calculateQuestIncrement", () => {
     it("incrémente WIN_BATTLES_ANY uniquement en cas de victoire p1", () => {
-      const victoryPayload: any = { winner: "p1", turnsCount: 4, battleType: "CAMPAIGN" };
-      const defeatPayload: any = { winner: "p2", turnsCount: 4, battleType: "CAMPAIGN" };
+      const victoryPayload = campaignBattlePayload();
+      const defeatPayload = campaignBattlePayload({
+        result: "DEFEAT",
+        winner: "p2",
+      });
 
-      expect(calculateQuestIncrement("WIN_BATTLES_ANY", victoryPayload)).toBe(1);
+      expect(calculateQuestIncrement("WIN_BATTLES_ANY", victoryPayload)).toBe(
+        1,
+      );
       expect(calculateQuestIncrement("WIN_BATTLES_ANY", defeatPayload)).toBe(0);
     });
 
     it("incrémente WIN_BATTLES_CAMPAIGN uniquement en cas de victoire en campagne", () => {
-      const campaignWin: any = { winner: "p1", turnsCount: 3, battleType: "CAMPAIGN" };
-      const trainingWin: any = { winner: "p1", turnsCount: 3, battleType: "TRAINING" };
+      const campaignWin = campaignBattlePayload({ turnsCount: 3 });
+      const trainingWin = trainingBattlePayload({ turnsCount: 3 });
 
-      expect(calculateQuestIncrement("WIN_BATTLES_CAMPAIGN", campaignWin)).toBe(1);
-      expect(calculateQuestIncrement("WIN_BATTLES_CAMPAIGN", trainingWin)).toBe(0);
+      expect(calculateQuestIncrement("WIN_BATTLES_CAMPAIGN", campaignWin)).toBe(
+        1,
+      );
+      expect(calculateQuestIncrement("WIN_BATTLES_CAMPAIGN", trainingWin)).toBe(
+        0,
+      );
     });
 
     it("incrémente COMPLETE_TURNS selon le nombre de tours disputés", () => {
-      const payload: any = { winner: "p2", turnsCount: 8, battleType: "CAMPAIGN" };
+      const payload = campaignBattlePayload({
+        result: "DEFEAT",
+        winner: "p2",
+        turnsCount: 8,
+      });
       expect(calculateQuestIncrement("COMPLETE_TURNS", payload)).toBe(8);
     });
   });
@@ -49,11 +104,13 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
         },
       };
 
-      await expect(isQuestProgressPendingForBattle(
-        "user-1",
-        "battle-1",
-        mockPrisma as any,
-      )).resolves.toBe(true);
+      await expect(
+        isQuestProgressPendingForBattle(
+          "user-1",
+          "battle-1",
+          asPrismaClient(mockPrisma),
+        ),
+      ).resolves.toBe(true);
       expect(mockPrisma.battleRecord.findFirst).toHaveBeenCalledWith({
         where: { idempotencyKey: "battle-1", userId: "user-1" },
         select: { id: true },
@@ -70,11 +127,13 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
         },
       };
 
-      await expect(isQuestProgressPendingForBattle(
-        "user-1",
-        "battle-of-user-2",
-        mockPrisma as any,
-      )).resolves.toBe(false);
+      await expect(
+        isQuestProgressPendingForBattle(
+          "user-1",
+          "battle-of-user-2",
+          asPrismaClient(mockPrisma),
+        ),
+      ).resolves.toBe(false);
       expect(mockPrisma.processedDomainEvent.findUnique).not.toHaveBeenCalled();
     });
 
@@ -88,11 +147,13 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
         },
       };
 
-      await expect(isQuestProgressPendingForBattle(
-        "user-1",
-        "battle-1",
-        mockPrisma as any,
-      )).resolves.toBe(false);
+      await expect(
+        isQuestProgressPendingForBattle(
+          "user-1",
+          "battle-1",
+          asPrismaClient(mockPrisma),
+        ),
+      ).resolves.toBe(false);
     });
   });
 
@@ -108,7 +169,11 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
       };
 
       await expect(
-        claimQuestReward("user-1", "rot-inexistante", mockPrisma as any)
+        claimQuestReward(
+          "user-1",
+          "rot-inexistante",
+          asPrismaClient(mockPrisma),
+        ),
       ).rejects.toThrow(QuestNotFoundError);
     });
 
@@ -130,7 +195,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
       };
 
       await expect(
-        claimQuestReward("user-1", "rot-1", mockPrisma as any)
+        claimQuestReward("user-1", "rot-1", asPrismaClient(mockPrisma)),
       ).rejects.toThrow(QuestNotCompletedError);
     });
 
@@ -152,7 +217,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
       };
 
       await expect(
-        claimQuestReward("user-1", "rot-1", mockPrisma as any)
+        claimQuestReward("user-1", "rot-1", asPrismaClient(mockPrisma)),
       ).rejects.toThrow(QuestRewardAlreadyClaimedError);
     });
 
@@ -177,7 +242,11 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
         $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
       };
 
-      const result = await claimQuestReward("user-1", "rot-1", mockPrisma as any);
+      const result = await claimQuestReward(
+        "user-1",
+        "rot-1",
+        asPrismaClient(mockPrisma),
+      );
 
       expect(result.success).toBe(true);
       expect(result.rewardPokedollars).toBe(150);
@@ -231,7 +300,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
       };
 
       await expect(
-        claimQuestReward("user-1", "rot-1", mockPrisma as any),
+        claimQuestReward("user-1", "rot-1", asPrismaClient(mockPrisma)),
       ).rejects.toThrow(QuestRewardAlreadyClaimedError);
       expect(mockTx.userProfile.upsert).not.toHaveBeenCalled();
     });
@@ -265,7 +334,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
           moneyGained: 5,
           playerPokemonIds: ["pokemon-1"],
         },
-        mockPrisma as any,
+        asPrismaClient(mockPrisma),
       );
 
       expect(result).toBe(0);
@@ -303,7 +372,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
             moneyGained: 5,
             playerPokemonIds: ["pokemon-1"],
           },
-          mockPrisma as any,
+          asPrismaClient(mockPrisma),
         ),
       ).rejects.toThrow("QUEST_EVENT_BATTLE_MISMATCH");
       expect(mockTx.userQuestProgress.upsert).not.toHaveBeenCalled();
@@ -328,13 +397,15 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
           }),
         },
         questRotation: {
-          findMany: vi.fn().mockImplementation(({ where }) => Promise.resolve([
-            {
-              id: `rotation-${where.type}`,
-              type: where.type,
-              quest: { targetType: "NOOP", targetCount: 1 },
-            },
-          ])),
+          findMany: vi.fn().mockImplementation(({ where }) =>
+            Promise.resolve([
+              {
+                id: `rotation-${where.type}`,
+                type: where.type,
+                quest: { targetType: "NOOP", targetCount: 1 },
+              },
+            ]),
+          ),
         },
         userQuestProgress: {
           upsert: vi.fn(),
@@ -358,7 +429,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
           moneyGained: 5,
           playerPokemonIds: ["pokemon-1"],
         },
-        mockPrisma as any,
+        asPrismaClient(mockPrisma),
       );
 
       expect(mockTx.questRotation.findMany).toHaveBeenCalledWith({

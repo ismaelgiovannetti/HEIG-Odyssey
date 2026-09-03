@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET as getQuestsRoute } from "@/app/api/quests/route";
 import { POST as claimQuestRoute } from "@/app/api/quests/claim/route";
-import { auth } from "@/lib/auth";
 import * as questService from "@/lib/quests/quest-progress-service";
+import type { UserQuestsState } from "@/lib/quests/quest-contract";
+
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
   auth: {
     api: {
-      getSession: vi.fn(),
+      getSession: getSessionMock,
     },
   },
 }));
@@ -39,7 +43,7 @@ describe("Quest API Routes (T-US13-03)", () => {
 
   describe("GET /api/quests", () => {
     it("renvoie 401 si le joueur n'est pas authentifié", async () => {
-      (auth.api.getSession as any).mockResolvedValue(null);
+      getSessionMock.mockResolvedValue(null);
 
       const req = new Request("http://localhost:3000/api/quests");
       const res = await getQuestsRoute(req);
@@ -51,11 +55,11 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("renvoie 200 avec la liste des quêtes de l'utilisateur", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
 
-      const mockQuestsState: any = {
+      const mockQuestsState: UserQuestsState = {
         dailyPeriodKey: "2026-09-01",
         weeklyPeriodKey: "2026-W36",
         dailyQuests: [],
@@ -63,7 +67,9 @@ describe("Quest API Routes (T-US13-03)", () => {
         allQuests: [],
       };
 
-      vi.spyOn(questService, "getUserQuests").mockResolvedValue(mockQuestsState);
+      vi.spyOn(questService, "getUserQuests").mockResolvedValue(
+        mockQuestsState,
+      );
 
       const req = new Request("http://localhost:3000/api/quests");
       const res = await getQuestsRoute(req);
@@ -77,19 +83,21 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("indique que le worker traite encore le combat du joueur", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
       const pendingSpy = vi
         .spyOn(questService, "isQuestProgressPendingForBattle")
         .mockResolvedValue(true);
-      const questsSpy = vi.spyOn(questService, "getUserQuests").mockResolvedValue({
-        dailyPeriodKey: "2026-09-01",
-        weeklyPeriodKey: "2026-W36",
-        dailyQuests: [],
-        weeklyQuests: [],
-        allQuests: [],
-      });
+      const questsSpy = vi
+        .spyOn(questService, "getUserQuests")
+        .mockResolvedValue({
+          dailyPeriodKey: "2026-09-01",
+          weeklyPeriodKey: "2026-W36",
+          dailyQuests: [],
+          weeklyQuests: [],
+          allQuests: [],
+        });
 
       const req = new Request(
         "http://localhost:3000/api/quests?afterBattleId=battle-training-42",
@@ -99,17 +107,14 @@ describe("Quest API Routes (T-US13-03)", () => {
 
       expect(res.status).toBe(200);
       expect(data.syncPending).toBe(true);
-      expect(pendingSpy).toHaveBeenCalledWith(
-        "user-123",
-        "battle-training-42",
-      );
+      expect(pendingSpy).toHaveBeenCalledWith("user-123", "battle-training-42");
       expect(pendingSpy.mock.invocationCallOrder[0]).toBeLessThan(
         questsSpy.mock.invocationCallOrder[0],
       );
     });
 
     it("refuse un identifiant de combat trop long avant tout accès métier", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
       const pendingSpy = vi.spyOn(
@@ -132,7 +137,7 @@ describe("Quest API Routes (T-US13-03)", () => {
 
   describe("POST /api/quests/claim", () => {
     it("renvoie 401 si le joueur n'est pas authentifié", async () => {
-      (auth.api.getSession as any).mockResolvedValue(null);
+      getSessionMock.mockResolvedValue(null);
 
       const req = createClaimRequest({ rotationId: "rot-123" });
       const res = await claimQuestRoute(req);
@@ -141,7 +146,7 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("renvoie 400 si le corps de requête est invalide", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
 
@@ -152,7 +157,7 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("refuse une réclamation provenant d'une origine externe", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
       const claimRewardSpy = vi.spyOn(questService, "claimQuestReward");
@@ -168,7 +173,7 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("refuse une réclamation qui n'utilise pas un corps JSON", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
       const claimRewardSpy = vi.spyOn(questService, "claimQuestReward");
@@ -185,7 +190,7 @@ describe("Quest API Routes (T-US13-03)", () => {
     });
 
     it("renvoie 200 lors d'une réclamation réussie", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
       });
 

@@ -7,7 +7,7 @@ import { useState, type FormEvent } from "react";
 import { FormAlert } from "@/components/auth/form-alert";
 import { PasswordField } from "@/components/auth/password-field";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { resetPasswordWithToken } from "@/lib/auth-client";
+import { resetPasswordWithToken } from "@/lib/auth/client";
 import {
   getPasswordValidationError,
   PASSWORD_REQUIREMENTS_MESSAGE,
@@ -63,11 +63,16 @@ export function ResetPasswordForm() {
     setIsPending(true);
 
     try {
-      const result = await resetPasswordWithToken({ token, newPassword: password });
+      const result = await resetPasswordWithToken({
+        token,
+        newPassword: password,
+      });
 
       if (result.error) {
         // Le même message couvre un jeton inconnu, expiré ou déjà consommé.
-        setFormError("Ce lien de récupération est invalide, expiré ou déjà utilisé.");
+        setFormError(
+          "Ce lien de récupération est invalide, expiré ou déjà utilisé.",
+        );
         return;
       }
 
@@ -75,7 +80,9 @@ export function ResetPasswordForm() {
       window.history.replaceState(null, "", "/reset-password?success=1");
       setIsComplete(true);
     } catch {
-      setFormError("La réinitialisation est momentanément indisponible. Réessayez.");
+      setFormError(
+        "La réinitialisation est momentanément indisponible. Réessayez.",
+      );
     } finally {
       setIsPending(false);
     }
@@ -85,10 +92,12 @@ export function ResetPasswordForm() {
     return (
       <div className="auth-form">
         <FormAlert tone="success">
-          Votre mot de passe a été modifié. Toutes vos anciennes sessions ont été déconnectées.
+          Votre mot de passe a été modifié. Toutes vos anciennes sessions ont
+          été déconnectées.
         </FormAlert>
         <p className="auth-switch">
-          Vous pouvez maintenant <Link href="/login?passwordReset=1">vous connecter</Link>.
+          Vous pouvez maintenant{" "}
+          <Link href="/login?passwordReset=1">vous connecter</Link>.
         </p>
       </div>
     );

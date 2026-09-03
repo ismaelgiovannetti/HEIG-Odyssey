@@ -1,3 +1,5 @@
+import "../../onboarding.css";
+
 import type { Metadata } from "next";
 
 import { OnboardingScreen } from "@/components/onboarding/onboarding-screen";

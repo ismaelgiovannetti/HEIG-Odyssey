@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateTrainingOpponentTeam } from "@/lib/training/opponent-generator";
+import { createSeededRng } from "../helpers/deterministic-rng";
 
 // RNG déterministe : consomme une séquence fixe de valeurs [0,1) fournie au test.
 function fakeRng(values: number[]): () => number {
@@ -15,12 +16,16 @@ describe("Génération de l'équipe adverse d'entraînement (T-US09-02)", () => 
   });
 
   it("ne contient jamais deux fois la même espèce", () => {
-    const team = generateTrainingOpponentTeam(30, 6, Math.random);
+    const team = generateTrainingOpponentTeam(
+      30,
+      6,
+      createSeededRng(0x1badb002),
+    );
     expect(new Set(team.map((member) => member.speciesId)).size).toBe(6);
   });
 
   it("donne à chaque membre au moins un move légal (1 à 4)", () => {
-    const team = generateTrainingOpponentTeam(30, 4, Math.random);
+    const team = generateTrainingOpponentTeam(30, 4, createSeededRng(0xc0ffee));
     for (const member of team) {
       expect(member.moves.length).toBeGreaterThanOrEqual(1);
       expect(member.moves.length).toBeLessThanOrEqual(4);
@@ -32,17 +37,32 @@ describe("Génération de l'équipe adverse d'entraînement (T-US09-02)", () => 
     expect(() => generateTrainingOpponentTeam(30, 7)).toThrow();
   });
 
-  it("produit des compositions différentes entre deux générations (RNG réel)", () => {
-    const first = generateTrainingOpponentTeam(50, 6, Math.random);
-    const second = generateTrainingOpponentTeam(50, 6, Math.random);
-    const firstIds = first.map((m) => m.speciesId).sort().join(",");
-    const secondIds = second.map((m) => m.speciesId).sort().join(",");
-    expect(firstIds).not.toBe(secondIds);
+  it("reproduit une graine et distingue deux séquences différentes", () => {
+    const first = generateTrainingOpponentTeam(
+      50,
+      6,
+      createSeededRng(0x12345678),
+    );
+    const replay = generateTrainingOpponentTeam(
+      50,
+      6,
+      createSeededRng(0x12345678),
+    );
+    const second = generateTrainingOpponentTeam(
+      50,
+      6,
+      createSeededRng(0xdeadbeef),
+    );
+    const speciesIds = (team: typeof first) =>
+      team.map((member) => member.speciesId);
+
+    expect(speciesIds(replay)).toEqual(speciesIds(first));
+    expect(speciesIds(second)).not.toEqual(speciesIds(first));
   });
 
   it("respecte les mêmes bornes de niveau que T-US09-01 (5 à 100)", () => {
-    const low = generateTrainingOpponentTeam(5, 1, Math.random);
-    const high = generateTrainingOpponentTeam(100, 1, Math.random);
+    const low = generateTrainingOpponentTeam(5, 1, createSeededRng(0xabc));
+    const high = generateTrainingOpponentTeam(100, 1, createSeededRng(0xdef));
     expect(low[0].level).toBe(5);
     expect(high[0].level).toBe(100);
   });

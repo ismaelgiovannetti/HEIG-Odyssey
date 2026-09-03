@@ -34,7 +34,7 @@ import type {
   CampaignProgressOverview,
   CampaignStageView,
   CampaignWorldView,
-} from "@/lib/campaign/campaign-service";
+} from "@/lib/campaign/campaign-contract";
 import styles from "./campaign-map.module.css";
 
 interface CampaignMapProps {
@@ -169,8 +169,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
     );
   }
 
-  const campaignTrack =
-    CAMPAIGN_TRACKS[world.degree] ?? DEFAULT_CAMPAIGN_TRACK;
+  const campaignTrack = CAMPAIGN_TRACKS[world.degree] ?? DEFAULT_CAMPAIGN_TRACK;
 
   return (
     <section
@@ -234,7 +233,9 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
               >
                 <span className={styles.worldIdentity}>
                   <span>{shortName(world)}</span>
-                  {world.degree !== "DOCTORAT" && <strong>{theme(world)}</strong>}
+                  {world.degree !== "DOCTORAT" && (
+                    <strong>{theme(world)}</strong>
+                  )}
                 </span>
                 <span className={styles.worldProgressCopy}>
                   <span>

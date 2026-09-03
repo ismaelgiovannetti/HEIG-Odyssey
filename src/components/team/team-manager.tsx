@@ -17,8 +17,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Hand,
-  Info,
   Leaf,
   Lightbulb,
   LoaderCircle,
@@ -44,11 +42,12 @@ import {
   teamRefusal,
   type TeamCell,
 } from "@/lib/team/team-draft";
-import { PokemonSprite, PokemonTypes } from "./pokemon-summary";
 import { PokemonDetailsDialog } from "./pokemon-details-dialog";
+import { TeamPokemonCell } from "./team-pokemon-cell";
 import { PokemonReleaseDialog } from "./pokemon-release-dialog";
 import { TeamTipsDialog } from "./team-tips-dialog";
 import { useTeamCollection } from "./use-team-collection";
+import { useTeamLeaveGuard } from "./use-team-leave-guard";
 import styles from "./team-manager.module.css";
 
 const START_CELL: TeamCell = { area: "team", slot: 1 };
@@ -83,15 +82,11 @@ export function TeamManager({ playerName }: { playerName: string }) {
   const dragSource = useRef<string | undefined>(undefined);
   const boxTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingFocus = useRef<TeamCell | null>(null);
-  const leaveGuard = useRef({ active: false, saving: false });
   const frozen = pending !== null || Boolean(error?.needsReload);
-  // Les effets passifs peuvent être nettoyés après le rendu suivant. La
-  // référence empêche alors un ancien écouteur de bloquer la navigation avec
-  // un état de sauvegarde devenu obsolète.
-  leaveGuard.current = {
+  useTeamLeaveGuard({
     active: dirty || pending === "save" || pending === "release",
     saving: pending === "save" || pending === "release",
-  };
+  });
   const byId = useMemo(
     () => new Map(snapshot?.pokemon.map((p) => [p.id, p]) ?? []),
     [snapshot],
@@ -117,12 +112,12 @@ export function TeamManager({ playerName }: { playerName: string }) {
     pending === "release"
       ? "Relâchement en cours…"
       : pending === "save"
-      ? "Enregistrement automatique…"
-      : pending === "load"
-        ? "Chargement de la collection…"
-        : dirty
-          ? "Sauvegarde non confirmée. Rechargez la collection pour vérifier."
-          : collection.notice || "Collection à jour.";
+        ? "Enregistrement automatique…"
+        : pending === "load"
+          ? "Chargement de la collection…"
+          : dirty
+            ? "Sauvegarde non confirmée. Rechargez la collection pour vérifier."
+            : collection.notice || "Collection à jour.";
   // Un refus de dépôt remplace le succès précédent au même endroit sous le PC.
   const feedbackText = boxError || moveError || saveStatus;
 
@@ -142,63 +137,6 @@ export function TeamManager({ playerName }: { playerName: string }) {
     },
     [],
   );
-
-  // On avertit uniquement tant que la sauvegarde n'est pas confirmée.
-  // Une fois la réponse reçue, quitter la page ne demande plus de confirmation.
-  // Aucune donnée privée n'est conservée dans le stockage local.
-  useEffect(() => {
-    if (!dirty && pending !== "save" && pending !== "release") return;
-    const beforeUnload = (event: BeforeUnloadEvent) => {
-      if (!leaveGuard.current.active) return;
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    const leave = (event: MouseEvent) => {
-      if (!leaveGuard.current.active) return;
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        event.altKey
-      )
-        return;
-      const link =
-        event.target instanceof Element
-          ? event.target.closest("a[href]")
-          : null;
-      if (
-        !(link instanceof HTMLAnchorElement) ||
-        link.target === "_blank" ||
-        link.hasAttribute("download")
-      )
-        return;
-      const target = new URL(link.href);
-      if (
-        target.pathname === window.location.pathname &&
-        target.search === window.location.search &&
-        target.origin === window.location.origin
-      )
-        return;
-      if (
-        !window.confirm(
-          leaveGuard.current.saving
-            ? "Une modification de la collection est en cours. Quitter cette page malgré tout ?"
-            : "Quitter cette page et abandonner les modifications non enregistrées ?",
-        )
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    window.addEventListener("beforeunload", beforeUnload);
-    document.addEventListener("click", leave, true);
-    return () => {
-      window.removeEventListener("beforeunload", beforeUnload);
-      document.removeEventListener("click", leave, true);
-    };
-  }, [dirty, pending]);
 
   function clearPickup() {
     setCarried(undefined);
@@ -415,145 +353,45 @@ export function TeamManager({ playerName }: { playerName: string }) {
     const pokemon = id ? byId.get(id) : undefined;
     const key = cellKey(cell);
     const picked = Boolean(id && id === carried);
-    const isTeam = cell.area === "team";
     const tabStop =
       focused.area === cell.area ? focused.slot === cell.slot : cell.slot === 1;
-    const movementButton = (
-      <button
+    return (
+      <TeamPokemonCell
         key={key}
-        type="button"
-        ref={(node) => {
+        cell={cell}
+        pokemon={pokemon}
+        picked={picked}
+        frozen={frozen}
+        highlighted={over === key}
+        tabStop={tabStop}
+        detailsDisabled={frozen || Boolean(carried)}
+        buttonRef={(node) => {
           if (node) buttons.current.set(key, node);
           else buttons.current.delete(key);
         }}
-        className={`${styles.cell} ${isTeam ? styles.teamCell : styles.pcCell}`}
-        data-picked={(!isTeam && picked) || undefined}
-        data-over={(!isTeam && over === key) || undefined}
-        data-empty={(!isTeam && !pokemon) || undefined}
-        aria-label={`${describeCell(cell)} : ${pokemon ? `${pokemon.name}, niveau ${pokemon.level}${pokemon.isShiny ? ", chromatique" : ""}${pokemon.currentHp === 0 ? ", K.O." : ""}` : "vide"}`}
-        aria-pressed={picked}
-        aria-disabled={frozen}
-        tabIndex={isTeam || tabStop ? 0 : -1}
-        draggable={Boolean(pokemon) && !frozen}
-        onFocus={() => {
-          setFocused(cell);
-        }}
-        onClick={() => activate(cell)}
-        onKeyDown={(event) => keyboard(event, cell)}
-        onDragStart={(event) => startDrag(event, cell)}
+        canDrop={() => Boolean(dragSource.current)}
+        onFocus={setFocused}
+        onActivate={activate}
+        onNavigate={keyboard}
+        onDragStart={startDrag}
         onDragEnd={clearPickup}
-        onDragOver={(event) => {
-          event.stopPropagation();
-          if (!dragSource.current || frozen) return;
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-          setOver(key);
+        onHighlight={(next) => {
+          if (next) setOver(next);
+          else setOver((current) => (current === key ? undefined : current));
         }}
-        onDragLeave={() =>
-          setOver((current) => (current === key ? undefined : current))
-        }
-        onDrop={(event) => {
+        onDrop={(event, destination) => {
           event.preventDefault();
-          // Une case précise conserve l'échange et ne déclenche pas aussi le dépôt sur le cadre.
+          // Une case précise ne déclenche pas aussi le dépôt sur le cadre.
           event.stopPropagation();
           const source = dragSource.current;
-          if (source) void place(source, cell);
+          if (source) void place(source, destination);
           clearPickup();
         }}
-      >
-        <span className={styles.slotNumber} aria-hidden="true">
-          {String(cell.slot).padStart(2, "0")}
-        </span>
-        {pokemon ? (
-          <>
-            {/* Une taille visuelle homogène garde les Pokémon lisibles dans
-                l'équipe comme dans les cases carrées du PC. */}
-            <PokemonSprite
-              pokemon={pokemon}
-              size={isTeam ? 80 : 45}
-              normalizeVisibleSize
-            />
-            {isTeam ? (
-              <span className={styles.teamInfo} aria-hidden="true">
-                <span className={styles.nameLine}>
-                  <strong>{pokemon.name}</strong>
-                  <span>Niv. {pokemon.level}</span>
-                </span>
-                <PokemonTypes types={pokemon.types} />
-                <span className={styles.hpLine}>
-                  <span className={styles.hpBar}>
-                    <span
-                      style={{
-                        width: `${Math.min(100, (pokemon.currentHp / pokemon.maxHp) * 100)}%`,
-                      }}
-                    />
-                  </span>
-                  <span>
-                    {pokemon.currentHp === 0
-                      ? "K.O."
-                      : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
-                  </span>
-                </span>
-              </span>
-            ) : (
-              <>
-                {pokemon.isShiny && (
-                  <span className={styles.shiny} aria-hidden="true">
-                    ✦
-                  </span>
-                )}
-                {pokemon.currentHp === 0 && (
-                  <span className={styles.ko} aria-hidden="true">
-                    K.O.
-                  </span>
-                )}
-              </>
-            )}
-            {picked && (
-              <Hand
-                className={styles.pickedMark}
-                size={14}
-                aria-hidden="true"
-              />
-            )}
-          </>
-        ) : (
-          <span className={styles.emptyLabel} aria-hidden="true">
-            {isTeam ? "Emplacement libre" : "+"}
-          </span>
-        )}
-      </button>
-    );
-
-    // Une seule carte porte la bordure et les états de déplacement, même vide.
-    // Les deux boutons restent frères : consulter la fiche ne prend pas le Pokémon.
-    if (!isTeam) return movementButton;
-    return (
-      <div
-        key={key}
-        className={styles.teamCard}
-        data-picked={picked || undefined}
-        data-over={over === key || undefined}
-        data-empty={!pokemon || undefined}
-      >
-        {movementButton}
-        {pokemon && (
-          <button
-            type="button"
-            className={styles.detailsButton}
-            aria-label={`Voir les détails de ${pokemon.name}`}
-            aria-haspopup="dialog"
-            title={`Voir les détails de ${pokemon.name}`}
-            disabled={frozen || Boolean(carried)}
-            onClick={() => {
-              if (frozen || carried || collection.isBusy()) return;
-              setDetailsId(pokemon.id);
-            }}
-          >
-            <Info size={22} aria-hidden="true" />
-          </button>
-        )}
-      </div>
+        onOpenDetails={(pokemonId) => {
+          if (frozen || carried || collection.isBusy()) return;
+          setDetailsId(pokemonId);
+        }}
+      />
     );
   }
 
@@ -657,241 +495,238 @@ export function TeamManager({ playerName }: { playerName: string }) {
           </div>
         ) : (
           <>
-          <div className={styles.workspace} aria-busy={pending !== null}>
-            <section
-              className={`${styles.panel} ${styles.teamPanel}`}
-              aria-labelledby="active-team-heading"
-            >
-              <header className={styles.panelHeading}>
-                <div>
-                  <UsersRound size={20} aria-hidden="true" />
-                  <h2 id="active-team-heading">Mon équipe</h2>
-                </div>
-                <span>
-                  {draft.team.length} / {TEAM_CAPACITY}
-                </span>
-              </header>
-              <div
-                className={styles.teamSlots}
-                role="group"
-                aria-label="Emplacements de l'équipe"
+            <div className={styles.workspace} aria-busy={pending !== null}>
+              <section
+                className={`${styles.panel} ${styles.teamPanel}`}
+                aria-labelledby="active-team-heading"
               >
-                {Array.from({ length: TEAM_CAPACITY }, (_, i) =>
-                  renderCell({ area: "team", slot: i + 1 }),
-                )}
-              </div>
-              <p className={styles.panelFoot}>
-                Un à six partenaires, dont un apte au combat. Les places se
-                regroupent après un retrait.
-              </p>
-            </section>
-
-            <section
-              className={`${styles.panel} ${styles.pcPanel}`}
-              aria-labelledby="pc-heading"
-              data-drop-target={over === `box-${box}` || undefined}
-              onDragOver={(event) => {
-                if (!dragSource.current || frozen) return;
-                event.preventDefault();
-                event.dataTransfer.dropEffect = "move";
-                setOver(`box-${box}`);
-              }}
-              onDragLeave={(event) => {
-                if (
-                  event.relatedTarget instanceof Node &&
-                  event.currentTarget.contains(event.relatedTarget)
-                )
-                  return;
-                setOver((current) =>
-                  current === `box-${box}` ? undefined : current,
-                );
-              }}
-              onDrop={dropInBox}
-            >
-              <header className={styles.panelHeading}>
-                <div>
-                  <Monitor size={20} aria-hidden="true" />
-                  <h2 id="pc-heading">PC de {playerName}</h2>
-                </div>
-              </header>
-              <div className={styles.boxHeading}>
-                <button
-                  type="button"
-                  className={styles.boxArrow}
-                  aria-label="Boîte précédente"
-                  disabled={pending !== null}
-                  onClick={() => changeBox(-1)}
-                  onDragEnter={() => hoverBox(-1)}
-                  onDragLeave={stopHoverBox}
-                  onDragOver={(event) => {
-                    if (dragSource.current) event.preventDefault();
-                  }}
-                >
-                  <ChevronLeft size={22} aria-hidden="true" />
-                </button>
-                <div>
-                  <h3>{snapshot.pc.boxes[box - 1].name}</h3>
-                  <span aria-hidden="true">-</span>
-                  <span>
-                    {boxCount} / {PC_BOX_CAPACITY} places
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.boxArrow}
-                  aria-label="Boîte suivante"
-                  disabled={pending !== null}
-                  onClick={() => changeBox(1)}
-                  onDragEnter={() => hoverBox(1)}
-                  onDragLeave={stopHoverBox}
-                  onDragOver={(event) => {
-                    if (dragSource.current) event.preventDefault();
-                  }}
-                >
-                  <ChevronRight size={22} aria-hidden="true" />
-                </button>
-              </div>
-              <div
-                className={styles.pcGrid}
-                style={
-                  {
-                    "--pc-rows": PC_ROWS,
-                    "--pc-columns": PC_COLUMNS,
-                  } as CSSProperties
-                }
-                role="grid"
-                aria-label={`Boîte ${box}`}
-                aria-rowcount={PC_ROWS}
-                aria-colcount={PC_COLUMNS}
-              >
-                {Array.from({ length: PC_ROWS }, (_, row) => (
-                  <div
-                    role="row"
-                    aria-rowindex={row + 1}
-                    className={styles.pcRow}
-                    key={row}
-                  >
-                    {Array.from({ length: PC_COLUMNS }, (_, column) => (
-                      <div
-                        role="gridcell"
-                        aria-colindex={column + 1}
-                        key={column}
-                      >
-                        {renderCell({
-                          area: "pc",
-                          box,
-                          slot: row * PC_COLUMNS + column + 1,
-                        })}
-                      </div>
-                    ))}
+                <header className={styles.panelHeading}>
+                  <div>
+                    <UsersRound size={20} aria-hidden="true" />
+                    <h2 id="active-team-heading">Mon équipe</h2>
                   </div>
-                ))}
-              </div>
-              <p className={styles.panelFoot}>
-                <button
-                  ref={releaseButton}
-                  type="button"
-                  className={styles.releaseButton}
-                  data-over={over === "release" || undefined}
-                  aria-label={
-                    carried && byId.get(carried)
-                      ? `Relâcher ${byId.get(carried)!.name} dans la nature`
-                      : "Relâcher un Pokémon dans la nature"
-                  }
-                  title="Relâcher dans la nature"
-                  disabled={frozen}
-                  onClick={() => {
-                    if (carried) {
-                      prepareRelease(carried);
-                      return;
-                    }
-                    collection.clearFeedback();
-                    setMoveError(
-                      "Prenez d’abord un Pokémon avant de le relâcher.",
-                    );
-                    setBoxError("");
-                    setAnnouncement("");
-                  }}
-                  onDragEnter={(event) => {
-                    event.stopPropagation();
-                    if (dragSource.current && !frozen) setOver("release");
-                  }}
-                  onDragOver={(event) => {
-                    event.stopPropagation();
-                    if (!dragSource.current || frozen) return;
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = "move";
-                    setOver("release");
-                  }}
-                  onDragLeave={() =>
-                    setOver((current) =>
-                      current === "release" ? undefined : current,
-                    )
-                  }
-                  onDrop={dropForRelease}
+                  <span>
+                    {draft.team.length} / {TEAM_CAPACITY}
+                  </span>
+                </header>
+                <div
+                  className={styles.teamSlots}
+                  role="group"
+                  aria-label="Emplacements de l'équipe"
                 >
-                  <Leaf size={18} aria-hidden="true" />
-                </button>
-                <span className={styles.pcCount}>
-                  {snapshot.count}{" "}
-                  {snapshot.count > 1 ? "Pokémons" : "Pokémon"}{" "}
-                  au total
-                </span>
-              </p>
-            </section>
-          </div>
+                  {Array.from({ length: TEAM_CAPACITY }, (_, i) =>
+                    renderCell({ area: "team", slot: i + 1 }),
+                  )}
+                </div>
+                <p className={styles.panelFoot}>
+                  Un à six partenaires, dont un apte au combat. Les places se
+                  regroupent après un retrait.
+                </p>
+              </section>
 
-          {/* Le retour de sauvegarde reste sous le PC, même pendant une prise. */}
-          <div
-            className={styles.saveFeedback}
-            data-error={Boolean(boxError || moveError) || undefined}
-          >
-            {pending === "save" || pending === "release" ? (
-              <LoaderCircle
-                className={styles.savingIcon}
-                size={16}
-                aria-hidden="true"
-              />
-            ) : boxError || moveError || error || dirty ? (
-              <AlertCircle
-                className={styles.saveWarning}
-                size={16}
-                aria-hidden="true"
-              />
-            ) : (
-              <Check size={16} aria-hidden="true" />
-            )}
-            {moveError ? (
-              <span role="alert">{moveError}</span>
-            ) : (
-              <span>{feedbackText}</span>
-            )}
-          </div>
+              <section
+                className={`${styles.panel} ${styles.pcPanel}`}
+                aria-labelledby="pc-heading"
+                data-drop-target={over === `box-${box}` || undefined}
+                onDragOver={(event) => {
+                  if (!dragSource.current || frozen) return;
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  setOver(`box-${box}`);
+                }}
+                onDragLeave={(event) => {
+                  if (
+                    event.relatedTarget instanceof Node &&
+                    event.currentTarget.contains(event.relatedTarget)
+                  )
+                    return;
+                  setOver((current) =>
+                    current === `box-${box}` ? undefined : current,
+                  );
+                }}
+                onDrop={dropInBox}
+              >
+                <header className={styles.panelHeading}>
+                  <div>
+                    <Monitor size={20} aria-hidden="true" />
+                    <h2 id="pc-heading">PC de {playerName}</h2>
+                  </div>
+                </header>
+                <div className={styles.boxHeading}>
+                  <button
+                    type="button"
+                    className={styles.boxArrow}
+                    aria-label="Boîte précédente"
+                    disabled={pending !== null}
+                    onClick={() => changeBox(-1)}
+                    onDragEnter={() => hoverBox(-1)}
+                    onDragLeave={stopHoverBox}
+                    onDragOver={(event) => {
+                      if (dragSource.current) event.preventDefault();
+                    }}
+                  >
+                    <ChevronLeft size={22} aria-hidden="true" />
+                  </button>
+                  <div>
+                    <h3>{snapshot.pc.boxes[box - 1].name}</h3>
+                    <span aria-hidden="true">-</span>
+                    <span>
+                      {boxCount} / {PC_BOX_CAPACITY} places
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.boxArrow}
+                    aria-label="Boîte suivante"
+                    disabled={pending !== null}
+                    onClick={() => changeBox(1)}
+                    onDragEnter={() => hoverBox(1)}
+                    onDragLeave={stopHoverBox}
+                    onDragOver={(event) => {
+                      if (dragSource.current) event.preventDefault();
+                    }}
+                  >
+                    <ChevronRight size={22} aria-hidden="true" />
+                  </button>
+                </div>
+                <div
+                  className={styles.pcGrid}
+                  style={
+                    {
+                      "--pc-rows": PC_ROWS,
+                      "--pc-columns": PC_COLUMNS,
+                    } as CSSProperties
+                  }
+                  role="grid"
+                  aria-label={`Boîte ${box}`}
+                  aria-rowcount={PC_ROWS}
+                  aria-colcount={PC_COLUMNS}
+                >
+                  {Array.from({ length: PC_ROWS }, (_, row) => (
+                    <div
+                      role="row"
+                      aria-rowindex={row + 1}
+                      className={styles.pcRow}
+                      key={row}
+                    >
+                      {Array.from({ length: PC_COLUMNS }, (_, column) => (
+                        <div
+                          role="gridcell"
+                          aria-colindex={column + 1}
+                          key={column}
+                        >
+                          {renderCell({
+                            area: "pc",
+                            box,
+                            slot: row * PC_COLUMNS + column + 1,
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <p className={styles.panelFoot}>
+                  <button
+                    ref={releaseButton}
+                    type="button"
+                    className={styles.releaseButton}
+                    data-over={over === "release" || undefined}
+                    aria-label={
+                      carried && byId.get(carried)
+                        ? `Relâcher ${byId.get(carried)!.name} dans la nature`
+                        : "Relâcher un Pokémon dans la nature"
+                    }
+                    title="Relâcher dans la nature"
+                    disabled={frozen}
+                    onClick={() => {
+                      if (carried) {
+                        prepareRelease(carried);
+                        return;
+                      }
+                      collection.clearFeedback();
+                      setMoveError(
+                        "Prenez d’abord un Pokémon avant de le relâcher.",
+                      );
+                      setBoxError("");
+                      setAnnouncement("");
+                    }}
+                    onDragEnter={(event) => {
+                      event.stopPropagation();
+                      if (dragSource.current && !frozen) setOver("release");
+                    }}
+                    onDragOver={(event) => {
+                      event.stopPropagation();
+                      if (!dragSource.current || frozen) return;
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                      setOver("release");
+                    }}
+                    onDragLeave={() =>
+                      setOver((current) =>
+                        current === "release" ? undefined : current,
+                      )
+                    }
+                    onDrop={dropForRelease}
+                  >
+                    <Leaf size={18} aria-hidden="true" />
+                  </button>
+                  <span className={styles.pcCount}>
+                    {snapshot.count}{" "}
+                    {snapshot.count > 1 ? "Pokémons" : "Pokémon"} au total
+                  </span>
+                </p>
+              </section>
+            </div>
 
-          {detailsPokemon && (
-            <PokemonDetailsDialog
-              key={detailsPokemon.id}
-              pokemon={detailsPokemon}
-              onClose={closeDetails}
-              onUpdated={() => {
-                void collection.reload();
-              }}
-            />
-          )}
-          {releaseCandidate && (
-            <PokemonReleaseDialog
-              key={releaseCandidate.id}
-              pokemon={releaseCandidate}
-              pending={pending === "release"}
-              onCancel={() => {
-                if (pending !== "release") setReleaseId(undefined);
-              }}
-              onConfirm={() => void confirmRelease()}
-            />
-          )}
-          {tipsOpen && (
-            <TeamTipsDialog onClose={() => setTipsOpen(false)} />
-          )}
+            {/* Le retour de sauvegarde reste sous le PC, même pendant une prise. */}
+            <div
+              className={styles.saveFeedback}
+              data-error={Boolean(boxError || moveError) || undefined}
+            >
+              {pending === "save" || pending === "release" ? (
+                <LoaderCircle
+                  className={styles.savingIcon}
+                  size={16}
+                  aria-hidden="true"
+                />
+              ) : boxError || moveError || error || dirty ? (
+                <AlertCircle
+                  className={styles.saveWarning}
+                  size={16}
+                  aria-hidden="true"
+                />
+              ) : (
+                <Check size={16} aria-hidden="true" />
+              )}
+              {moveError ? (
+                <span role="alert">{moveError}</span>
+              ) : (
+                <span>{feedbackText}</span>
+              )}
+            </div>
+
+            {detailsPokemon && (
+              <PokemonDetailsDialog
+                key={detailsPokemon.id}
+                pokemon={detailsPokemon}
+                onClose={closeDetails}
+                onUpdated={() => {
+                  void collection.reload();
+                }}
+              />
+            )}
+            {releaseCandidate && (
+              <PokemonReleaseDialog
+                key={releaseCandidate.id}
+                pokemon={releaseCandidate}
+                pending={pending === "release"}
+                onCancel={() => {
+                  if (pending !== "release") setReleaseId(undefined);
+                }}
+                onConfirm={() => void confirmRelease()}
+              />
+            )}
+            {tipsOpen && <TeamTipsDialog onClose={() => setTipsOpen(false)} />}
           </>
         )}
       </div>

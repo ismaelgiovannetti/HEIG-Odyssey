@@ -81,30 +81,34 @@ const RewardSchema = z.object({
   newBalance: z.number().int().nonnegative(),
   stageCompleted: z.boolean(),
   unlockedNextStageId: z.string().nullable(),
-  teamLeveledUp: z.array(z.object({
-    pokemonId: z.string().min(1),
-    speciesId: z.string().min(1),
-    name: z.string().min(1),
-    oldLevel: z.number().int().min(1).max(100),
-    newLevel: z.number().int().min(1).max(100),
-    newCurrentHp: z.number().nonnegative(),
-    newMaxHp: z.number().positive(),
-  })),
+  teamLeveledUp: z.array(
+    z.object({
+      pokemonId: z.string().min(1),
+      speciesId: z.string().min(1),
+      name: z.string().min(1),
+      oldLevel: z.number().int().min(1).max(100),
+      newLevel: z.number().int().min(1).max(100),
+      newCurrentHp: z.number().nonnegative(),
+      newMaxHp: z.number().positive(),
+    }),
+  ),
 });
 
-export const EventSchema = z.object({
-  type: z.string().min(1),
-  turn: z.number().int().nonnegative(),
-  message: z.string(),
-  side: z.enum(["p1", "p2"]).optional(),
-  currentHp: z.number().optional(),
-  maxHp: z.number().optional(),
-  multiplier: z.number().optional(),
-  status: z.string().optional(),
-  hitCount: z.number().optional(),
-  residual: z.boolean().optional(),
-  fromEffect: z.string().optional(),
-}).passthrough();
+export const EventSchema = z
+  .object({
+    type: z.string().min(1),
+    turn: z.number().int().nonnegative(),
+    message: z.string(),
+    side: z.enum(["p1", "p2"]).optional(),
+    currentHp: z.number().optional(),
+    maxHp: z.number().optional(),
+    multiplier: z.number().optional(),
+    status: z.string().optional(),
+    hitCount: z.number().optional(),
+    residual: z.boolean().optional(),
+    fromEffect: z.string().optional(),
+  })
+  .passthrough();
 
 const StartResponseSchema = z.object({
   success: z.literal(true),
@@ -202,7 +206,8 @@ export async function readBattleActionResponse(
     const conflict = ConflictSchema.safeParse(body);
     if (conflict.success) {
       throw new BattleStateConflictError(
-        conflict.data.error ?? "Le combat a avancé. L'affichage a été actualisé.",
+        conflict.data.error ??
+          "Le combat a avancé. L'affichage a été actualisé.",
         conflict.data.state,
       );
     }

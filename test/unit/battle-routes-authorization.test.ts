@@ -244,7 +244,9 @@ describe("autorisation du démarrage d'un combat", () => {
     );
     expect(mocks.registerBattleSession.mock.calls[0]?.[1]).toBe("owner-user");
     // Les participants sont les créatures lues en base, pas des identifiants clients.
-    expect(mocks.registerBattleSession.mock.calls[0]?.[2]).toEqual(["pokemon-1"]);
+    expect(mocks.registerBattleSession.mock.calls[0]?.[2]).toEqual([
+      "pokemon-1",
+    ]);
   });
 
   it("refuse une origine externe avant de créer un combat", async () => {
@@ -377,8 +379,12 @@ describe("POST /api/battle/abandon", () => {
 
 describe("erreurs internes des combats", () => {
   it("ne renvoie jamais le message technique au navigateur", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mocks.processBattleTurn.mockRejectedValue(new Error("internal-secret-value"));
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    mocks.processBattleTurn.mockRejectedValue(
+      new Error("internal-secret-value"),
+    );
 
     const response = await applyBattleAction(
       request("/api/battle/action", {

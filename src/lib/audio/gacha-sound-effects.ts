@@ -66,7 +66,9 @@ export class GachaSoundPlayer {
 
   private remember(source: AudioScheduledSourceNode) {
     this.sources.add(source);
-    source.addEventListener("ended", () => this.sources.delete(source), { once: true });
+    source.addEventListener("ended", () => this.sources.delete(source), {
+      once: true,
+    });
   }
 
   private stopScheduledSources() {
@@ -116,7 +118,10 @@ export class GachaSoundPlayer {
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, startsAt);
     gain.gain.setValueAtTime(0.0001, startsAt);
-    gain.gain.exponentialRampToValueAtTime(level, startsAt + Math.min(0.08, duration / 4));
+    gain.gain.exponentialRampToValueAtTime(
+      level,
+      startsAt + Math.min(0.08, duration / 4),
+    );
     gain.gain.exponentialRampToValueAtTime(0.0001, startsAt + duration);
     oscillator.connect(gain).connect(destination);
     oscillator.start(startsAt);
@@ -186,7 +191,15 @@ export class GachaSoundPlayer {
 
     this.scheduleNoise(context, master, now, 3, 0.045, 780);
     [220, 293.66, 369.99, 440, 587.33].forEach((frequency, index) => {
-      this.scheduleTone(context, master, frequency, now + 0.35 + index * 0.48, 0.72, 0.07, "triangle");
+      this.scheduleTone(
+        context,
+        master,
+        frequency,
+        now + 0.35 + index * 0.48,
+        0.72,
+        0.07,
+        "triangle",
+      );
     });
   }
 
@@ -203,8 +216,24 @@ export class GachaSoundPlayer {
     master.connect(context.destination);
 
     [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
-      this.scheduleTone(context, master, frequency, now + index * 0.3, 0.82, 0.12, "sine");
-      this.scheduleTone(context, master, frequency * 2, now + 0.04 + index * 0.3, 0.5, 0.035, "triangle");
+      this.scheduleTone(
+        context,
+        master,
+        frequency,
+        now + index * 0.3,
+        0.82,
+        0.12,
+        "sine",
+      );
+      this.scheduleTone(
+        context,
+        master,
+        frequency * 2,
+        now + 0.04 + index * 0.3,
+        0.5,
+        0.035,
+        "triangle",
+      );
     });
     this.scheduleNoise(context, master, now + 0.92, 0.34, 0.08, 2_400);
     this.scheduleTone(context, master, 1318.51, now + 1.18, 0.76, 0.09, "sine");
@@ -217,7 +246,8 @@ export class GachaSoundPlayer {
       preferences.isMuted ||
       preferences.volume <= 0 ||
       !/^[a-z0-9-]+$/i.test(speciesId)
-    ) return;
+    )
+      return;
 
     if (
       this.crySpeciesId === speciesId &&
@@ -242,8 +272,15 @@ export class GachaSoundPlayer {
         if (!response.ok) return;
 
         const payload = (await response.json()) as PokeApiCryResponse;
-        const sources = [payload.cries?.latest, payload.cries?.legacy].filter(isAllowedCryUrl);
-        if (request.signal.aborted || sources.length === 0 || typeof Audio === "undefined") return;
+        const sources = [payload.cries?.latest, payload.cries?.legacy].filter(
+          isAllowedCryUrl,
+        );
+        if (
+          request.signal.aborted ||
+          sources.length === 0 ||
+          typeof Audio === "undefined"
+        )
+          return;
 
         let sourceIndex = 0;
         const audio = new Audio(sources[sourceIndex]);
@@ -283,7 +320,8 @@ export class GachaSoundPlayer {
     this.cryPreparation = preparation;
     await preparation;
     if (this.cryPreparation === preparation) this.cryPreparation = null;
-    if (!this.cryAudio && this.crySpeciesId === speciesId) this.crySpeciesId = null;
+    if (!this.cryAudio && this.crySpeciesId === speciesId)
+      this.crySpeciesId = null;
   }
 
   /** Joue une seule fois le cri préchargé au moment de la révélation. */

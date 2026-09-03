@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 
+import "../../battle.css";
+import "../../training.css";
+
 import { ApplicationShell } from "@/components/application/application-shell";
 import { TrainingHub } from "@/components/training/training-hub";
 import { getApplicationPlayer } from "@/lib/player/application-player";

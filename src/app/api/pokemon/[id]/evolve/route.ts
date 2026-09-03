@@ -61,7 +61,11 @@ export async function POST(
       return json({ success: false, error: error.message }, error.status);
     }
 
-    logger.error("Échec de l'évolution du Pokémon", { requestId, pokemonId: id }, error);
+    logger.error(
+      "Échec de l'évolution du Pokémon",
+      { requestId, pokemonId: id },
+      error,
+    );
     return json(
       { success: false, error: "Impossible de faire évoluer ce Pokémon." },
       500,

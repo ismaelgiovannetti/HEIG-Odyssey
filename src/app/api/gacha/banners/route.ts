@@ -11,10 +11,14 @@ export async function GET(req: Request) {
       data: banners,
     });
   } catch (error) {
-    logger.error("Échec du chargement des bannières", { requestId, action: "gacha.banners.list" }, error);
+    logger.error(
+      "Échec du chargement des bannières",
+      { requestId, action: "gacha.banners.list" },
+      error,
+    );
     return NextResponse.json(
       { success: false, error: "Impossible de récupérer les bannières." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

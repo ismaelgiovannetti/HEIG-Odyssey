@@ -1,32 +1,12 @@
 import { Sparkles, Swords } from "lucide-react";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
 import type { PokemonType } from "@/lib/content/schemas";
 import type { EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 import { formatGameInteger } from "@/lib/format-number";
 import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
-import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
+import { getPokemonTypeLabel } from "@/lib/pokemon/type-presentation";
 import styles from "./team-manager.module.css";
-
-const TYPE_LABELS: Record<PokemonType, string> = {
-  Normal: "Normal",
-  Fire: "Feu",
-  Water: "Eau",
-  Grass: "Plante",
-  Electric: "Électrik",
-  Ice: "Glace",
-  Fighting: "Combat",
-  Poison: "Poison",
-  Ground: "Sol",
-  Flying: "Vol",
-  Psychic: "Psy",
-  Bug: "Insecte",
-  Rock: "Roche",
-  Ghost: "Spectre",
-  Dragon: "Dragon",
-  Steel: "Acier",
-  Dark: "Ténèbres",
-};
 
 // Les libellés restent lisibles indépendamment de la couleur ou du thème choisi.
 export function PokemonTypes({ types }: { types: PokemonType[] }) {
@@ -34,7 +14,7 @@ export function PokemonTypes({ types }: { types: PokemonType[] }) {
     <span className={styles.types}>
       {types.map((type) => (
         <span key={type} className={styles.type} data-type={type}>
-          {TYPE_LABELS[type]}
+          {getPokemonTypeLabel(type)}
         </span>
       ))}
     </span>
@@ -91,8 +71,8 @@ export function PokemonSummary({
               #
               {pokemon.dexNumber == null
                 ? "-"
-                : String(pokemon.dexNumber).padStart(3, "0")} · Niveau{" "}
-              {pokemon.level}
+                : String(pokemon.dexNumber).padStart(3, "0")}{" "}
+              · Niveau {pokemon.level}
             </p>
             <h2 id={titleId}>
               {pokemon.name}{" "}
@@ -230,4 +210,3 @@ export function PokemonSummary({
     </section>
   );
 }
-
