@@ -197,7 +197,7 @@ export function PokemonMovesEditor({
         <section className={styles.equippedSection}>
           <div className={styles.sectionHeading}>
             <h3>Capacités actives ({equippedMoves.length}/4)</h3>
-            <small>Choisissez jusqu'à 4 capacités à emmener en combat</small>
+            <small>Choisissez jusqu&apos;à 4 capacités à emmener en combat</small>
           </div>
 
           <div className={styles.equippedGrid}>

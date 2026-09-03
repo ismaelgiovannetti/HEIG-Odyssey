@@ -184,7 +184,7 @@ export function PokemonEvolutionDialog({
                 </p>
               ) : (
                 <p>
-                  Ce Pokémon requiert encore de l'expérience (Niveau {evolution.requiredLevel}) pour pouvoir évoluer en{" "}
+                  Ce Pokémon requiert encore de l&apos;expérience (Niveau {evolution.requiredLevel}) pour pouvoir évoluer en{" "}
                   <strong>{evolution.targetName}</strong>.
                 </p>
               )}
