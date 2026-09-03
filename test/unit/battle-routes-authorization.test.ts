@@ -28,6 +28,7 @@ const mocks = vi.hoisted(() => {
     getTrainer: vi.fn(),
     loadCampaign: vi.fn(),
     processBattleTurn: vi.fn(),
+    consumeFixedWindowRateLimit: vi.fn(),
     registerBattleSession: vi.fn(),
     userPokemonToTrainerPokemon: vi.fn(),
     validateTeamComposition: vi.fn(),
@@ -36,6 +37,14 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: mocks.getSession } },
+}));
+
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
+vi.mock("@/lib/security/rate-limit", () => ({
+  consumeFixedWindowRateLimit: mocks.consumeFixedWindowRateLimit,
 }));
 
 vi.mock("@/lib/campaign/campaign-service", () => ({
@@ -75,7 +84,10 @@ import { POST as abandonBattle } from "@/app/api/battle/abandon/route";
 function request(path: string, body: unknown): Request {
   return new Request(`http://localhost:3000${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+    },
     body: JSON.stringify(body),
   });
 }
@@ -83,6 +95,10 @@ function request(path: string, body: unknown): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getSession.mockResolvedValue({ user: { id: "owner-user" } });
+  mocks.consumeFixedWindowRateLimit.mockResolvedValue({
+    allowed: true,
+    retryAfter: null,
+  });
   mocks.findMany.mockResolvedValue([{ id: "pokemon-1" }]);
   mocks.validateTeamComposition.mockReturnValue({ isValid: true, errors: [] });
   mocks.userPokemonToTrainerPokemon.mockReturnValue({
@@ -115,7 +131,7 @@ describe("POST /api/battle/start", () => {
     mocks.getSession.mockResolvedValue(null);
 
     const response = await startBattle(
-      request("/api/battle/start", { trainerId: "trainer-1" }),
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
     );
 
     expect(response.status).toBe(401);
@@ -127,20 +143,34 @@ describe("POST /api/battle/start", () => {
     const response = await startBattle(
       request("/api/battle/start", {
         userId: "victim-user",
-        trainerId: "trainer-1",
+        stageId: "bachelor-1-stage-1",
       }),
     );
 
     expect(response.status).toBe(400);
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
+
+  it("limite le nombre de combats démarrés par un même compte", async () => {
+    mocks.consumeFixedWindowRateLimit.mockResolvedValue({
+      allowed: false,
+      retryAfter: 42,
+    });
+
+    const response = await startBattle(
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("42");
+    expect(mocks.findMany).not.toHaveBeenCalled();
+  });
 });
 
 describe("autorisation du démarrage d'un combat", () => {
-  it("refuse de mélanger une étape de campagne et un autre dresseur", async () => {
+  it("refuse un identifiant de dresseur fourni directement par le client", async () => {
     const response = await startBattle(
       request("/api/battle/start", {
-        stageId: "bachelor-1-stage-1",
         trainerId: "trainer-1",
       }),
     );
@@ -203,7 +233,7 @@ describe("autorisation du démarrage d'un combat", () => {
 
   it("charge et enregistre le combat avec l'identité Better Auth", async () => {
     const response = await startBattle(
-      request("/api/battle/start", { trainerId: "trainer-1" }),
+      request("/api/battle/start", { stageId: "bachelor-1-stage-1" }),
     );
 
     expect(response.status).toBe(200);
@@ -215,6 +245,23 @@ describe("autorisation du démarrage d'un combat", () => {
     expect(mocks.registerBattleSession.mock.calls[0]?.[1]).toBe("owner-user");
     // Les participants sont les créatures lues en base, pas des identifiants clients.
     expect(mocks.registerBattleSession.mock.calls[0]?.[2]).toEqual(["pokemon-1"]);
+  });
+
+  it("refuse une origine externe avant de créer un combat", async () => {
+    const response = await startBattle(
+      new Request("http://localhost:3000/api/battle/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://malveillant.example",
+        },
+        body: JSON.stringify({ stageId: "bachelor-1-stage-1" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.registerBattleSession).not.toHaveBeenCalled();
   });
 });
 

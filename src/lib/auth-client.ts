@@ -66,6 +66,14 @@ export function signUpWithEmail({ username, email, password, callbackPath }: Sig
   });
 }
 
+// Better Auth applique à nouveau la validation et la normalisation côté serveur.
+// Cette vérification sert uniquement à fournir un retour anticipé dans le formulaire.
+export function checkUsernameAvailability(username: string) {
+  return authClient.isUsernameAvailable({
+    username: normalizeUsername(username),
+  });
+}
+
 export function signInWithIdentifier({
   identifier,
   password,

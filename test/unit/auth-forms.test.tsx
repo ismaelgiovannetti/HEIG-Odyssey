@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // un serveur ni dépendre d'un compte réel, de PostgreSQL ou de Resend.
 const formMocks = vi.hoisted(() => ({
   buildPostSignInCallback: vi.fn(),
+  checkUsernameAvailability: vi.fn(),
   requestPasswordRecovery: vi.fn(),
   requestVerificationEmail: vi.fn(),
   resetPasswordWithToken: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/auth-client", () => ({
   buildPostSignInCallback: formMocks.buildPostSignInCallback,
+  checkUsernameAvailability: formMocks.checkUsernameAvailability,
   requestPasswordRecovery: formMocks.requestPasswordRecovery,
   requestVerificationEmail: formMocks.requestVerificationEmail,
   resetPasswordWithToken: formMocks.resetPasswordWithToken,
@@ -49,6 +51,10 @@ describe("erreurs des formulaires d'authentification", () => {
     formMocks.useRouter.mockReturnValue({ push: formMocks.routerPush });
     formMocks.useSearchParams.mockReturnValue(new URLSearchParams());
     formMocks.buildPostSignInCallback.mockReturnValue("/auth/continue?next=%2Fdashboard");
+    formMocks.checkUsernameAvailability.mockResolvedValue({
+      data: { available: true },
+      error: null,
+    });
   });
 
   afterEach(() => {
@@ -148,8 +154,26 @@ describe("erreurs des formulaires d'authentification", () => {
     expect(formMocks.signUpWithEmail).not.toHaveBeenCalled();
   });
 
-  // Le serveur peut refuser l'inscription sans révéler le champ déjà utilisé.
-  it("ne révèle pas si l'e-mail ou le nom existe déjà", async () => {
+  it("signale en direct un nom d'utilisateur déjà pris", async () => {
+    const user = userEvent.setup();
+    formMocks.checkUsernameAvailability.mockResolvedValue({
+      data: { available: false },
+      error: null,
+    });
+    render(<SignupForm />);
+
+    const usernameInput = screen.getByLabelText("Nom d'utilisateur");
+    await user.type(usernameInput, "Katniss_1");
+
+    expect(
+      await screen.findByText("Ce nom d'utilisateur est déjà pris.", {}, { timeout: 2_000 })
+    ).toBeTruthy();
+    expect(usernameInput.getAttribute("aria-invalid")).toBe("true");
+    expect(formMocks.checkUsernameAvailability).toHaveBeenCalledWith("Katniss_1");
+  });
+
+  // Le refus final ne révèle ni l'adresse enregistrée ni les détails du serveur.
+  it("conserve un refus d'inscription générique", async () => {
     const user = userEvent.setup();
     formMocks.signUpWithEmail.mockResolvedValue({
       error: { message: "USER_ALREADY_EXISTS" },

@@ -1,4 +1,5 @@
 import type { DomainEventEnvelope, DomainEventType } from "@/lib/events/contracts";
+import { isPermanentDomainEventError } from "@/lib/events/errors";
 import { logger } from "@/lib/logger";
 
 export type EventHandler<T = any> = (event: DomainEventEnvelope<T>) => Promise<void>;
@@ -37,11 +38,12 @@ export function clearEventHandlers(): void {
  */
 export async function dispatchDomainEvent(event: DomainEventEnvelope): Promise<{
   success: boolean;
+  retryable: boolean;
   errors: Error[];
 }> {
   const handlers = eventHandlersMap.get(event.eventType);
   if (!handlers || handlers.size === 0) {
-    return { success: true, errors: [] };
+    return { success: true, retryable: false, errors: [] };
   }
 
   const errors: Error[] = [];
@@ -62,6 +64,9 @@ export async function dispatchDomainEvent(event: DomainEventEnvelope): Promise<{
 
   return {
     success: errors.length === 0,
+    // Une erreur inconnue est transitoire par défaut. On ne met en quarantaine
+    // que les événements dont tous les échecs sont explicitement permanents.
+    retryable: errors.some((error) => !isPermanentDomainEventError(error)),
     errors,
   };
 }

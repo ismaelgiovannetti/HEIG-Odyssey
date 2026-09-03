@@ -58,15 +58,16 @@ test.describe("boucle principale (T-US19-05)", () => {
     // Le Pikachu niveau 50 écrase le Bidoof niveau 6 : une victoire déterministe
     // en un tour, sans dépendre du profil aléatoire de l'IA adverse.
     const victoryHeading = page.getByRole("heading", { name: "Victoire confirmée !" });
-    for (let attempt = 0; attempt < 3 && !(await victoryHeading.isVisible()); attempt++) {
-      const actionResolved = page.waitForResponse(
+    const decisiveMove = page.getByRole("button", { name: /^Tonnerre\b/ });
+    await expect(decisiveMove).toBeEnabled();
+    await Promise.all([
+      page.waitForResponse(
         (response) =>
           response.url().endsWith("/api/battle/action") && response.ok(),
-      );
-      await page.getByRole("button", { name: /Thunderbolt/ }).click();
-      await actionResolved;
-    }
-    await expect(victoryHeading).toBeVisible();
+      ),
+      decisiveMove.click(),
+    ]);
+    await expect(victoryHeading).toBeVisible({ timeout: 15_000 });
 
     // --- Étape 3 : résultat et gains vérifiés immédiatement après le combat -
     const rewards = page.locator(".battle-result__rewards");
@@ -99,8 +100,6 @@ test.describe("boucle principale (T-US19-05)", () => {
     await page.getByRole("button", { name: /Générer l.adversaire/ }).click();
     await trainingOpponentReady;
 
-    await expect(page.getByRole("heading", { name: "Simulation prête" })).toBeVisible();
-    await page.getByRole("button", { name: /Entrer dans l.arène/ }).click();
     await expect(page.locator("#battle-title")).toBeVisible();
 
     // La difficulté ne change pas le niveau de l'adversaire (il reste calé sur
@@ -139,9 +138,17 @@ test.describe("boucle principale (T-US19-05)", () => {
     // pas l'étape 1 rejouée. La preuve de persistance est la progression
     // elle-même : le compteur d'épreuves réussies et l'étape 2 accessible.
     await page.goto("/campaign");
-    await expect(page.getByLabel(/1 étapes? terminées? sur \d+/)).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /^Lancer le combat : Laboratoire Normal - Étape 2/ }),
+      page.getByRole("status", {
+        name: "Monde actuel : Les Fondations du Type Normal (1/6 terminées)",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "Lancer le combat : Mathématiques 2 — Suites tactiques",
+        exact: true,
+      }),
     ).toBeVisible();
   });
 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { abandonBattleSession } from "@/lib/combat/battle-session-store";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 
 const AbandonBodySchema = z
@@ -22,8 +23,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    const raw: unknown = await req.json().catch(() => null);
-    const parsed = AbandonBodySchema.safeParse(raw);
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return NextResponse.json(
+        { success: false, error: body.error },
+        { status: body.status },
+      );
+    }
+
+    const parsed = AbandonBodySchema.safeParse(body.value);
     if (!parsed.success) {
       return NextResponse.json(
         { success: false, error: "Requête invalide" },

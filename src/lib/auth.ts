@@ -21,6 +21,7 @@ import { deliverPasswordResetEmail } from "@/lib/email/password-reset-email";
 import { deliverVerificationEmail } from "@/lib/email/verification-email";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { consumeFixedWindowRateLimit } from "@/lib/security/rate-limit";
 
 // Ce fichier centralise la configuration serveur de Better Auth.
 // Il ne doit jamais être importé dans un composant client.
@@ -38,6 +39,9 @@ export const auth = betterAuth({
   }),
   // Une liste précise protège les requêtes et redirections contre les origines externes.
   trustedOrigins: [applicationOrigin],
+  // L'identité affichée est volontairement immuable dans ce jeu. Désactiver
+  // l'endpoint générique évite de contourner les règles appliquées à l'inscription.
+  disabledPaths: ["/update-user"],
   // L'e-mail doit être confirmé avant la création de la première session.
   emailAndPassword: {
     enabled: true,
@@ -93,12 +97,17 @@ export const auth = betterAuth({
   rateLimit: {
     // Les routes sensibles utilisent des limites plus strictes que le reste de l'API.
     enabled: true,
+    // Redis applique la limite atomiquement et la partage entre toutes les instances.
+    customStorage: {
+      consume: (key, rule) => consumeFixedWindowRateLimit("auth", key, rule),
+    },
     window: 60,
     max: 100,
     customRules: {
       "/sign-in/email": { window: 10, max: 3 },
       "/sign-in/username": { window: 10, max: 3 },
       "/sign-up/email": { window: 60, max: 5 },
+      "/is-username-available": { window: 60, max: 30 },
       "/send-verification-email": { window: 60, max: 3 },
       "/request-password-reset": { window: 60, max: 3 },
       "/reset-password": { window: 60, max: 5 },
@@ -108,6 +117,11 @@ export const auth = betterAuth({
   advanced: {
     // Le cookie Secure est obligatoire dans l'image de production.
     useSecureCookies: process.env.NODE_ENV === "production",
+    // Traefik fournit cette adresse ; les chaînes multiples restent refusées
+    // tant qu'aucun proxy de confiance précis n'est configuré.
+    ipAddress: {
+      ipAddressHeaders: ["x-forwarded-for"],
+    },
     // Les jointures réduisent le nombre de requêtes nécessaires à Better Auth.
     database: {
       joins: true,

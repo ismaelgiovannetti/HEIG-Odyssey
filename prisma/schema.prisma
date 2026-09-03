@@ -305,3 +305,13 @@ model OutboxEvent {
   @@map("outbox_event")
 }
 
+// Reçu transactionnel des événements consommés. Redis Streams livre au moins
+// une fois ; cette clé unique empêche qu'un rejeu incrémente deux fois une quête.
+model ProcessedDomainEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  aggregateId String   @unique
+  processedAt DateTime @default(now())
+
+  @@map("processed_domain_event")
+}

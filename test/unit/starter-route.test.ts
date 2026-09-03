@@ -13,6 +13,10 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
 vi.mock("@/lib/starter/starter-service", () => ({
   selectStarter: selectStarterMock,
 }));
@@ -24,6 +28,7 @@ function createRequest(body: unknown): Request {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
     },
     body: JSON.stringify(body),
   });

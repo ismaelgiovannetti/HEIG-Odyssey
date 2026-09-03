@@ -967,6 +967,30 @@ body {
   font-weight: 700;
 }
 
+.auth-field__availability {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.auth-field__availability--checking {
+  color: var(--color-info-text);
+}
+
+.auth-field__availability--available {
+  color: var(--color-success-text);
+}
+
+.auth-field__availability--taken {
+  color: var(--color-error-text);
+}
+
+.auth-field__availability--error {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
 .auth-password-wrap {
   position: relative;
 }

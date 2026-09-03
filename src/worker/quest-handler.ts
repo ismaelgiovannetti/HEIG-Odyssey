@@ -1,5 +1,5 @@
 import { registerEventHandler } from "./event-dispatcher";
-import { handleBattleCompletedForQuests } from "@/lib/quests/quest-progress-service";
+import { handleBattleCompletedEventForQuests } from "@/lib/quests/quest-progress-service";
 import type { BattleCompletedPayload, TrainingCompletedPayload } from "@/lib/events/contracts";
 import { logger } from "@/lib/logger";
 
@@ -14,7 +14,7 @@ export function registerQuestEventHandlers(): void {
 
   registerEventHandler<BattleCompletedPayload>("battle.completed", async (envelope) => {
     try {
-      await handleBattleCompletedForQuests(envelope.payload);
+      await handleBattleCompletedEventForQuests(envelope.eventId, envelope.payload);
     } catch (err) {
       logger.error("Échec de mise à jour des quêtes après un combat", {
         eventId: envelope.eventId,
@@ -26,7 +26,7 @@ export function registerQuestEventHandlers(): void {
 
   registerEventHandler<TrainingCompletedPayload>("training.completed", async (envelope) => {
     try {
-      await handleBattleCompletedForQuests(envelope.payload);
+      await handleBattleCompletedEventForQuests(envelope.eventId, envelope.payload);
     } catch (err) {
       logger.error("Échec de mise à jour des quêtes après un entraînement", {
         eventId: envelope.eventId,

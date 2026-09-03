@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { randomBytes, randomUUID } from "node:crypto";
 import { prisma } from "../prisma";
 import { loadGachaBanners, getSpecies, loadSpecies } from "../content/loader";
 import { hydrateMoves } from "../content/moves";
@@ -49,6 +50,11 @@ export class GachaIdempotencyConflictError extends Error {
 const OFFICIAL_STARTER_DEX = new Set([1, 4, 7, 152, 155, 158, 252, 255, 258, 387, 390, 393]);
 const INITIAL_EVS = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
 
+/** Fraction uniforme issue du CSPRNG système, dans l'intervalle [0, 1). */
+function secureRandomFraction(): number {
+  return randomBytes(6).readUIntBE(0, 6) / 0x1_0000_0000_0000;
+}
+
 /**
  * Détermine la rareté intrinsèque d'une espèce selon ses caractéristiques (T-US12-01).
  */
@@ -93,7 +99,7 @@ export interface GachaRollResult {
  */
 export function rollGachaPull(
   banner: GachaBannerConfig,
-  rng: () => number = Math.random
+  rng: () => number = secureRandomFraction,
 ): GachaRollResult {
   const speciesMap = loadSpecies();
   const availableSpecies: Array<{ species: Species; rarity: PokemonRarity }> = [];
@@ -193,7 +199,7 @@ export async function executeGachaPull(
   params: ExecuteGachaPullParams,
   client: any = prisma
 ): Promise<GachaExecutionResult> {
-  const { userId, bannerId, idempotencyKey, rng = Math.random } = params;
+  const { userId, bannerId, idempotencyKey, rng = secureRandomFraction } = params;
 
   // 1. Récupération de la bannière demandée
   const banners = loadGachaBanners();
@@ -203,7 +209,7 @@ export async function executeGachaPull(
     throw new BannerNotFoundError();
   }
 
-  const resolvedIdempotencyKey = idempotencyKey || `pull_${userId}_${Date.now()}_${Math.random()}`;
+  const resolvedIdempotencyKey = idempotencyKey || `pull_${userId}_${randomUUID()}`;
 
   // 2. Vérification d'idempotence préalable
   const existingPull = await client.gachaPull.findUnique({

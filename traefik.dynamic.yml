@@ -1,0 +1,36 @@
+http:
+  middlewares:
+    webapp-body-limit:
+      buffering:
+        # Filet global ; les routes sensibles appliquent aussi leur propre limite.
+        maxRequestBodyBytes: 524288
+
+  routers:
+    webapp:
+      entryPoints:
+        - websecure
+      rule: Host(`play.heig-odyssey.online`)
+      service: webapp
+      middlewares:
+        - webapp-body-limit
+      tls:
+        certResolver: myresolver
+
+    landing:
+      entryPoints:
+        - websecure
+      rule: Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)
+      service: landing
+      tls:
+        certResolver: myresolver
+
+  services:
+    webapp:
+      loadBalancer:
+        servers:
+          - url: http://webapp:3000
+
+    landing:
+      loadBalancer:
+        servers:
+          - url: http://landing-page:80

@@ -6,6 +6,7 @@ import {
   BattleSessionUnavailableError,
   processBattleTurn,
 } from "@/lib/combat/battle-session-store";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 
 const BattleActionBodySchema = z.object({
@@ -41,8 +42,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const raw: unknown = await req.json().catch(() => null);
-    const parsed = BattleActionBodySchema.safeParse(raw);
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return NextResponse.json(
+        { success: false, error: body.error },
+        { status: body.status },
+      );
+    }
+
+    const parsed = BattleActionBodySchema.safeParse(body.value);
 
     if (!parsed.success) {
       return NextResponse.json(

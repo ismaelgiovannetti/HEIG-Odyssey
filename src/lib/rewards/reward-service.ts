@@ -22,6 +22,7 @@ export interface GrantBattleRewardsParams {
   battleId: string;
   stageId: string;
   winner: "p1" | "p2";
+  turnsCount?: number;
   // Identifiants capturés par le serveur au lancement, jamais par le navigateur.
   playerPokemonIds: readonly string[];
 }
@@ -54,6 +55,7 @@ export async function grantBattleRewards({
   battleId,
   stageId,
   winner,
+  turnsCount = 1,
   playerPokemonIds,
 }: GrantBattleRewardsParams): Promise<BattleRewardResult> {
   const participantIds = snapshotBattleParticipants(playerPokemonIds);
@@ -100,8 +102,14 @@ export async function grantBattleRewards({
     }
   }
 
-  const moneyReward = winner === "p1" ? stageConfig?.rewardMoney || 50 : 0;
-  const xpReward = winner === "p1" ? stageConfig?.rewardXp || 100 : 0;
+  // Un appel interne ne peut pas transformer un identifiant inconnu en gains
+  // de secours : le contenu de campagne validé reste la source de vérité.
+  if (!stageConfig) {
+    throw new Error("CAMPAIGN_STAGE_NOT_FOUND");
+  }
+
+  const moneyReward = winner === "p1" ? stageConfig.rewardMoney : 0;
+  const xpReward = winner === "p1" ? stageConfig.rewardXp : 0;
 
   const txResult = await prisma.$transaction(async (tx) => {
     // Monnaie, expérience, progression et résultat font partie de la même transaction.
@@ -233,7 +241,7 @@ export async function grantBattleRewards({
         playerTeamSnapshot: { pokemonIds: [...participantIds] },
         idempotencyKey: battleId,
         result: winner === "p1" ? BattleResult.VICTORY : BattleResult.DEFEAT,
-        turnsCount: 1,
+        turnsCount,
         rewardsClaimed: true,
         moneyGained: moneyReward,
         xpGained: xpReward,
@@ -251,7 +259,7 @@ export async function grantBattleRewards({
       opponentId: stageConfig?.trainerId || stageId,
       result: winner === "p1" ? "VICTORY" : "DEFEAT",
       winner,
-      turnsCount: 1,
+      turnsCount,
       xpGained: xpReward,
       moneyGained: moneyReward,
       playerPokemonIds: [...participantIds],
@@ -271,7 +279,9 @@ export async function grantBattleRewards({
         eventType: domainEvent.eventType,
         aggregateType: domainEvent.aggregateType,
         aggregateId: domainEvent.aggregateId,
-        payload: domainEvent as unknown as Prisma.InputJsonValue,
+        // Les métadonnées de l'enveloppe ont leurs propres colonnes Outbox.
+        // Seul le payload est stocké pour éviter une double encapsulation à la publication.
+        payload: domainEvent.payload as Prisma.InputJsonValue,
         status: OutboxStatus.PENDING,
       },
     });
@@ -473,7 +483,7 @@ export async function grantTrainingRewards({
         eventType: domainEvent.eventType,
         aggregateType: domainEvent.aggregateType,
         aggregateId: domainEvent.aggregateId,
-        payload: domainEvent as unknown as Prisma.InputJsonValue,
+        payload: domainEvent.payload as Prisma.InputJsonValue,
         status: OutboxStatus.PENDING,
       },
     });
@@ -493,5 +503,3 @@ export async function grantTrainingRewards({
 
   return txResult;
 }
-
-

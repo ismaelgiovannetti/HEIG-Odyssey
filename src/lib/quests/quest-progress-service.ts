@@ -1,6 +1,7 @@
 import { prisma } from "../prisma";
 import { getOrGenerateActiveRotations } from "./rotation-service";
 import type { BattleCompletedPayload, TrainingCompletedPayload } from "../events/contracts";
+import { PermanentDomainEventError } from "../events/errors";
 import type { QuestType } from "@prisma/client";
 
 export interface UserQuestItem {
@@ -163,21 +164,8 @@ export async function handleBattleCompletedForQuests(
     const increment = calculateQuestIncrement(rotation.quest.targetType, payload);
     if (increment <= 0) continue;
 
-    const existing = await client.userQuestProgress.findUnique({
-      where: {
-        userId_rotationId: {
-          userId,
-          rotationId: rotation.id,
-        },
-      },
-    });
-
-    const previousCount = existing?.currentCount ?? 0;
     const targetCount = rotation.quest.targetCount;
-    const newCount = previousCount + increment;
-    const isCompleted = newCount >= targetCount || (existing?.isCompleted ?? false);
-
-    await client.userQuestProgress.upsert({
+    const progress = await client.userQuestProgress.upsert({
       where: {
         userId_rotationId: {
           userId,
@@ -187,19 +175,80 @@ export async function handleBattleCompletedForQuests(
       create: {
         userId,
         rotationId: rotation.id,
-        currentCount: newCount,
-        isCompleted: newCount >= targetCount,
+        currentCount: increment,
+        isCompleted: increment >= targetCount,
       },
       update: {
-        currentCount: newCount,
-        isCompleted,
+        // L'incrément SQL évite de perdre une victoire si deux événements
+        // distincts sont traités simultanément pour le même joueur.
+        currentCount: { increment },
       },
     });
+
+    if (!progress.isCompleted && progress.currentCount >= targetCount) {
+      await client.userQuestProgress.updateMany({
+        where: { id: progress.id, isCompleted: false },
+        data: { isCompleted: true },
+      });
+    }
 
     updatedCount++;
   }
 
   return updatedCount;
+}
+
+/**
+ * Applique un événement Redis une seule fois. Le reçu et les progressions sont
+ * écrits dans la même transaction : un crash ne peut laisser l'un sans l'autre.
+ */
+export async function handleBattleCompletedEventForQuests(
+  eventId: string,
+  payload: BattleCompletedPayload | TrainingCompletedPayload,
+  client: any = prisma,
+): Promise<number> {
+  return client.$transaction(async (tx: any) => {
+    const receipt = await tx.processedDomainEvent.createMany({
+      // Un combat ne doit faire progresser les quêtes qu'une seule fois, même
+      // si un producteur compromis republie son payload avec un nouvel eventId.
+      data: [{ eventId, aggregateId: payload.battleId }],
+      skipDuplicates: true,
+    });
+
+    if (receipt.count === 0) {
+      return 0;
+    }
+
+    // Redis est un transport, pas une source de vérité. Un événement forgé ou
+    // corrompu ne doit pas pouvoir faire progresser les quêtes d'un autre compte.
+    const battle = await tx.battleRecord.findUnique({
+      where: { idempotencyKey: payload.battleId },
+      select: {
+        userId: true,
+        battleType: true,
+        opponentId: true,
+        result: true,
+        turnsCount: true,
+        xpGained: true,
+        moneyGained: true,
+      },
+    });
+    const eventMatchesRecord =
+      battle?.userId === payload.userId &&
+      battle.battleType === payload.battleType &&
+      battle.opponentId === payload.opponentId &&
+      battle.result === payload.result &&
+      payload.winner === (battle.result === "VICTORY" ? "p1" : "p2") &&
+      battle.turnsCount === payload.turnsCount &&
+      battle.xpGained === payload.xpGained &&
+      battle.moneyGained === payload.moneyGained;
+
+    if (!eventMatchesRecord) {
+      throw new PermanentDomainEventError("QUEST_EVENT_BATTLE_MISMATCH");
+    }
+
+    return handleBattleCompletedForQuests(payload, tx);
+  });
 }
 
 /**
@@ -242,14 +291,24 @@ export async function claimQuestReward(
 
     const quest = progress.rotation.quest;
 
-    // 2. Mise à jour atomique : marquer comme réclamé
-    await tx.userQuestProgress.update({
-      where: { id: progress.id },
+    // 2. La précondition fait partie de l'UPDATE : deux requêtes concurrentes
+    // ne peuvent jamais toutes les deux franchir cette étape.
+    const claimed = await tx.userQuestProgress.updateMany({
+      where: {
+        id: progress.id,
+        userId,
+        isCompleted: true,
+        rewardClaimed: false,
+      },
       data: {
         rewardClaimed: true,
         claimedAt: new Date(),
       },
     });
+
+    if (claimed.count !== 1) {
+      throw new QuestRewardAlreadyClaimedError();
+    }
 
     // 3. Crédit de la monnaie dans le profil utilisateur
     const updatedProfile = await tx.userProfile.upsert({

@@ -17,24 +17,25 @@ import {
   type TrainingDifficulty,
 } from "@/lib/combat/training-generator";
 import type { Trainer } from "@/lib/content/schemas";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
+import { consumeFixedWindowRateLimit } from "@/lib/security/rate-limit";
 
 const BattleTargetIdSchema = z.string().trim().min(1).max(100);
 
 const StartBattleBodySchema = z
   .object({
     stageId: BattleTargetIdSchema.optional(),
-    trainerId: BattleTargetIdSchema.optional(),
     mode: z.enum(["campaign", "training"]).optional(),
     difficulty: z.enum(["easy", "normal", "hard"]).optional(),
   })
   .strict()
-  .superRefine(({ stageId, trainerId, mode, difficulty }, context) => {
+  .superRefine(({ stageId, mode, difficulty }, context) => {
     if (mode === "training") {
-      if (stageId || trainerId) {
+      if (stageId) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Le mode entraînement ne requiert ni stageId ni trainerId.",
+          message: "Le mode entraînement ne requiert pas de stageId.",
         });
       }
       return;
@@ -49,11 +50,11 @@ const StartBattleBodySchema = z
       });
     }
 
-    // Mode campagne par défaut
-    if (Boolean(stageId) === Boolean(trainerId)) {
+    // En campagne, le serveur résout toujours le dresseur depuis une étape autorisée.
+    if (!stageId) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Indiquez soit une étape, soit un dresseur.",
+        message: "Indiquez une étape de campagne.",
       });
     }
   });
@@ -74,8 +75,30 @@ export async function POST(req: Request) {
       );
     }
 
-    const raw: unknown = await req.json().catch(() => null);
-    const parsed = StartBattleBodySchema.safeParse(raw);
+    const rateLimit = await consumeFixedWindowRateLimit(
+      "battle-start",
+      session.user.id,
+      { window: 60, max: 12 },
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Trop de combats démarrés. Réessayez plus tard." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfter) },
+        },
+      );
+    }
+
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return NextResponse.json(
+        { success: false, error: body.error },
+        { status: body.status },
+      );
+    }
+
+    const parsed = StartBattleBodySchema.safeParse(body.value);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -84,7 +107,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { stageId, trainerId, mode, difficulty } = parsed.data;
+    const { stageId, mode, difficulty } = parsed.data;
     const userId = session.user.id;
 
     // L'équipe chargée appartient obligatoirement au compte authentifié.
@@ -117,29 +140,25 @@ export async function POST(req: Request) {
       });
     } else {
       // Une étape de campagne impose le dresseur défini dans le contenu et exige l'autorisation d'accès.
-      let targetTrainerId = trainerId;
-      if (stageId) {
-        const accessCheck = await canUserAccessStage(userId, stageId);
-        if (!accessCheck.allowed) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
-            },
-            { status: 403 }
-          );
-        }
-        targetTrainerId = accessCheck.trainerId;
+      const accessCheck = await canUserAccessStage(userId, stageId!);
+      if (!accessCheck.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: accessCheck.reason ?? "Accès refusé à cette étape de campagne.",
+          },
+          { status: 403 }
+        );
       }
 
-      if (!targetTrainerId) {
+      if (!accessCheck.trainerId) {
         return NextResponse.json(
           { success: false, error: "Dresseur ou étape introuvable" },
           { status: 404 }
         );
       }
 
-      opponentTrainer = getTrainer(targetTrainerId);
+      opponentTrainer = getTrainer(accessCheck.trainerId);
     }
 
     if (!opponentTrainer) {

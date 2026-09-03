@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Ces tests protègent le contrat entre nos formulaires et Better Auth : choix
 // de la méthode de connexion, normalisation et destinations de retour sûres.
 const authClientMocks = vi.hoisted(() => ({
+  isUsernameAvailable: vi.fn(),
   requestPasswordReset: vi.fn(),
   resetPassword: vi.fn(),
   sendVerificationEmail: vi.fn(),
@@ -16,6 +17,7 @@ const authClientMocks = vi.hoisted(() => ({
 // uniquement les données que notre adaptateur lui transmet.
 vi.mock("better-auth/react", () => ({
   createAuthClient: () => ({
+    isUsernameAvailable: authClientMocks.isUsernameAvailable,
     requestPasswordReset: authClientMocks.requestPasswordReset,
     resetPassword: authClientMocks.resetPassword,
     sendVerificationEmail: authClientMocks.sendVerificationEmail,
@@ -36,6 +38,7 @@ vi.mock("better-auth/client/plugins", () => ({
 
 import {
   buildPostSignInCallback,
+  checkUsernameAvailability,
   requestPasswordRecovery,
   requestVerificationEmail,
   resetPasswordWithToken,
@@ -115,6 +118,19 @@ describe("adaptateur client d'authentification", () => {
       email: "player@example.com",
       password: "TestPassword!2026",
       callbackURL: "/login?verified=1",
+    });
+  });
+
+  it("normalise le nom avant de vérifier sa disponibilité", async () => {
+    authClientMocks.isUsernameAvailable.mockResolvedValue({
+      data: { available: true },
+      error: null,
+    });
+
+    await checkUsernameAvailability("  Kim.Possible_1  ");
+
+    expect(authClientMocks.isUsernameAvailable).toHaveBeenCalledWith({
+      username: "kim.possible_1",
     });
   });
 
