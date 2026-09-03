@@ -1,0 +1,197 @@
+/* ============================================================
+   Strategic threats callout (real Pokemon sprites)
+   ============================================================ */
+.threat-row {
+  margin-top: var(--space-5);
+  text-align: center;
+}
+
+.threat-intro {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.threat-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 980px;
+  margin-inline: auto;
+  text-align: left;
+}
+
+@media (min-width: 760px) {
+  .threat-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.threat-item {
+  --threat-color: #424a8e;
+  --threat-dark: #292f63;
+  --threat-soft: rgba(66, 74, 142, 0.14);
+  display: grid;
+  grid-template-rows: auto auto;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--threat-soft);
+  border: 2px solid var(--threat-color);
+  box-shadow: 4px 4px 0 var(--threat-dark);
+  clip-path: var(--notch);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.threat-item:nth-child(2) {
+  --threat-color: #176799;
+  --threat-dark: #0e466c;
+  --threat-soft: rgba(23, 103, 153, 0.14);
+}
+
+.threat-item:nth-child(3) {
+  --threat-color: #9b3f62;
+  --threat-dark: #6c2a44;
+  --threat-soft: rgba(155, 63, 98, 0.14);
+}
+
+.threat-item:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 var(--threat-color);
+}
+
+.threat-item-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 78px;
+  padding: 10px 18px;
+  background: linear-gradient(
+    100deg,
+    var(--threat-dark),
+    var(--threat-color),
+    var(--threat-dark)
+  );
+  border-bottom: 3px solid var(--color-outline);
+}
+
+.threat-sprite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 3px 3px 0 var(--color-outline);
+  clip-path: var(--notch-sm);
+}
+
+.threat-sprite img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.threat-item h3 {
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.threat-item-tag {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 18px;
+  background: var(--threat-soft);
+  border-top: 3px solid var(--threat-color);
+  color: var(--threat-dark);
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Starter picker (roster wall)
+   ============================================================ */
+.starter-wall {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 560px) {
+  .starter-wall {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 860px) {
+  .starter-wall {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.starter-tile {
+  --starter-color: var(--color-starter-border);
+  --starter-dark: var(--color-outline);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+  min-height: 132px;
+  background: var(--color-starter-card);
+  border: 2px solid var(--starter-color);
+  clip-path: var(--notch-sm);
+  padding: 12px 12px 0;
+  text-align: center;
+  box-shadow: 4px 4px 0 var(--starter-dark);
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.starter-tile:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--starter-color);
+  border-color: var(--starter-dark);
+}
+
+.starter-tile img {
+  align-self: center;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 2px auto 10px;
+  filter: drop-shadow(2px 3px 0 rgba(32, 32, 32, 0.18));
+}
+
+.starter-tile span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  margin-inline: -12px;
+  padding: 8px 5px;
+  background: var(--starter-color);
+  border-top: 2px solid var(--starter-dark);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.starter-note {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-top: var(--space-4);
+}

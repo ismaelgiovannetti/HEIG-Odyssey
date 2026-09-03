@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState, useId, useRef } from "react";
-import { Sparkles, ArrowRight, X, LoaderCircle, AlertCircle, Check } from "lucide-react";
+import {
+  Sparkles,
+  ArrowRight,
+  X,
+  LoaderCircle,
+  AlertCircle,
+} from "lucide-react";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import { playPokemonCry } from "@/lib/audio/pokemon-cry";
 import styles from "./team-manager.module.css";
 
@@ -66,8 +72,12 @@ export function PokemonEvolutionDialog({
       playPokemonCry(evolution.targetSpeciesId);
       setHasEvolved(true);
       onEvolved();
-    } catch (err: any) {
-      setErrorMessage(err?.message || "Une erreur est survenue lors de l'évolution.");
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue lors de l'évolution.",
+      );
     } finally {
       setIsEvolving(false);
     }
@@ -169,7 +179,11 @@ export function PokemonEvolutionDialog({
                   height={96}
                 />
                 <strong>{evolution.targetName}</strong>
-                <span className={evolution.canEvolve ? styles.levelReady : styles.levelNeeded}>
+                <span
+                  className={
+                    evolution.canEvolve ? styles.levelReady : styles.levelNeeded
+                  }
+                >
                   Niv. {evolution.requiredLevel} requis
                 </span>
               </div>
@@ -179,12 +193,13 @@ export function PokemonEvolutionDialog({
               {evolution.canEvolve ? (
                 <p>
                   Ce Pokémon a atteint le niveau requis et est prêt à évoluer en{" "}
-                  <strong>{evolution.targetName}</strong>. Ses statistiques seront
-                  considérablement améliorées !
+                  <strong>{evolution.targetName}</strong>. Ses statistiques
+                  seront considérablement améliorées !
                 </p>
               ) : (
                 <p>
-                  Ce Pokémon requiert encore de l&apos;expérience (Niveau {evolution.requiredLevel}) pour pouvoir évoluer en{" "}
+                  Ce Pokémon requiert encore de l&apos;expérience (Niveau{" "}
+                  {evolution.requiredLevel}) pour pouvoir évoluer en{" "}
                   <strong>{evolution.targetName}</strong>.
                 </p>
               )}
@@ -208,7 +223,8 @@ export function PokemonEvolutionDialog({
               >
                 {isEvolving ? (
                   <>
-                    <LoaderCircle size={16} className={styles.loadingSpinner} /> Évolution en cours...
+                    <LoaderCircle size={16} className={styles.loadingSpinner} />{" "}
+                    Évolution en cours...
                   </>
                 ) : (
                   <>

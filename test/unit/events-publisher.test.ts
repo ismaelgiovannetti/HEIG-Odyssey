@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { publishDomainEvent, publishPendingOutboxEvents, EVENTS_STREAM_KEY } from "@/lib/events/publisher";
+import {
+  publishDomainEvent,
+  publishPendingOutboxEvents,
+  EVENTS_STREAM_KEY,
+} from "@/lib/events/publisher";
 import { createDomainEvent } from "@/lib/events/contracts";
 import { prisma } from "@/lib/prisma";
 import { OutboxStatus } from "@prisma/client";
+import { asRedisClient } from "../helpers/mock-clients";
+import { outboxEvent } from "../helpers/prisma-fixtures";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -43,7 +49,7 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
       },
     });
 
-    const msgId = await publishDomainEvent(event, mockRedis as any);
+    const msgId = await publishDomainEvent(event, asRedisClient(mockRedis));
 
     expect(msgId).toBe("1725180000000-0");
     expect(mockRedis.xadd).toHaveBeenCalledWith(
@@ -62,13 +68,13 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
       "occurredAt",
       event.occurredAt,
       "payload",
-      expect.any(String)
+      expect.any(String),
     );
   });
 
   it("parcourt les événements en attente et les marque comme PUBLISHED après succès", async () => {
     const pendingEvents = [
-      {
+      outboxEvent({
         id: "outbox-1",
         eventId: "evt_111",
         eventType: "battle.completed",
@@ -78,17 +84,19 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
         status: OutboxStatus.PENDING,
         retryCount: 0,
         createdAt: new Date("2026-09-01T10:00:00Z"),
-      },
+      }),
     ];
 
-    (prisma.outboxEvent.findMany as any).mockResolvedValue(pendingEvents);
-    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    vi.mocked(prisma.outboxEvent.findMany).mockResolvedValue(pendingEvents);
+    vi.mocked(prisma.outboxEvent.update).mockResolvedValue(pendingEvents[0]);
 
     const mockRedis = {
       xadd: vi.fn().mockResolvedValue("1725180000001-0"),
     };
 
-    const result = await publishPendingOutboxEvents({ client: mockRedis as any });
+    const result = await publishPendingOutboxEvents({
+      client: asRedisClient(mockRedis),
+    });
 
     expect(result.publishedCount).toBe(1);
     expect(result.failedCount).toBe(0);
@@ -104,8 +112,8 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
   });
 
   it("déplie les anciennes enveloppes Outbox avant de publier leur payload", async () => {
-    (prisma.outboxEvent.findMany as any).mockResolvedValue([
-      {
+    vi.mocked(prisma.outboxEvent.findMany).mockResolvedValue([
+      outboxEvent({
         id: "outbox-legacy",
         eventId: "evt_legacy",
         eventType: "battle.completed",
@@ -123,12 +131,14 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
         status: OutboxStatus.PENDING,
         retryCount: 0,
         createdAt: new Date("2026-09-01T10:00:00Z"),
-      },
+      }),
     ]);
-    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    vi.mocked(prisma.outboxEvent.update).mockResolvedValue(
+      outboxEvent({ id: "outbox-legacy", eventId: "evt_legacy" }),
+    );
     const mockRedis = { xadd: vi.fn().mockResolvedValue("1-0") };
 
-    await publishPendingOutboxEvents({ client: mockRedis as any });
+    await publishPendingOutboxEvents({ client: asRedisClient(mockRedis) });
 
     const args = mockRedis.xadd.mock.calls[0];
     const payloadIndex = args.indexOf("payload") + 1;
@@ -140,7 +150,7 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
 
   it("gère l'erreur lors de l'envoi Redis et incrémente le retryCount", async () => {
     const pendingEvents = [
-      {
+      outboxEvent({
         id: "outbox-2",
         eventId: "evt_222",
         eventType: "battle.completed",
@@ -150,17 +160,19 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
         status: OutboxStatus.PENDING,
         retryCount: 1,
         createdAt: new Date("2026-09-01T10:00:00Z"),
-      },
+      }),
     ];
 
-    (prisma.outboxEvent.findMany as any).mockResolvedValue(pendingEvents);
-    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    vi.mocked(prisma.outboxEvent.findMany).mockResolvedValue(pendingEvents);
+    vi.mocked(prisma.outboxEvent.update).mockResolvedValue(pendingEvents[0]);
 
     const mockRedis = {
       xadd: vi.fn().mockRejectedValue(new Error("Redis connection refused")),
     };
 
-    const result = await publishPendingOutboxEvents({ client: mockRedis as any });
+    const result = await publishPendingOutboxEvents({
+      client: asRedisClient(mockRedis),
+    });
 
     expect(result.publishedCount).toBe(0);
     expect(result.failedCount).toBe(1);
@@ -175,7 +187,7 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
   });
 
   it("reprend durablement les événements ayant épuisé les essais courts", async () => {
-    const failedEvent = {
+    const failedEvent = outboxEvent({
       id: "outbox-failed",
       eventId: "evt_failed",
       eventType: "battle.completed",
@@ -185,15 +197,15 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
       status: OutboxStatus.FAILED,
       retryCount: 5,
       createdAt: new Date("2026-09-01T10:00:00Z"),
-    };
-    (prisma.outboxEvent.findMany as any).mockResolvedValue([failedEvent]);
-    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    });
+    vi.mocked(prisma.outboxEvent.findMany).mockResolvedValue([failedEvent]);
+    vi.mocked(prisma.outboxEvent.update).mockResolvedValue(failedEvent);
     const mockRedis = {
       xadd: vi.fn().mockRejectedValue(new Error("Redis unavailable")),
     };
 
     await publishPendingOutboxEvents({
-      client: mockRedis as any,
+      client: asRedisClient(mockRedis),
       continuousRecovery: true,
     });
 

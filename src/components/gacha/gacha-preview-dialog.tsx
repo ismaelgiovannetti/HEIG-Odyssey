@@ -2,9 +2,9 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { SpriteProvider } from "@/components/SpriteProvider";
+import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
-import type { PokemonRarity } from "@/lib/gacha/gacha-service";
+import type { PokemonRarity } from "@/lib/gacha/gacha-contract";
 import styles from "./gacha-shop.module.css";
 
 export interface GachaPreviewSpecies {
@@ -73,17 +73,22 @@ export function GachaPreviewDialog({
     return species
       .map((pokemon) => ({
         ...pokemon,
-        chance: countByRarity[pokemon.rarity] > 0
-          ? rateByRarity[pokemon.rarity] / countByRarity[pokemon.rarity]
-          : 0,
+        chance:
+          countByRarity[pokemon.rarity] > 0
+            ? rateByRarity[pokemon.rarity] / countByRarity[pokemon.rarity]
+            : 0,
       }))
-      .sort((left, right) =>
-        RARITY_ORDER[left.rarity] - RARITY_ORDER[right.rarity] ||
-        right.chance - left.chance ||
-        left.dexNumber - right.dexNumber,
+      .sort(
+        (left, right) =>
+          RARITY_ORDER[left.rarity] - RARITY_ORDER[right.rarity] ||
+          right.chance - left.chance ||
+          left.dexNumber - right.dexNumber,
       );
   }, [banner.rates.common, banner.rates.epic, banner.rates.rare, species]);
-  const pageCount = Math.max(1, Math.ceil(speciesWithChance.length / PREVIEW_PAGE_SIZE));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(speciesWithChance.length / PREVIEW_PAGE_SIZE),
+  );
   const visibleSpecies = speciesWithChance.slice(
     page * PREVIEW_PAGE_SIZE,
     (page + 1) * PREVIEW_PAGE_SIZE,
@@ -99,7 +104,8 @@ export function GachaPreviewDialog({
 
     return () => {
       if (dialog.open) dialog.close();
-      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus();
+      if (trigger instanceof HTMLElement && trigger.isConnected)
+        trigger.focus();
     };
   }, []);
 
@@ -134,15 +140,28 @@ export function GachaPreviewDialog({
           <h2 id={titleId}>{banner.name}</h2>
           <p id={descriptionId}>{species.length} Pokémon disponibles</p>
         </div>
-        <button ref={closeButtonRef} type="button" aria-label="Fermer l’aperçu" onClick={onClose}>
+        <button
+          ref={closeButtonRef}
+          type="button"
+          aria-label="Fermer l’aperçu"
+          onClick={onClose}
+        >
           <X size={20} aria-hidden="true" />
         </button>
       </header>
 
       {visibleSpecies.length > 0 ? (
-        <div className={styles.previewGrid} role="list" aria-label={`Pokémon disponibles dans ${banner.name}`}>
+        <div
+          className={styles.previewGrid}
+          role="list"
+          aria-label={`Pokémon disponibles dans ${banner.name}`}
+        >
           {visibleSpecies.map((pokemon) => (
-            <article className={styles.previewPokemon} role="listitem" key={pokemon.id}>
+            <article
+              className={styles.previewPokemon}
+              role="listitem"
+              key={pokemon.id}
+            >
               <span>N° {String(pokemon.dexNumber).padStart(3, "0")}</span>
               <SpriteProvider
                 speciesId={pokemon.id}
@@ -152,22 +171,40 @@ export function GachaPreviewDialog({
                 normalizeVisibleSize
               />
               <strong>{pokemon.name}</strong>
-              <span className={styles.previewChance} data-rarity={pokemon.rarity.toLowerCase()}>
-                {RARITY_LABELS[pokemon.rarity]} · {formatIndividualChance(pokemon.chance)}
+              <span
+                className={styles.previewChance}
+                data-rarity={pokemon.rarity.toLowerCase()}
+              >
+                {RARITY_LABELS[pokemon.rarity]} ·{" "}
+                {formatIndividualChance(pokemon.chance)}
               </span>
             </article>
           ))}
         </div>
       ) : (
-        <p className={styles.previewEmpty} role="status">Aucun Pokémon disponible.</p>
+        <p className={styles.previewEmpty} role="status">
+          Aucun Pokémon disponible.
+        </p>
       )}
 
       <footer className={styles.previewPagination}>
-        <button type="button" onClick={previousPage} disabled={page === 0} aria-label="Page précédente">
+        <button
+          type="button"
+          onClick={previousPage}
+          disabled={page === 0}
+          aria-label="Page précédente"
+        >
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
-        <span>Page <strong>{page + 1}</strong> sur <strong>{pageCount}</strong></span>
-        <button type="button" onClick={nextPage} disabled={page >= pageCount - 1} aria-label="Page suivante">
+        <span>
+          Page <strong>{page + 1}</strong> sur <strong>{pageCount}</strong>
+        </span>
+        <button
+          type="button"
+          onClick={nextPage}
+          disabled={page >= pageCount - 1}
+          aria-label="Page suivante"
+        >
           <ChevronRight size={20} aria-hidden="true" />
         </button>
       </footer>

@@ -1,0 +1,17 @@
+title = "HEIG Odyssey secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+# Identifiant de combat fictif, sans accès à un service ni donnée sensible.
+# Les deux critères sont obligatoires : aucun fichier de test n'est exclu du scan.
+# Cette exception reste valable lorsque la CI analyse les commits précédents.
+[[rules.allowlists]]
+description = "Identifiant fixe du test de rejeu des récompenses"
+condition = "AND"
+paths = ['''^test/unit/reward-service\.test\.ts$''']
+regexTarget = "secret"
+regexes = ['''^battle-uuid-12345$''']

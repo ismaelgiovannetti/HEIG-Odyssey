@@ -1,11 +1,16 @@
 import { getSavedAudioPreferences } from "./audio-preferences";
 
 let audioCtx: AudioContext | null = null;
+type WebkitAudioWindow = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+  };
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext || (window as WebkitAudioWindow).webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
@@ -217,7 +222,10 @@ export function playBattleSfx(type: BattleSfxType) {
         const gain = ctx.createGain();
         osc.type = "sine";
         osc.frequency.setValueAtTime(880 + idx * 320, t + delay);
-        osc.frequency.exponentialRampToValueAtTime(1720 + idx * 320, t + delay + 0.18);
+        osc.frequency.exponentialRampToValueAtTime(
+          1720 + idx * 320,
+          t + delay + 0.18,
+        );
 
         gain.gain.setValueAtTime(0.35, t + delay);
         gain.gain.exponentialRampToValueAtTime(0.01, t + delay + 0.2);

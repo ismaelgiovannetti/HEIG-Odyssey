@@ -19,7 +19,9 @@ export default function LoginPage() {
       title="Reprendre l'aventure"
       description="Connectez-vous avec votre adresse e-mail ou votre nom de dresseur."
     >
-      <Suspense fallback={<p className="auth-loading">Chargement du formulaire...</p>}>
+      <Suspense
+        fallback={<p className="auth-loading">Chargement du formulaire...</p>}
+      >
         <LoginForm />
       </Suspense>
     </AuthShell>

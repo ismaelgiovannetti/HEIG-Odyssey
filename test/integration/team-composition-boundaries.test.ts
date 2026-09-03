@@ -13,7 +13,10 @@ const createdUsers = new Set<string>();
 // Les tests créent et suppriment leurs propres comptes, uniquement sur une base locale.
 function assertLocalDatabase() {
   const value = process.env.DATABASE_URL;
-  if (!value || !["localhost", "127.0.0.1", "[::1]"].includes(new URL(value).hostname)) {
+  if (
+    !value ||
+    !["localhost", "127.0.0.1", "[::1]"].includes(new URL(value).hostname)
+  ) {
     throw new Error("TEAM_INTEGRATION_DATABASE_MUST_BE_LOCAL");
   }
 }
@@ -59,7 +62,10 @@ async function createCollection(pokemonCount = 3) {
 async function readStoredState(userId: string) {
   return {
     profile: await prisma.userProfile.findUnique({ where: { userId } }),
-    pokemon: await prisma.userPokemon.findMany({ where: { userId }, orderBy: { id: "asc" } }),
+    pokemon: await prisma.userPokemon.findMany({
+      where: { userId },
+      orderBy: { id: "asc" },
+    }),
   };
 }
 
@@ -108,13 +114,17 @@ describe("limites réelles de composition d'équipe (T-US05-04)", () => {
       updateActiveTeam(userId, {
         expectedRevision: 0,
         teamPokemonIds: [pokemon[0].id],
-        pcPlacements: [{ pokemonId: other.pokemon[0].id, boxNumber: 1, boxSlot: 1 }],
+        pcPlacements: [
+          { pokemonId: other.pokemon[0].id, boxNumber: 1, boxSlot: 1 },
+        ],
       }),
     ).rejects.toBeInstanceOf(TeamPokemonNotOwnedError);
 
     expect(await readStoredState(userId)).toEqual(before);
     // La créature de l'autre joueur ne doit elle non plus jamais avoir été déplacée.
-    const otherAfter = await prisma.userPokemon.findUniqueOrThrow({ where: { id: other.pokemon[0].id } });
+    const otherAfter = await prisma.userPokemon.findUniqueOrThrow({
+      where: { id: other.pokemon[0].id },
+    });
     expect(otherAfter.teamPosition).toBeNull();
   });
 

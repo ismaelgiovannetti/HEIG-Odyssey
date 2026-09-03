@@ -1,54 +1,18 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 import { loadCampaign, loadTrainers } from "@/lib/content/loader";
-import type { CampaignDegreeEnum, CampaignStage, CampaignWorld } from "@/lib/content/schemas";
-import type { z } from "zod";
+import type { CampaignStage, CampaignWorld } from "@/lib/content/schemas";
+import type {
+  CampaignProgressOverview,
+  CampaignStageView,
+  CampaignWorldView,
+  StageAccessCheckResult,
+  StageProgressStatus,
+  WorldProgressStatus,
+} from "./campaign-contract";
 
-export type CampaignDegree = z.infer<typeof CampaignDegreeEnum>;
-
-export type StageProgressStatus = "COMPLETED" | "ACCESSIBLE" | "LOCKED";
-export type WorldProgressStatus = "COMPLETED" | "ACCESSIBLE" | "LOCKED";
-
-export interface CampaignStageView {
-  id: string;
-  stageNumber: number;
-  name: string;
-  description: string;
-  recommendedLevel: number;
-  trainerId: string;
-  trainerName: string;
-  trainerTitle: string;
-  trainerSprite: string;
-  prerequisiteStageId: string | null;
-  rewardMoney: number;
-  rewardXp: number;
-  status: StageProgressStatus;
-  isCompleted: boolean;
-  isAccessible: boolean;
-  isLocked: boolean;
-  firstClearedAt: Date | null;
-}
-
-export interface CampaignWorldView {
-  id: string;
-  name: string;
-  degree: CampaignDegree;
-  description: string;
-  stages: CampaignStageView[];
-  status: WorldProgressStatus;
-  completedStagesCount: number;
-  totalStagesCount: number;
-  isCompleted: boolean;
-  isAccessible: boolean;
-  isLocked: boolean;
-}
-
-export interface CampaignProgressOverview {
-  worlds: CampaignWorldView[];
-  currentWorldId: string;
-  totalCompletedStages: number;
-  totalStages: number;
-  nextRecommendedStage: CampaignStageView | null;
-}
+export type * from "./campaign-contract";
 
 /**
  * Charge l'ensemble des mondes et étapes de la campagne en calculant le statut
@@ -171,14 +135,6 @@ export async function getCampaignProgressForUser(
     totalStages,
     nextRecommendedStage,
   };
-}
-
-export interface StageAccessCheckResult {
-  allowed: boolean;
-  reason?: string;
-  stage?: CampaignStage;
-  trainerId?: string;
-  worldId?: string;
 }
 
 /**

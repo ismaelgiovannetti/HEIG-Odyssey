@@ -1,0 +1,360 @@
+/* ============================================================
+   Roadmap (disponible vs prochainement)
+   ============================================================ */
+.version-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  max-width: 1080px;
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .version-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.version-card {
+  --roadmap-color: var(--color-primary);
+  --roadmap-dark: var(--color-primary-dark);
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  padding: 42px 36px 36px;
+  border: 3px solid var(--roadmap-dark);
+  clip-path: var(--notch);
+  box-shadow: 6px 6px 0 var(--roadmap-dark);
+}
+
+.version-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--roadmap-dark),
+    var(--roadmap-color),
+    var(--roadmap-dark)
+  );
+}
+
+.version-card--now {
+  --roadmap-color: var(--color-primary);
+  --roadmap-dark: var(--color-primary-dark);
+  background: linear-gradient(135deg, #f5dedc, #edc4c0);
+}
+
+.version-card--next {
+  --roadmap-color: #788595;
+  --roadmap-dark: #4a5664;
+  background: linear-gradient(135deg, #e5eaf0, #d4dce6);
+}
+
+.version-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.version-card-head::after {
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.4px;
+}
+
+.version-card--now .version-card-head::after {
+  content: "ÉTAPE 01";
+  color: var(--color-primary-dark);
+}
+
+.version-card--next .version-card-head::after {
+  content: "ÉTAPE 02";
+}
+
+.version-badge {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 7px 12px;
+  border: 2px solid var(--color-outline);
+  clip-path: var(--notch-sm);
+  box-shadow: 3px 3px 0 var(--color-outline);
+}
+
+.version-card--now .version-badge {
+  background: var(--color-primary-dark);
+  color: var(--color-on-primary);
+}
+
+.version-card--next .version-badge {
+  background: #596573;
+  color: #ffffff;
+}
+
+.version-card h3 {
+  font-size: 16px;
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+
+.version-intro {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.version-list li {
+  font-size: 15px;
+  color: var(--color-text);
+  padding-left: 34px;
+  position: relative;
+}
+
+.version-list li::before {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-outline);
+  box-shadow: 2px 2px 0 var(--color-outline);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.version-card--now .version-list li::before {
+  content: "✓";
+  background: var(--color-primary-light);
+  color: #ffffff;
+}
+
+.version-card--next .version-list li::before {
+  content: "→";
+  background: #cbd3dd;
+  color: #3d4855;
+}
+
+/* ============================================================
+   Team credits (trainer ID cards)
+   ============================================================ */
+.team-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+@media (min-width: 900px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.trainer-card {
+  --member-color: #315f7a;
+  --member-dark: #203f52;
+  --member-soft: #dfeaf0;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(150px, 40%) minmax(0, 1fr);
+  min-height: 280px;
+  background: var(--member-soft);
+  border: 3px solid var(--member-dark);
+  clip-path: var(--notch);
+  box-shadow: 6px 6px 0 var(--member-dark);
+  overflow: hidden;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.trainer-card--ismael {
+  --member-color: #39705a;
+  --member-dark: #24493a;
+  --member-soft: #e0ece7;
+}
+
+.trainer-card--evan {
+  --member-color: #80601e;
+  --member-dark: #574114;
+  --member-soft: #eee7d7;
+}
+
+.trainer-card--mo {
+  --member-color: #654e87;
+  --member-dark: #44355d;
+  --member-soft: #e8e3ee;
+}
+
+.trainer-card::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 auto 40%;
+  height: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--member-dark),
+    var(--member-color),
+    var(--member-dark)
+  );
+  pointer-events: none;
+}
+
+.trainer-card:hover {
+  transform: translate(-3px, -3px);
+  border-color: var(--member-dark);
+  box-shadow: 9px 9px 0 var(--member-dark);
+}
+
+.trainer-photo {
+  background: linear-gradient(
+    160deg,
+    var(--trainer-c1, #ff5c5c),
+    var(--trainer-c2, #7a0c1e)
+  );
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 3px solid var(--member-dark);
+  overflow: hidden;
+}
+
+.trainer-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: center 20%;
+  flex-shrink: 0;
+}
+
+.trainer-card--tiago .trainer-photo {
+  --trainer-c1: #d54f45;
+  --trainer-c2: #8f251f;
+}
+
+.trainer-card--tiago .trainer-photo img {
+  object-position: 51% 22%;
+}
+
+.trainer-card--ismael .trainer-photo {
+  --trainer-c1: #ffffff;
+  --trainer-c2: #aaa7a1;
+}
+
+.trainer-card--ismael .trainer-photo img {
+  object-position: 45% 18%;
+}
+
+.trainer-card--evan .trainer-photo {
+  --trainer-c1: #5c5a57;
+  --trainer-c2: #202020;
+}
+
+.trainer-card--evan .trainer-photo img {
+  object-position: 42% 24%;
+}
+
+.trainer-card--mo .trainer-photo {
+  --trainer-c1: #c94036;
+  --trainer-c2: #5b1713;
+}
+
+.trainer-card--mo .trainer-photo img {
+  object-position: 52% 12%;
+  transform: scale(1.1);
+}
+
+.trainer-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--member-soft);
+  padding: 28px var(--space-3) var(--space-3);
+}
+
+.trainer-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.trainer-role {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--member-dark);
+  margin-bottom: var(--space-2);
+  display: block;
+}
+
+.trainer-body p {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.trainer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.trainer-tag {
+  font-size: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #ffffff;
+  background: var(--member-dark);
+  border: 2px solid var(--member-color);
+  padding: 5px 9px;
+  box-shadow: 2px 2px 0 var(--color-outline);
+}
+
+@media (max-width: 559px) {
+  .trainer-card {
+    display: block;
+  }
+
+  .trainer-card::after {
+    left: 0;
+  }
+
+  .trainer-photo {
+    height: 210px;
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 3px solid var(--member-dark);
+  }
+}

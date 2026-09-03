@@ -193,7 +193,11 @@ describe("brouillon de l'équipe et des boîtes PC", () => {
 describe("première case libre lors d'un dépôt sur une boîte", () => {
   it("choisit la première case d'une boîte vide", () => {
     const draft = draftFromCollection(teamSnapshot().pokemon);
-    expect(firstFreePcCell(draft, 20)).toEqual({ area: "pc", box: 20, slot: 1 });
+    expect(firstFreePcCell(draft, 20)).toEqual({
+      area: "pc",
+      box: 20,
+      slot: 1,
+    });
   });
 
   it("remplit le premier trou sans trier les occupants ni confondre les boîtes", () => {

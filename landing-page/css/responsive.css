@@ -1,0 +1,290 @@
+/* ============================================================
+   Grands écrans (1440p / 4K)
+   Agrandit l'interface pour conserver de bonnes proportions sur
+   un écran large sans étirer excessivement les lignes de texte.
+   ============================================================ */
+@media (min-width: 1600px) and (min-height: 850px) {
+  :root {
+    --header-offset: 80px;
+    --header-visual-height: 79px;
+  }
+
+  body {
+    font-size: 19px;
+  }
+
+  .container {
+    padding-inline: var(--space-4);
+  }
+
+  .section {
+    padding-block: var(--space-6);
+  }
+
+  .section-head {
+    max-width: 920px;
+    margin-bottom: var(--space-5);
+  }
+
+  .eyebrow {
+    font-size: 13px;
+  }
+
+  .section-title {
+    font-size: 36px;
+  }
+
+  .section-lede {
+    font-size: 20px;
+  }
+
+  .btn {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .brand,
+  .brand-logo {
+    width: 240px;
+  }
+
+  .brand {
+    height: 48px;
+    flex-basis: 240px;
+  }
+
+  .nav-links {
+    font-size: 13px;
+  }
+
+  .nav-links a {
+    padding: 11px 13px;
+  }
+
+  .hero-grid {
+    gap: var(--space-6);
+  }
+
+  .hero-badge {
+    font-size: 14px;
+  }
+
+  .hero-title {
+    font-size: 46px;
+  }
+
+  .hero-lede {
+    max-width: 60ch;
+    font-size: 21px;
+  }
+
+  .hero-screen {
+    min-height: 380px;
+  }
+
+  .hero-screen-hud {
+    font-size: 10px;
+  }
+
+  .hero-screen-stage {
+    min-height: 220px;
+  }
+
+  .hero-mascot {
+    width: 120px;
+  }
+
+  .hero-mascot--garchomp {
+    width: 115px;
+  }
+
+  .battle-trainer {
+    width: 74px;
+  }
+
+  .battle-trainer--opponent {
+    width: 88px;
+  }
+
+  .hero-screen-dialog {
+    font-size: 18px;
+  }
+
+  .answer-board-head > span {
+    font-size: 13px;
+  }
+
+  .answer-board-head p,
+  .experience-summary,
+  .experience-missing strong,
+  .answer-path p {
+    font-size: 17px;
+  }
+
+  .experience-source h3 {
+    font-size: 15px;
+  }
+
+  .summary-band > p {
+    font-size: 18px;
+  }
+
+  .answer-path h4 {
+    font-size: 13px;
+  }
+
+  .menu-card::before {
+    height: 86px;
+  }
+
+  .menu-card-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .menu-card h3 {
+    font-size: 16px;
+  }
+
+  .menu-card p {
+    font-size: 18px;
+  }
+
+  .menu-card-tag {
+    min-height: 56px;
+    font-size: 10px;
+  }
+
+  .diff-card {
+    min-height: 380px;
+  }
+
+  .diff-card::before {
+    height: 108px;
+  }
+
+  .diff-card h3 {
+    font-size: 18px;
+  }
+
+  .diff-card p {
+    font-size: 19px;
+  }
+
+  .diff-reward {
+    font-size: 14px;
+  }
+
+  .threat-list {
+    max-width: 1240px;
+  }
+
+  .threat-intro {
+    font-size: 17px;
+  }
+
+  .threat-item-header {
+    min-height: 88px;
+  }
+
+  .threat-sprite {
+    width: 60px;
+    height: 60px;
+  }
+
+  .threat-sprite img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .threat-item h3 {
+    font-size: 13px;
+  }
+
+  .threat-item-tag {
+    min-height: 50px;
+    font-size: 9px;
+  }
+
+  .starter-tile {
+    min-height: 154px;
+  }
+
+  .starter-tile img {
+    width: 76px;
+    height: 76px;
+  }
+
+  .starter-tile span {
+    min-height: 44px;
+    font-size: 9px;
+  }
+
+  .starter-note {
+    font-size: 16px;
+  }
+
+  .version-grid {
+    max-width: 1360px;
+  }
+
+  .version-card h3 {
+    font-size: 18px;
+  }
+
+  .version-intro {
+    font-size: 18px;
+  }
+
+  .version-list li {
+    font-size: 17px;
+  }
+
+  .version-badge,
+  .trainer-role,
+  .trainer-tag {
+    font-size: 13px;
+  }
+
+  .team-grid {
+    max-width: 1400px;
+  }
+
+  .trainer-card,
+  .trainer-photo {
+    min-height: 310px;
+  }
+
+  .trainer-name {
+    font-size: 17px;
+  }
+
+  .trainer-body p {
+    font-size: 17px;
+  }
+
+  .cta-band .container {
+    max-width: 1240px;
+  }
+
+  .cta-kicker {
+    font-size: 12px;
+  }
+
+  .cta-band h2 {
+    font-size: 32px;
+  }
+
+  .cta-band p {
+    font-size: 19px;
+  }
+
+  .footer-brand,
+  .footer-logo {
+    width: 240px;
+  }
+
+  .footer-credits {
+    font-size: 13px;
+  }
+}

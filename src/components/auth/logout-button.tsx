@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 
-import { signOutCurrentSession } from "@/lib/auth-client";
+import { signOutCurrentSession } from "@/lib/auth/client";
 import { FormAlert } from "@/components/auth/form-alert";
 
 /**

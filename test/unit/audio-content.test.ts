@@ -20,12 +20,18 @@ interface TrainerWithMusic {
 
 function loadAudioTracks(): AudioTrack[] {
   const filePath = join(process.cwd(), "content", "audio-tracks.json");
-  return (JSON.parse(readFileSync(filePath, "utf-8")) as { tracks: AudioTrack[] }).tracks;
+  return (
+    JSON.parse(readFileSync(filePath, "utf-8")) as { tracks: AudioTrack[] }
+  ).tracks;
 }
 
 function loadTrainers(): TrainerWithMusic[] {
   const filePath = join(process.cwd(), "content", "trainers.json");
-  return (JSON.parse(readFileSync(filePath, "utf-8")) as { trainers: TrainerWithMusic[] }).trainers;
+  return (
+    JSON.parse(readFileSync(filePath, "utf-8")) as {
+      trainers: TrainerWithMusic[];
+    }
+  ).trainers;
 }
 
 describe("Audio Tracks Catalog & Trainer Associations (T-US08-05, T-US08-06)", () => {
@@ -52,8 +58,19 @@ describe("Audio Tracks Catalog & Trainer Associations (T-US08-05, T-US08-06)", (
     const tracks = loadAudioTracks();
 
     const expectedTrainers = [
-      "Fouad", "Nastaran", "Mosqueron", "Augier", "Torri",
-      "Gamba", "Auberson", "Tiago", "Mo", "Ismael", "Evan", "Hêche", "Donini"
+      "Fouad",
+      "Nastaran",
+      "Mosqueron",
+      "Augier",
+      "Torri",
+      "Gamba",
+      "Auberson",
+      "Tiago",
+      "Mo",
+      "Ismael",
+      "Evan",
+      "Hêche",
+      "Donini",
     ];
 
     for (const trainer of expectedTrainers) {
@@ -81,7 +98,11 @@ describe("Audio Tracks Catalog & Trainer Associations (T-US08-05, T-US08-06)", (
 
     for (const track of tracks) {
       const relativePath = track.src.replace(/^\//, "");
-      const localPath = join(process.cwd(), "public", ...relativePath.split("/"));
+      const localPath = join(
+        process.cwd(),
+        "public",
+        ...relativePath.split("/"),
+      );
 
       expect(
         existsSync(localPath),

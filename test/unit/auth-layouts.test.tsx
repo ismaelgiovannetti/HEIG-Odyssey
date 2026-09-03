@@ -31,9 +31,9 @@ describe("gardes des pages d'authentification", () => {
   it("laisse une session anonyme accéder aux formulaires publics", async () => {
     sessionMocks.getServerSession.mockResolvedValue(null);
 
-    await expect(PublicAuthLayout({ children: "formulaire public" })).resolves.toBe(
-      "formulaire public"
-    );
+    await expect(
+      PublicAuthLayout({ children: "formulaire public" }),
+    ).resolves.toBe("formulaire public");
     expect(sessionMocks.redirect).not.toHaveBeenCalled();
   });
 
@@ -42,9 +42,9 @@ describe("gardes des pages d'authentification", () => {
       user: { id: "user-1" },
     });
 
-    await expect(PublicAuthLayout({ children: "formulaire public" })).rejects.toThrow(
-      "NEXT_REDIRECT:/auth/continue"
-    );
+    await expect(
+      PublicAuthLayout({ children: "formulaire public" }),
+    ).rejects.toThrow("NEXT_REDIRECT:/auth/continue");
     expect(sessionMocks.redirect).toHaveBeenCalledWith("/auth/continue");
   });
 
@@ -52,10 +52,12 @@ describe("gardes des pages d'authentification", () => {
   it("refuse une page protégée sans session valide", async () => {
     sessionMocks.getServerSession.mockResolvedValue(null);
 
-    await expect(ProtectedLayout({ children: "contenu privé" })).rejects.toThrow(
-      "NEXT_REDIRECT:/login?sessionExpired=1"
+    await expect(
+      ProtectedLayout({ children: "contenu privé" }),
+    ).rejects.toThrow("NEXT_REDIRECT:/login?sessionExpired=1");
+    expect(sessionMocks.redirect).toHaveBeenCalledWith(
+      "/login?sessionExpired=1",
     );
-    expect(sessionMocks.redirect).toHaveBeenCalledWith("/login?sessionExpired=1");
   });
 
   it("autorise une session valide à afficher une page protégée", async () => {
@@ -64,7 +66,7 @@ describe("gardes des pages d'authentification", () => {
     });
 
     await expect(ProtectedLayout({ children: "contenu privé" })).resolves.toBe(
-      "contenu privé"
+      "contenu privé",
     );
     expect(sessionMocks.redirect).not.toHaveBeenCalled();
   });

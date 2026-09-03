@@ -2,6 +2,7 @@ import { Dex } from "@pkmn/sim";
 import { getSpeciesFrenchName } from "./species-names-fr";
 
 const dex = Dex.forGen(4);
+type DexSpeciesData = ReturnType<typeof dex.species.get>;
 
 export interface EvolutionTarget {
   targetSpeciesId: string;
@@ -14,7 +15,9 @@ export interface EvolutionTarget {
 /**
  * Détermine le niveau requis pour les évolutions spéciales (Pierres, Échange, Bonheur).
  */
-export function getRequiredLevelForEvolution(targetData: any): number {
+export function getRequiredLevelForEvolution(
+  targetData: DexSpeciesData,
+): number {
   if (targetData.evoLevel && typeof targetData.evoLevel === "number") {
     return targetData.evoLevel;
   }
@@ -22,7 +25,11 @@ export function getRequiredLevelForEvolution(targetData: any): number {
   // Pour les évolutions par objet, pierre, échange ou amitié dans le cadre du MVP web :
   if (targetData.evoType === "trade") return 30;
   if (targetData.evoType === "useItem") return 25;
-  if (targetData.evoType === "levelFriendship" || targetData.evoType === "levelHold") return 20;
+  if (
+    targetData.evoType === "levelFriendship" ||
+    targetData.evoType === "levelHold"
+  )
+    return 20;
   if (targetData.evoType === "levelMove") return targetData.evoLevel || 25;
 
   return 20; // Seuil par défaut

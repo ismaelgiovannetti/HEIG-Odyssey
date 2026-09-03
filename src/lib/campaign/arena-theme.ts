@@ -24,9 +24,25 @@ export type ArenaTheme =
   | "training";
 
 export const ARENA_THEMES: readonly ArenaTheme[] = [
-  "normal", "grass", "electric", "steel", "psychic", "poison", "dragon",
-  "fire", "water", "ice", "fighting", "ground", "flying", "bug", "rock",
-  "ghost", "dark", "neutral", "training",
+  "normal",
+  "grass",
+  "electric",
+  "steel",
+  "psychic",
+  "poison",
+  "dragon",
+  "fire",
+  "water",
+  "ice",
+  "fighting",
+  "ground",
+  "flying",
+  "bug",
+  "rock",
+  "ghost",
+  "dark",
+  "neutral",
+  "training",
 ];
 
 // Type dominant de chaque monde de campagne (déduit du contenu, codé en dur).

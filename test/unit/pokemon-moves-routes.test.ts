@@ -2,13 +2,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET as getLearnsetRoute } from "@/app/api/pokemon/[id]/learnset/route";
 import { PUT as updateMovesRoute } from "@/app/api/pokemon/[id]/moves/route";
 import { POST as evolveRoute } from "@/app/api/pokemon/[id]/evolve/route";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { teamPokemon } from "../helpers/team-fixtures";
+
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
   auth: {
     api: {
-      getSession: vi.fn(),
+      getSession: getSessionMock,
     },
   },
 }));
@@ -38,7 +42,7 @@ describe("Pokemon Moves & Evolution API Routes", () => {
 
   describe("GET /api/pokemon/[id]/learnset", () => {
     it("returns 401 if user is not authenticated", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue(null);
+      getSessionMock.mockResolvedValue(null);
 
       const res = await getLearnsetRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/learnset"),
@@ -51,18 +55,29 @@ describe("Pokemon Moves & Evolution API Routes", () => {
     });
 
     it("returns learnable moves and evolutions for owned Pokemon", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
 
-      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue({
-        id: "pkmn-1",
-        userId: "user-123",
-        speciesId: "bulbasaur",
-        nickname: "Bulbizarre",
-        level: 16,
-        moves: [{ id: "tackle", name: "Charge", type: "Normal", power: 40, pp: 35, maxPp: 35 }],
-      } as any);
+      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue(
+        teamPokemon({
+          id: "pkmn-1",
+          userId: "user-123",
+          speciesId: "bulbasaur",
+          nickname: "Bulbizarre",
+          level: 16,
+          moves: [
+            {
+              id: "tackle",
+              name: "Charge",
+              type: "Normal",
+              power: 40,
+              pp: 35,
+              maxPp: 35,
+            },
+          ],
+        }),
+      );
 
       const res = await getLearnsetRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/learnset"),
@@ -82,9 +97,9 @@ describe("Pokemon Moves & Evolution API Routes", () => {
 
   describe("PUT /api/pokemon/[id]/moves", () => {
     it("returns 400 on invalid move count", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
 
       const res = await updateMovesRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
@@ -104,9 +119,9 @@ describe("Pokemon Moves & Evolution API Routes", () => {
     });
 
     it("returns 400 when a move identifier is not a bounded string", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
 
       const res = await updateMovesRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
@@ -125,39 +140,63 @@ describe("Pokemon Moves & Evolution API Routes", () => {
     });
 
     it("updates moves successfully when valid", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
 
-      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue({
-        id: "pkmn-1",
-        userId: "user-123",
-        speciesId: "bulbasaur",
-        level: 16,
-      } as any);
+      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue(
+        teamPokemon({
+          id: "pkmn-1",
+          userId: "user-123",
+          speciesId: "bulbasaur",
+          level: 16,
+        }),
+      );
 
-      vi.mocked(prisma.userPokemon.update).mockResolvedValue({
-        id: "pkmn-1",
-        userId: "user-123",
-        speciesId: "bulbasaur",
-        nickname: "Bulbizarre",
-        level: 16,
-        experience: 0,
-        teamPosition: 1,
-        boxNumber: null,
-        boxSlot: null,
-        isShiny: false,
-        ability: "Overgrow",
-        nature: "Hardy",
-        moves: [
-          { id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 35, maxPp: 35, priority: 0 },
-          { id: "vinewhip", name: "Fouet Lianes", type: "Grass", category: "physical", power: 45, accuracy: 100, pp: 25, maxPp: 25, priority: 0 },
-        ],
-        ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-        evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        currentHp: 20,
-        maxHp: 20,
-      } as any);
+      vi.mocked(prisma.userPokemon.update).mockResolvedValue(
+        teamPokemon({
+          id: "pkmn-1",
+          userId: "user-123",
+          speciesId: "bulbasaur",
+          nickname: "Bulbizarre",
+          level: 16,
+          experience: 0,
+          teamPosition: 1,
+          boxNumber: null,
+          boxSlot: null,
+          isShiny: false,
+          ability: "Overgrow",
+          nature: "Hardy",
+          moves: [
+            {
+              id: "tackle",
+              name: "Charge",
+              type: "Normal",
+              category: "physical",
+              power: 40,
+              accuracy: 100,
+              pp: 35,
+              maxPp: 35,
+              priority: 0,
+            },
+            {
+              id: "vinewhip",
+              name: "Fouet Lianes",
+              type: "Grass",
+              category: "physical",
+              power: 45,
+              accuracy: 100,
+              pp: 25,
+              maxPp: 25,
+              priority: 0,
+            },
+          ],
+          ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
+          evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          currentHp: 20,
+          maxHp: 20,
+        }),
+      );
 
       const res = await updateMovesRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
@@ -180,35 +219,39 @@ describe("Pokemon Moves & Evolution API Routes", () => {
 
   describe("POST /api/pokemon/[id]/evolve", () => {
     it("evolves pokemon and updates database", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
 
-      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue({
-        id: "pkmn-1",
-        userId: "user-123",
-        speciesId: "bulbasaur",
-        nickname: "Bulbizarre",
-        level: 16,
-        currentHp: 40,
-        maxHp: 40,
-        ivs: { hp: 15 },
-        evs: { hp: 0 },
-        moves: [],
-      } as any);
+      vi.mocked(prisma.userPokemon.findFirst).mockResolvedValue(
+        teamPokemon({
+          id: "pkmn-1",
+          userId: "user-123",
+          speciesId: "bulbasaur",
+          nickname: "Bulbizarre",
+          level: 16,
+          currentHp: 40,
+          maxHp: 40,
+          ivs: { hp: 15 },
+          evs: { hp: 0 },
+          moves: [],
+        }),
+      );
 
-      vi.mocked(prisma.userPokemon.update).mockResolvedValue({
-        id: "pkmn-1",
-        userId: "user-123",
-        speciesId: "ivysaur",
-        nickname: "Herbizarre",
-        level: 16,
-        currentHp: 50,
-        maxHp: 50,
-        ivs: { hp: 15 },
-        evs: { hp: 0 },
-        moves: [],
-      } as any);
+      vi.mocked(prisma.userPokemon.update).mockResolvedValue(
+        teamPokemon({
+          id: "pkmn-1",
+          userId: "user-123",
+          speciesId: "ivysaur",
+          nickname: "Herbizarre",
+          level: 16,
+          currentHp: 50,
+          maxHp: 50,
+          ivs: { hp: 15 },
+          evs: { hp: 0 },
+          moves: [],
+        }),
+      );
 
       const res = await evolveRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/evolve", {
@@ -230,9 +273,9 @@ describe("Pokemon Moves & Evolution API Routes", () => {
     });
 
     it("does not expose an unexpected database error", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-123" },
-      } as any);
+      });
       vi.mocked(prisma.userPokemon.findFirst).mockRejectedValue(
         new Error("postgres-secret-detail"),
       );

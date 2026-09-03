@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET as getBannersRoute } from "@/app/api/gacha/banners/route";
 import { POST as pullRoute } from "@/app/api/gacha/pull/route";
-import { auth } from "@/lib/auth";
 import * as gachaService from "@/lib/gacha/gacha-service";
+
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
   auth: {
     api: {
-      getSession: vi.fn(),
+      getSession: getSessionMock,
     },
   },
 }));
@@ -52,7 +55,7 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
 
   describe("POST /api/gacha/pull", () => {
     it("renvoie 401 si le joueur n'est pas authentifié", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue(null);
+      getSessionMock.mockResolvedValue(null);
 
       const req = new Request("http://localhost:3000/api/gacha/pull", {
         method: "POST",
@@ -68,10 +71,10 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
     });
 
     it("renvoie 400 si le body est invalide", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "usr_123", emailVerified: true },
         session: { id: "ses_123" },
-      } as any);
+      });
 
       const req = postRequest({}); // Manque bannerId et clé d'idempotence.
 
@@ -83,13 +86,13 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
     });
 
     it("renvoie 400 si les fonds sont insuffisants", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "usr_poor", emailVerified: true },
         session: { id: "ses_123" },
-      } as any);
+      });
 
       vi.spyOn(gachaService, "executeGachaPull").mockRejectedValue(
-        new gachaService.InsufficientFundsError("Solde insuffisant")
+        new gachaService.InsufficientFundsError("Solde insuffisant"),
       );
 
       const req = postRequest({
@@ -106,10 +109,10 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
     });
 
     it("exécute le tirage et renvoie 200 avec les données du Pokémon obtenu", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "usr_rich", emailVerified: true },
         session: { id: "ses_123" },
-      } as any);
+      });
 
       vi.spyOn(gachaService, "executeGachaPull").mockResolvedValue({
         success: true,
@@ -147,10 +150,10 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
     });
 
     it("refuse une origine différente avant toute dépense", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "usr_123", emailVerified: true },
         session: { id: "ses_123" },
-      } as any);
+      });
 
       const res = await pullRoute(
         postRequest(
@@ -164,13 +167,16 @@ describe("Gacha API Routes (T-US12-02, T-US12-05)", () => {
     });
 
     it("refuse un compte dont l'adresse e-mail n'est pas vérifiée", async () => {
-      vi.mocked(auth.api.getSession).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "usr_123", emailVerified: false },
         session: { id: "ses_123" },
-      } as any);
+      });
 
       const res = await pullRoute(
-        postRequest({ bannerId: "banner-standard", idempotencyKey: "email-unverified" }),
+        postRequest({
+          bannerId: "banner-standard",
+          idempotencyKey: "email-unverified",
+        }),
       );
 
       expect(res.status).toBe(403);

@@ -18,14 +18,22 @@ export interface TrainingLevelResult {
  * l'équipe active (une équipe incomplète, de 1 à 5 membres, est traitée
  * comme n'importe quelle autre : la moyenne porte sur les membres présents).
  */
-export function calculateTrainingOpponentLevel(teamLevels: number[]): TrainingLevelResult {
+export function calculateTrainingOpponentLevel(
+  teamLevels: number[],
+): TrainingLevelResult {
   if (teamLevels.length === 0) {
-    throw new Error("Impossible de calculer un niveau d'entraînement sans équipe active.");
+    throw new Error(
+      "Impossible de calculer un niveau d'entraînement sans équipe active.",
+    );
   }
 
-  const average = teamLevels.reduce((sum, level) => sum + level, 0) / teamLevels.length;
+  const average =
+    teamLevels.reduce((sum, level) => sum + level, 0) / teamLevels.length;
   const referenceLevel = Math.round(average);
-  const opponentLevel = Math.min(TRAINING_MAX_LEVEL, Math.max(TRAINING_MIN_LEVEL, referenceLevel));
+  const opponentLevel = Math.min(
+    TRAINING_MAX_LEVEL,
+    Math.max(TRAINING_MIN_LEVEL, referenceLevel),
+  );
 
   return {
     referenceLevel,

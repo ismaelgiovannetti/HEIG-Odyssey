@@ -1,3 +1,5 @@
+import "server-only";
+
 import { getApplicationOrigin } from "@/lib/auth/environment";
 
 export type ProtectedJsonBodyResult =

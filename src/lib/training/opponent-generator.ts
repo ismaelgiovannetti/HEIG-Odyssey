@@ -3,8 +3,6 @@ import { hydrateMoves } from "../content/moves";
 import { TrainerSchema } from "../content/schemas";
 import type { Species, TrainerPokemon } from "../content/schemas";
 
-// Compatibilité des imports existants pendant que l'hydratation vit désormais
-// dans le module de contenu commun aux combats et au recrutement.
 export { hydrateMove, hydrateMoves } from "../content/moves";
 
 /**
@@ -19,10 +17,12 @@ export function getTrainingSpeciesPool(): Species[] {
   );
 }
 
-function pickDistinctSpecies(pool: Species[], count: number, rng: () => number): Species[] {
-  // Tirage sans remise (Fisher-Yates partiel) : deux appels successifs
-  // donnent des compositions différentes, comme l'exige le critère
-  // d'acceptation US-09, sans jamais dupliquer une espèce dans l'équipe.
+function pickDistinctSpecies(
+  pool: Species[],
+  count: number,
+  rng: () => number,
+): Species[] {
+  // Le tirage sans remise garantit qu'une espèce n'apparaît qu'une fois.
   const remaining = [...pool];
   const picked: Species[] = [];
   for (let i = 0; i < count && remaining.length > 0; i++) {
@@ -34,8 +34,8 @@ function pickDistinctSpecies(pool: Species[], count: number, rng: () => number):
 
 /**
  * Génère une équipe adverse d'entraînement : `teamSize` espèces distinctes
- * tirées du pool, toutes au niveau calculé par calculateTrainingOpponentLevel
- * (T-US09-01), avec leur moveset par défaut hydraté depuis le Dex.
+ * tirées du pool, toutes au niveau fourni par l'appelant et avec leur
+ * moveset par défaut hydraté depuis le Dex.
  * `rng` est injectable pour des tests déterministes ; Math.random en usage réel.
  */
 export function generateTrainingOpponentTeam(
@@ -45,7 +45,9 @@ export function generateTrainingOpponentTeam(
 ): TrainerPokemon[] {
   // Bornes du format de combat, identiques à celles de TrainerSchema.team.
   if (!Number.isInteger(teamSize) || teamSize < 1 || teamSize > 6) {
-    throw new Error("La taille de l'équipe adverse doit être comprise entre 1 et 6.");
+    throw new Error(
+      "La taille de l'équipe adverse doit être comprise entre 1 et 6.",
+    );
   }
 
   const selected = pickDistinctSpecies(getTrainingSpeciesPool(), teamSize, rng);

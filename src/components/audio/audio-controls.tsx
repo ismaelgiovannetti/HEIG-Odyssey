@@ -11,9 +11,11 @@ interface AudioControlsProps {
 /**
  * Barre de son unique du jeu, affichée dans la navbar. Elle pilote l'ensemble
  * de l'audio (musique et bruitages de combat, sons du gacha, cris des Pokémon)
- * via les préférences globales persistées (T-US08-03, T-US14-02).
+ * via les préférences globales persistées.
  */
-export function AudioControls({ className = "" }: Readonly<AudioControlsProps>) {
+export function AudioControls({
+  className = "",
+}: Readonly<AudioControlsProps>) {
   const preferences = useAudioPreferences();
   const effectiveVolume = preferences.isMuted ? 0 : preferences.volume;
 

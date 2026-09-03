@@ -12,7 +12,7 @@ export interface QuestSeedDefinition {
 }
 
 /**
- * Catalogue des définitions de quêtes du MVP (T-US13-06).
+ * Catalogue des définitions de quêtes du MVP.
  */
 export const MVP_QUEST_DEFINITIONS: QuestSeedDefinition[] = [
   // ----------------------------------------------------

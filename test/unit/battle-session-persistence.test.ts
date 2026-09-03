@@ -69,7 +69,9 @@ describe("persistance en mémoire d'une session de combat", () => {
   it("abandonBattleSession libère immédiatement le verrou de l'équipe", async () => {
     const store = await import("@/lib/combat/battle-session-store");
     store.registerBattleSession(
-      { battleId: "battle-quit" } as Parameters<typeof store.registerBattleSession>[0],
+      { battleId: "battle-quit" } as Parameters<
+        typeof store.registerBattleSession
+      >[0],
       "user-1",
       ["pk-1"],
       undefined,
@@ -94,7 +96,9 @@ describe("persistance en mémoire d'une session de combat", () => {
     const store = await import("@/lib/combat/battle-session-store");
 
     store.registerBattleSession(
-      { battleId: "battle-old" } as Parameters<typeof store.registerBattleSession>[0],
+      { battleId: "battle-old" } as Parameters<
+        typeof store.registerBattleSession
+      >[0],
       "user-1",
       ["pk-1"],
       undefined,
@@ -102,7 +106,9 @@ describe("persistance en mémoire d'une session de combat", () => {
       { battleType: "TRAINING", difficulty: "easy" },
     );
     store.registerBattleSession(
-      { battleId: "battle-new" } as Parameters<typeof store.registerBattleSession>[0],
+      { battleId: "battle-new" } as Parameters<
+        typeof store.registerBattleSession
+      >[0],
       "user-1",
       ["pk-2"],
       undefined,
@@ -121,7 +127,9 @@ describe("persistance en mémoire d'une session de combat", () => {
     try {
       const store = await import("@/lib/combat/battle-session-store");
       store.registerBattleSession(
-        { battleId: "battle-idle" } as Parameters<typeof store.registerBattleSession>[0],
+        { battleId: "battle-idle" } as Parameters<
+          typeof store.registerBattleSession
+        >[0],
         "user-2",
         ["pk-2"],
         undefined,

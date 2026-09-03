@@ -33,7 +33,10 @@ export async function GET(
     });
 
     if (!pokemon) {
-      return json({ success: false, error: "Pokémon introuvable dans votre collection." }, 404);
+      return json(
+        { success: false, error: "Pokémon introuvable dans votre collection." },
+        404,
+      );
     }
 
     const learnableMoves = await getLearnableMovesForSpecies(
@@ -41,10 +44,7 @@ export async function GET(
       pokemon.level,
     );
 
-    const evolutions = getEvolutionOptions(
-      pokemon.speciesId,
-      pokemon.level,
-    );
+    const evolutions = getEvolutionOptions(pokemon.speciesId, pokemon.level);
 
     return json({
       success: true,
@@ -59,7 +59,17 @@ export async function GET(
       evolutions,
     });
   } catch (error) {
-    logger.error("Échec de la récupération du learnset du Pokémon", { requestId, pokemonId: id }, error);
-    return json({ success: false, error: "Impossible de récupérer les capacités disponibles." }, 500);
+    logger.error(
+      "Échec de la récupération du learnset du Pokémon",
+      { requestId, pokemonId: id },
+      error,
+    );
+    return json(
+      {
+        success: false,
+        error: "Impossible de récupérer les capacités disponibles.",
+      },
+      500,
+    );
   }
 }

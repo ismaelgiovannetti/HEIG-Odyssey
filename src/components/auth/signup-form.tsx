@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { checkUsernameAvailability, signUpWithEmail } from "@/lib/auth-client";
+import { checkUsernameAvailability, signUpWithEmail } from "@/lib/auth/client";
 import {
   getPasswordValidationError,
   isValidUsername,
@@ -19,7 +19,8 @@ import { SubmitButton } from "@/components/auth/submit-button";
 type FieldErrors = Partial<
   Record<"username" | "email" | "password" | "passwordConfirmation", string>
 >;
-type UsernameAvailabilityStatus = "idle" | "checking" | "available" | "taken" | "error";
+type UsernameAvailabilityStatus =
+  "idle" | "checking" | "available" | "taken" | "error";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_AVAILABILITY_DELAY_MS = 450;
@@ -62,7 +63,9 @@ export function SignupForm() {
             return;
           }
 
-          setUsernameAvailability(result.data.available ? "available" : "taken");
+          setUsernameAvailability(
+            result.data.available ? "available" : "taken",
+          );
         })
         .catch(() => {
           if (!shouldIgnoreResult) setUsernameAvailability("error");
@@ -81,8 +84,7 @@ export function SignupForm() {
     const errors: FieldErrors = {};
 
     if (!isValidUsername(username)) {
-      errors.username =
-        `Utilisez ${USERNAME_MIN_LENGTH} à ${USERNAME_MAX_LENGTH} caractères : lettres, chiffres, point ou tiret bas.`;
+      errors.username = `Utilisez ${USERNAME_MIN_LENGTH} à ${USERNAME_MAX_LENGTH} caractères : lettres, chiffres, point ou tiret bas.`;
     } else if (usernameAvailability === "taken") {
       errors.username = "Ce nom d'utilisateur est déjà pris.";
     }
@@ -99,7 +101,8 @@ export function SignupForm() {
     if (!passwordConfirmation) {
       errors.passwordConfirmation = "Confirmez votre mot de passe.";
     } else if (passwordConfirmation !== password) {
-      errors.passwordConfirmation = "Les deux mots de passe ne correspondent pas.";
+      errors.passwordConfirmation =
+        "Les deux mots de passe ne correspondent pas.";
     }
 
     return errors;
@@ -134,7 +137,7 @@ export function SignupForm() {
         // Le refus final reste générique : la disponibilité du nom est publique,
         // mais l'adresse enregistrée et les détails du serveur restent privés.
         setFormError(
-          "Impossible de créer le compte avec ces informations. Vérifiez les champs ou essayez une autre adresse."
+          "Impossible de créer le compte avec ces informations. Vérifiez les champs ou essayez une autre adresse.",
         );
         return;
       }
@@ -144,7 +147,7 @@ export function SignupForm() {
       try {
         window.sessionStorage.setItem(
           "heig-odyssey-verification-email",
-          email.trim().toLowerCase()
+          email.trim().toLowerCase(),
         );
       } catch {
         // L'utilisateur pourra ressaisir son adresse sur l'écran suivant.
@@ -178,20 +181,29 @@ export function SignupForm() {
     usernameFeedbackClassName = "auth-field__error";
   } else if (usernameAvailability === "checking") {
     usernameFeedback = "Vérification de la disponibilité…";
-    usernameFeedbackClassName = "auth-field__availability auth-field__availability--checking";
+    usernameFeedbackClassName =
+      "auth-field__availability auth-field__availability--checking";
   } else if (usernameAvailability === "available") {
     usernameFeedback = "Ce nom d'utilisateur est disponible.";
-    usernameFeedbackClassName = "auth-field__availability auth-field__availability--available";
+    usernameFeedbackClassName =
+      "auth-field__availability auth-field__availability--available";
   } else if (usernameAvailability === "taken") {
     usernameFeedback = "Ce nom d'utilisateur est déjà pris.";
-    usernameFeedbackClassName = "auth-field__availability auth-field__availability--taken";
+    usernameFeedbackClassName =
+      "auth-field__availability auth-field__availability--taken";
   } else if (usernameAvailability === "error") {
-    usernameFeedback = "La disponibilité ne peut pas être vérifiée pour le moment.";
-    usernameFeedbackClassName = "auth-field__availability auth-field__availability--error";
+    usernameFeedback =
+      "La disponibilité ne peut pas être vérifiée pour le moment.";
+    usernameFeedbackClassName =
+      "auth-field__availability auth-field__availability--error";
   }
 
   return (
-    <form className="auth-form auth-form--signup" onSubmit={handleSubmit} noValidate>
+    <form
+      className="auth-form auth-form--signup"
+      onSubmit={handleSubmit}
+      noValidate
+    >
       {formError ? (
         <FormAlert key={feedbackRevision} tone="error">
           {formError}
@@ -212,7 +224,9 @@ export function SignupForm() {
           autoCapitalize="none"
           spellCheck={false}
           placeholder="Dresseur42"
-          aria-invalid={Boolean(fieldErrors.username) || usernameAvailability === "taken"}
+          aria-invalid={
+            Boolean(fieldErrors.username) || usernameAvailability === "taken"
+          }
           aria-busy={usernameAvailability === "checking"}
           aria-describedby="username-help"
           required

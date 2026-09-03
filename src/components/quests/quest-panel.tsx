@@ -16,44 +16,16 @@ import {
   QUEST_PROGRESS_INVALIDATED_EVENT,
   type QuestProgressInvalidatedEventDetail,
 } from "@/lib/quests/quest-progress-events";
-
-interface QuestItem {
-  rotationId: string;
-  questId: string;
-  title: string;
-  description: string;
-  type: "DAILY" | "WEEKLY";
-  targetCount: number;
-  currentCount: number;
-  isCompleted: boolean;
-  rewardClaimed: boolean;
-  rewardPokedollars: number;
-  rewardXp: number;
-  endDate: string;
-}
-
-interface QuestsState {
-  dailyQuests: QuestItem[];
-  weeklyQuests: QuestItem[];
-}
-
-interface QuestsResponse {
-  success: boolean;
-  data?: QuestsState;
-  error?: string;
-  syncPending?: boolean;
-}
+import {
+  ClaimQuestSuccessResponseSchema,
+  QuestListSuccessResponseSchema,
+  readApiError,
+  type QuestGroups,
+  type QuestItem,
+} from "@/lib/quests/quest-contract";
 
 interface QuestLoadResult {
   syncPending: boolean;
-}
-
-interface ClaimQuestResponse {
-  success: boolean;
-  data?: {
-    newBalance: number;
-  };
-  error?: string;
 }
 
 interface QuestGroupProps {
@@ -73,14 +45,7 @@ const GENERIC_CLAIM_ERROR =
 // Le worker consomme normalement l'événement presque immédiatement. Cette
 // fenêtre bornée absorbe les courts retards Redis sans créer de polling infini.
 const QUEST_SYNC_ATTEMPT_DELAYS_MS = [
-  0,
-  250,
-  500,
-  1_000,
-  2_000,
-  4_000,
-  8_000,
-  16_000,
+  0, 250, 500, 1_000, 2_000, 4_000, 8_000, 16_000,
 ] as const;
 
 /** Attend le prochain essai tout en permettant une annulation immédiate. */
@@ -123,7 +88,10 @@ function formatTimeRemaining(endDate: string, now: number): string {
 /** Signale visuellement une rotation expirée ou arrivant à échéance dans moins d'une heure. */
 function isTimeRemainingUrgent(endDate: string, now: number): boolean {
   const remainingMilliseconds = new Date(endDate).getTime() - now;
-  return !Number.isFinite(remainingMilliseconds) || remainingMilliseconds < 60 * 60_000;
+  return (
+    !Number.isFinite(remainingMilliseconds) ||
+    remainingMilliseconds < 60 * 60_000
+  );
 }
 
 function getQuestClassName(quest: QuestItem) {
@@ -142,8 +110,12 @@ function QuestCard({
   claimingRotationId: string | null;
   onClaim: (rotationId: string) => Promise<void>;
 }>) {
-  const currentCount = Math.min(Math.max(quest.currentCount, 0), quest.targetCount);
-  const progress = quest.targetCount > 0 ? (currentCount / quest.targetCount) * 100 : 0;
+  const currentCount = Math.min(
+    Math.max(quest.currentCount, 0),
+    quest.targetCount,
+  );
+  const progress =
+    quest.targetCount > 0 ? (currentCount / quest.targetCount) * 100 : 0;
   const statusClassName = getQuestClassName(quest);
   const isClaiming = claimingRotationId === quest.rotationId;
 
@@ -167,16 +139,26 @@ function QuestCard({
         >
           <span style={{ width: `${progress}%` }} />
         </div>
-        <strong>{currentCount}/{quest.targetCount}</strong>
+        <strong>
+          {currentCount}/{quest.targetCount}
+        </strong>
       </div>
 
       <div className="quest-card__footer">
         <div className="quest-card__rewards" aria-label="Récompenses">
-          <span className="quest-card__reward quest-card__reward--money" title="Pokédollars">
-            <span className="quest-card__currency-mark" aria-hidden="true">₽</span>
+          <span
+            className="quest-card__reward quest-card__reward--money"
+            title="Pokédollars"
+          >
+            <span className="quest-card__currency-mark" aria-hidden="true">
+              ₽
+            </span>
             <strong>{quest.rewardPokedollars}</strong>
           </span>
-          <span className="quest-card__reward quest-card__reward--xp" title="Expérience">
+          <span
+            className="quest-card__reward quest-card__reward--xp"
+            title="Expérience"
+          >
             <Zap aria-hidden="true" size={17} strokeWidth={2.5} />
             <strong>+{quest.rewardXp} XP</strong>
           </span>
@@ -213,9 +195,10 @@ function QuestGroup({
 }: Readonly<QuestGroupProps>) {
   const completedCount = quests.filter((quest) => quest.isCompleted).length;
   const endDate = quests[0]?.endDate;
-  const remainingClassName = endDate && isTimeRemainingUrgent(endDate, now)
-    ? "quest-group__remaining is-urgent"
-    : "quest-group__remaining";
+  const remainingClassName =
+    endDate && isTimeRemainingUrgent(endDate, now)
+      ? "quest-group__remaining is-urgent"
+      : "quest-group__remaining";
   // Les objectifs encore actifs restent prioritaires. Une mission terminée
   // descend automatiquement sous celles qu'il reste à accomplir.
   const orderedQuests = [...quests].sort(
@@ -226,28 +209,38 @@ function QuestGroup({
     <section className="quest-group" aria-labelledby={id}>
       <header className="quest-group__header">
         <div className="quest-group__identity">
-          <span className="quest-group__icon" aria-hidden="true"><Icon size={22} /></span>
+          <span className="quest-group__icon" aria-hidden="true">
+            <Icon size={22} />
+          </span>
           <div>
             <h3 id={id}>{title}</h3>
             <p className={remainingClassName}>
               <Clock3 aria-hidden="true" size={13} />
-              {endDate ? formatTimeRemaining(endDate, now) : "Aucune rotation active"}
+              {endDate
+                ? formatTimeRemaining(endDate, now)
+                : "Aucune rotation active"}
             </p>
           </div>
         </div>
-        <span className="quest-group__summary">{completedCount}/{quests.length}</span>
+        <span className="quest-group__summary">
+          {completedCount}/{quests.length}
+        </span>
       </header>
 
       <div className="quest-group__list">
-        {orderedQuests.length > 0 ? orderedQuests.map((quest) => (
-          <QuestCard
-            key={quest.rotationId}
-            quest={quest}
-            claimingRotationId={claimingRotationId}
-            onClaim={onClaim}
-          />
-        )) : (
-          <p className="quest-group__empty">Aucune mission disponible pour cette rotation.</p>
+        {orderedQuests.length > 0 ? (
+          orderedQuests.map((quest) => (
+            <QuestCard
+              key={quest.rotationId}
+              quest={quest}
+              claimingRotationId={claimingRotationId}
+              onClaim={onClaim}
+            />
+          ))
+        ) : (
+          <p className="quest-group__empty">
+            Aucune mission disponible pour cette rotation.
+          </p>
         )}
       </div>
     </section>
@@ -267,90 +260,102 @@ export function QuestPanel() {
   const claimInFlightRef = useRef(false);
   const pointerInsideRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [quests, setQuests] = useState<QuestsState | null>(null);
+  const [quests, setQuests] = useState<QuestGroups | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
-  const [claimingRotationId, setClaimingRotationId] = useState<string | null>(null);
+  const [claimingRotationId, setClaimingRotationId] = useState<string | null>(
+    null,
+  );
   const [now, setNow] = useState(() => Date.now());
 
   const progressSummary = useMemo(() => {
-    const allQuests = quests ? [...quests.dailyQuests, ...quests.weeklyQuests] : [];
+    const allQuests = quests
+      ? [...quests.dailyQuests, ...quests.weeklyQuests]
+      : [];
     return {
       completed: allQuests.filter((quest) => quest.isCompleted).length,
       total: allQuests.length,
     };
   }, [quests]);
 
-  const loadQuests = useCallback(async (
-    afterBattleId?: string,
-  ): Promise<QuestLoadResult | null> => {
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-    setIsLoading(true);
-    setError(null);
+  const loadQuests = useCallback(
+    async (afterBattleId?: string): Promise<QuestLoadResult | null> => {
+      requestRef.current?.abort();
+      const controller = new AbortController();
+      requestRef.current = controller;
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const endpoint = afterBattleId
-        ? `/api/quests?${new URLSearchParams({ afterBattleId }).toString()}`
-        : "/api/quests";
-      const response = await fetch(endpoint, {
-        cache: "no-store",
-        credentials: "same-origin",
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
-      const payload = (await response.json().catch(() => null)) as QuestsResponse | null;
+      try {
+        const endpoint = afterBattleId
+          ? `/api/quests?${new URLSearchParams({ afterBattleId }).toString()}`
+          : "/api/quests";
+        const response = await fetch(endpoint, {
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+        const body: unknown = await response.json().catch(() => null);
+        const payload = QuestListSuccessResponseSchema.safeParse(body);
 
-      if (!response.ok || !payload?.success || !payload.data) {
-        throw new Error(payload?.error || GENERIC_LOAD_ERROR);
-      }
+        if (!response.ok || !payload.success) {
+          throw new Error(readApiError(body) || GENERIC_LOAD_ERROR);
+        }
 
-      setQuests(payload.data);
-      return { syncPending: payload.syncPending === true };
-    } catch (cause) {
-      if (controller.signal.aborted) return null;
-      setError(cause instanceof Error ? cause.message : GENERIC_LOAD_ERROR);
-      return null;
-    } finally {
-      if (requestRef.current === controller) {
-        requestRef.current = null;
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    }
-  }, []);
-
-  const refreshUntilSynchronized = useCallback(async (battleId: string) => {
-    syncRefreshRef.current?.abort();
-    requestRef.current?.abort();
-
-    const controller = new AbortController();
-    syncRefreshRef.current = controller;
-    pendingBattleIdRef.current = battleId;
-
-    try {
-      for (const delayMs of QUEST_SYNC_ATTEMPT_DELAYS_MS) {
-        const canContinue = await waitForRetry(delayMs, controller.signal);
-        if (!canContinue) return;
-
-        const result = await loadQuests(battleId);
-        if (controller.signal.aborted) return;
-
-        if (result && !result.syncPending) {
-          if (pendingBattleIdRef.current === battleId) {
-            pendingBattleIdRef.current = null;
-          }
-          setAnnouncement("Progression des missions actualisée.");
-          return;
+        setQuests({
+          dailyQuests: payload.data.data.dailyQuests,
+          weeklyQuests: payload.data.data.weeklyQuests,
+        });
+        return { syncPending: payload.data.syncPending };
+      } catch (cause) {
+        if (controller.signal.aborted) return null;
+        setError(cause instanceof Error ? cause.message : GENERIC_LOAD_ERROR);
+        return null;
+      } finally {
+        if (requestRef.current === controller) {
+          requestRef.current = null;
+          if (!controller.signal.aborted) setIsLoading(false);
         }
       }
-    } finally {
-      if (syncRefreshRef.current === controller) {
-        syncRefreshRef.current = null;
+    },
+    [],
+  );
+
+  const refreshUntilSynchronized = useCallback(
+    async (battleId: string) => {
+      syncRefreshRef.current?.abort();
+      requestRef.current?.abort();
+
+      const controller = new AbortController();
+      syncRefreshRef.current = controller;
+      pendingBattleIdRef.current = battleId;
+
+      try {
+        for (const delayMs of QUEST_SYNC_ATTEMPT_DELAYS_MS) {
+          const canContinue = await waitForRetry(delayMs, controller.signal);
+          if (!canContinue) return;
+
+          const result = await loadQuests(battleId);
+          if (controller.signal.aborted) return;
+
+          if (result && !result.syncPending) {
+            if (pendingBattleIdRef.current === battleId) {
+              pendingBattleIdRef.current = null;
+            }
+            setAnnouncement("Progression des missions actualisée.");
+            return;
+          }
+        }
+      } finally {
+        if (syncRefreshRef.current === controller) {
+          syncRefreshRef.current = null;
+        }
       }
-    }
-  }, [loadQuests]);
+    },
+    [loadQuests],
+  );
 
   const refreshLatestQuests = useCallback(() => {
     const pendingBattleId = pendingBattleIdRef.current;
@@ -378,7 +383,8 @@ export function QuestPanel() {
   // ainsi se mettre à jour pendant que le résultat du combat est affiché.
   useEffect(() => {
     function handleQuestProgressInvalidated(event: Event) {
-      const detail = (event as CustomEvent<QuestProgressInvalidatedEventDetail>).detail;
+      const detail = (event as CustomEvent<QuestProgressInvalidatedEventDetail>)
+        .detail;
       const battleId = detail?.battleId?.trim();
       if (!battleId || battleId.length > 128) return;
 
@@ -390,10 +396,11 @@ export function QuestPanel() {
       QUEST_PROGRESS_INVALIDATED_EVENT,
       handleQuestProgressInvalidated,
     );
-    return () => window.removeEventListener(
-      QUEST_PROGRESS_INVALIDATED_EVENT,
-      handleQuestProgressInvalidated,
-    );
+    return () =>
+      window.removeEventListener(
+        QUEST_PROGRESS_INVALIDATED_EVENT,
+        handleQuestProgressInvalidated,
+      );
   }, [refreshUntilSynchronized]);
 
   useEffect(() => {
@@ -429,21 +436,19 @@ export function QuestPanel() {
       const response = await fetch("/api/quests/claim", {
         method: "POST",
         credentials: "same-origin",
-        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ rotationId }),
       });
-      const payload = (await response.json().catch(() => null)) as ClaimQuestResponse | null;
-      const newBalance = payload?.data?.newBalance;
+      const body: unknown = await response.json().catch(() => null);
+      const payload = ClaimQuestSuccessResponseSchema.safeParse(body);
 
-      if (
-        !response.ok ||
-        !payload?.success ||
-        typeof newBalance !== "number" ||
-        !Number.isSafeInteger(newBalance) ||
-        newBalance < 0
-      ) {
-        throw new Error(payload?.error || GENERIC_CLAIM_ERROR);
+      if (!response.ok || !payload.success) {
+        throw new Error(readApiError(body) || GENERIC_CLAIM_ERROR);
       }
+      const newBalance = payload.data.data.newBalance;
 
       // Le bouton va disparaître : replacer le focus sur le déclencheur évite
       // qu'un blur transitoire ferme le panneau pour les utilisateurs clavier.
@@ -454,7 +459,9 @@ export function QuestPanel() {
       setQuests((current) => {
         if (!current) return current;
         const markAsClaimed = (quest: QuestItem) =>
-          quest.rotationId === rotationId ? { ...quest, rewardClaimed: true } : quest;
+          quest.rotationId === rotationId
+            ? { ...quest, rewardClaimed: true }
+            : quest;
         return {
           dailyQuests: current.dailyQuests.map(markAsClaimed),
           weeklyQuests: current.weeklyQuests.map(markAsClaimed),
@@ -502,7 +509,9 @@ export function QuestPanel() {
     >
       <button
         ref={triggerRef}
-        className={isOpen ? "quest-menu__trigger is-open" : "quest-menu__trigger"}
+        className={
+          isOpen ? "quest-menu__trigger is-open" : "quest-menu__trigger"
+        }
         type="button"
         title="Missions"
         aria-label={`Missions : ${counterText} terminées`}
@@ -518,7 +527,9 @@ export function QuestPanel() {
         <strong>{counterText}</strong>
       </button>
 
-      <p className="visually-hidden" aria-live="polite">{announcement}</p>
+      <p className="visually-hidden" aria-live="polite">
+        {announcement}
+      </p>
 
       {isOpen ? (
         <div

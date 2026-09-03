@@ -17,7 +17,7 @@ interface BattleCatchlinesProps {
 }
 
 /**
- * Réplique d'introduction / conclusion du dresseur adverse (T-US08-02).
+ * Réplique d'introduction / conclusion du dresseur adverse.
  *
  * Les répliques suivent le point de vue du joueur, comme les libellés le
  * suggèrent : `victoryCatchline` s'affiche quand le joueur l'emporte,

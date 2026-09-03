@@ -57,7 +57,11 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -85,7 +89,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "node", "scripts/worker-healthcheck.mjs"]
+      test: ["CMD", "node", "scripts/ops/worker-healthcheck.mjs"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -102,7 +106,11 @@ services:
     networks:
       - frontend
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5

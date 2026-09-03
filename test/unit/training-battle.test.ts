@@ -3,16 +3,21 @@ import {
   computeAverageTeamLevel,
   difficultyToAIProfile,
   generateTrainingOpponent,
-} from "@/lib/combat/training-generator";
+} from "@/lib/training/training-generator";
 import { grantTrainingRewards } from "@/lib/rewards/reward-service";
 import { POST as startBattleRoute } from "@/app/api/battle/start/route";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { mockInteractiveTransaction } from "../helpers/mock-clients";
+import { teamPokemon } from "../helpers/team-fixtures";
+
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
   auth: {
     api: {
-      getSession: vi.fn(),
+      getSession: getSessionMock,
     },
   },
 }));
@@ -51,7 +56,6 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-
 describe("Training Battle Mode (T-US09-03)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -88,7 +92,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
   describe("Récompenses d'entraînement (grantTrainingRewards)", () => {
     it("attribue les récompenses de victoire et crée l'OutboxEvent training.completed", async () => {
-      (prisma.battleRecord.findUnique as any).mockResolvedValue(null);
+      vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
 
       const mockTx = {
         userPokemon: {
@@ -115,7 +119,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
         },
       };
 
-      (prisma.$transaction as any).mockImplementation((cb: any) => cb(mockTx));
+      mockInteractiveTransaction(prisma, mockTx);
 
       const result = await grantTrainingRewards({
         userId: "user-1",
@@ -152,7 +156,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
     });
 
     it("ne crédite aucun gain en cas de défaite p2", async () => {
-      (prisma.battleRecord.findUnique as any).mockResolvedValue(null);
+      vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
 
       const mockTx = {
         userPokemon: {
@@ -179,7 +183,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
         },
       };
 
-      (prisma.$transaction as any).mockImplementation((cb: any) => cb(mockTx));
+      mockInteractiveTransaction(prisma, mockTx);
 
       const result = await grantTrainingRewards({
         userId: "user-1",
@@ -197,24 +201,20 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
   describe("API POST /api/battle/start en mode training", () => {
     it("démarre avec succès un combat d'entraînement avec une équipe valide", async () => {
-      (auth.api.getSession as any).mockResolvedValue({
+      getSessionMock.mockResolvedValue({
         user: { id: "user-training-1" },
       });
 
-      (prisma.userPokemon.findMany as any).mockResolvedValue([
-        {
+      vi.mocked(prisma.userPokemon.findMany).mockResolvedValue([
+        teamPokemon({
           id: "pkmn-1",
           userId: "user-training-1",
-          speciesId: "turtwig",
           nickname: "Twiggy",
           level: 15,
-          experience: 0,
           currentHp: 45,
           maxHp: 45,
           teamPosition: 1,
-          ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
-
-        },
+        }),
       ]);
 
       const req = new Request("http://localhost:3000/api/battle/start", {

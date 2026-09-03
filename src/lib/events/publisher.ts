@@ -1,3 +1,5 @@
+import "server-only";
+
 import { prisma } from "../prisma";
 import { getRedisClient } from "./redis-client";
 import { OutboxStatus } from "@prisma/client";
@@ -44,7 +46,7 @@ function unwrapLegacyOutboxPayload(
  */
 export async function publishDomainEvent(
   event: DomainEventEnvelope,
-  client?: Redis
+  client?: Redis,
 ): Promise<string> {
   const redis = client ?? getRedisClient();
 
@@ -64,7 +66,7 @@ export async function publishDomainEvent(
     "occurredAt",
     event.occurredAt,
     "payload",
-    JSON.stringify(event.payload)
+    JSON.stringify(event.payload),
   );
 
   logger.info("Événement publié dans Redis Streams", {
@@ -83,12 +85,14 @@ export async function publishDomainEvent(
  * En cas de succès, marque l'événement comme PUBLISHED.
  * En cas d'échec, incrémente le compteur de retry et enregistre l'erreur.
  */
-export async function publishPendingOutboxEvents(options: {
-  batchSize?: number;
-  maxRetries?: number;
-  client?: Redis;
-  continuousRecovery?: boolean;
-} = {}): Promise<PublishPendingResult> {
+export async function publishPendingOutboxEvents(
+  options: {
+    batchSize?: number;
+    maxRetries?: number;
+    client?: Redis;
+    continuousRecovery?: boolean;
+  } = {},
+): Promise<PublishPendingResult> {
   const batchSize = options.batchSize ?? 50;
   const maxRetries = options.maxRetries ?? 5;
   const redis = options.client ?? getRedisClient();
@@ -113,7 +117,8 @@ export async function publishPendingOutboxEvents(options: {
       const envelope: DomainEventEnvelope = {
         eventId: outboxItem.eventId,
         eventType: outboxItem.eventType as DomainEventEnvelope["eventType"],
-        aggregateType: outboxItem.aggregateType as DomainEventEnvelope["aggregateType"],
+        aggregateType:
+          outboxItem.aggregateType as DomainEventEnvelope["aggregateType"],
         aggregateId: outboxItem.aggregateId,
         version: 1,
         occurredAt: outboxItem.createdAt.toISOString(),
@@ -138,28 +143,34 @@ export async function publishPendingOutboxEvents(options: {
       publishedCount++;
     } catch (error) {
       failedCount++;
-      const errorMessage = String(sanitizeLogData(
-        error instanceof Error ? error.message : String(error),
-      ));
+      const errorMessage = String(
+        sanitizeLogData(error instanceof Error ? error.message : String(error)),
+      );
       const isLastRetry =
         !continuousRecovery && outboxItem.retryCount + 1 >= maxRetries;
 
-      logger.error("Échec de publication d'un événement Outbox", {
-        eventId: outboxItem.eventId,
-        action: "event.publish.retry",
-        eventType: outboxItem.eventType,
-        retryCount: outboxItem.retryCount + 1,
-        terminal: isLastRetry,
-      }, error);
-
-      await prisma.outboxEvent.update({
-        where: { id: outboxItem.id },
-        data: {
-          retryCount: { increment: 1 },
-          lastError: errorMessage,
-          status: isLastRetry ? OutboxStatus.FAILED : OutboxStatus.PENDING,
+      logger.error(
+        "Échec de publication d'un événement Outbox",
+        {
+          eventId: outboxItem.eventId,
+          action: "event.publish.retry",
+          eventType: outboxItem.eventType,
+          retryCount: outboxItem.retryCount + 1,
+          terminal: isLastRetry,
         },
-      }).catch(() => {});
+        error,
+      );
+
+      await prisma.outboxEvent
+        .update({
+          where: { id: outboxItem.id },
+          data: {
+            retryCount: { increment: 1 },
+            lastError: errorMessage,
+            status: isLastRetry ? OutboxStatus.FAILED : OutboxStatus.PENDING,
+          },
+        })
+        .catch(() => {});
     }
   }
 
@@ -173,10 +184,14 @@ export function triggerOutboxFlush(): void {
   // Exécution asynchrone sans bloquer la requête HTTP
   setImmediate(() => {
     publishPendingOutboxEvents().catch((err) => {
-      logger.error("Échec du vidage de l'Outbox en arrière-plan", {
-        eventId: logger.generateEventId(),
-        action: "outbox.flush",
-      }, err);
+      logger.error(
+        "Échec du vidage de l'Outbox en arrière-plan",
+        {
+          eventId: logger.generateEventId(),
+          action: "outbox.flush",
+        },
+        err,
+      );
     });
   });
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // ----------------------------------------------------
-// 1. Move & Attack Schema
+// 1. Schéma des capacités
 // ----------------------------------------------------
 export const PokemonTypeEnum = z.enum([
   "Normal",
@@ -41,7 +41,7 @@ export const MoveSchema = z.object({
 export type Move = z.infer<typeof MoveSchema>;
 
 // ----------------------------------------------------
-// 2. Base Species Schema
+// 2. Schéma des espèces
 // ----------------------------------------------------
 export const BaseStatsSchema = z.object({
   hp: z.number().int().positive(),
@@ -71,8 +71,13 @@ export const SpeciesSchema = z.object({
 
 export type Species = z.infer<typeof SpeciesSchema>;
 
+export const SpeciesConfigSchema = z.object({
+  version: z.string(),
+  species: z.array(SpeciesSchema).min(1),
+});
+
 // ----------------------------------------------------
-// 3. Starter Configuration Schema (US-03, US-15)
+// 3. Configuration des Pokémon de départ
 // ----------------------------------------------------
 export const StarterOptionSchema = z.object({
   speciesId: z.string().min(1),
@@ -90,10 +95,8 @@ export const StartersConfigSchema = z.object({
   starters: z.array(StarterOptionSchema).min(1),
 });
 
-export type StartersConfig = z.infer<typeof StartersConfigSchema>;
-
 // ----------------------------------------------------
-// 4. Trainers & Opponents Schema (US-08, US-15)
+// 4. Schéma des dresseurs et adversaires
 // ----------------------------------------------------
 export const AIProfileEnum = z.enum(["random", "heuristic", "expectiminimax"]);
 export type AIProfile = z.infer<typeof AIProfileEnum>;
@@ -141,10 +144,8 @@ export const TrainersConfigSchema = z.object({
   trainers: z.array(TrainerSchema).min(1),
 });
 
-export type TrainersConfig = z.infer<typeof TrainersConfigSchema>;
-
 // ----------------------------------------------------
-// 5. Campaign Progression Schema (US-07, US-15)
+// 5. Schéma de progression de la campagne
 // ----------------------------------------------------
 export const CampaignDegreeEnum = z.enum(["BACHELOR", "MASTER", "DOCTORAT"]);
 
@@ -177,42 +178,43 @@ export const CampaignConfigSchema = z.object({
   worlds: z.array(CampaignWorldSchema).min(1),
 });
 
-export type CampaignConfig = z.infer<typeof CampaignConfigSchema>;
-
 // ----------------------------------------------------
-// 6. Gacha Banners Schema (US-12, US-15)
+// 6. Schéma des bannières de recrutement
 // ----------------------------------------------------
-export const GachaBannerConfigSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string(),
-  costPokedollars: z.number().int().positive(),
-  rates: z.object({
-    common: z.number().min(0).max(1),
-    rare: z.number().min(0).max(1),
-    epic: z.number().min(0).max(1),
-    shinyRate: z.number().min(0).max(1),
-  }),
-  poolSpecies: z.array(z.string()).min(1),
-  isActive: z.boolean().default(true),
-}).superRefine((banner, context) => {
-  const rarityTotal = banner.rates.common + banner.rates.rare + banner.rates.epic;
-  if (Math.abs(rarityTotal - 1) > 1e-9) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["rates"],
-      message: "Common, rare and epic rates must add up to 1",
-    });
-  }
+export const GachaBannerConfigSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    description: z.string(),
+    costPokedollars: z.number().int().positive(),
+    rates: z.object({
+      common: z.number().min(0).max(1),
+      rare: z.number().min(0).max(1),
+      epic: z.number().min(0).max(1),
+      shinyRate: z.number().min(0).max(1),
+    }),
+    poolSpecies: z.array(z.string()).min(1),
+    isActive: z.boolean().default(true),
+  })
+  .superRefine((banner, context) => {
+    const rarityTotal =
+      banner.rates.common + banner.rates.rare + banner.rates.epic;
+    if (Math.abs(rarityTotal - 1) > 1e-9) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["rates"],
+        message: "Common, rare and epic rates must add up to 1",
+      });
+    }
 
-  if (new Set(banner.poolSpecies).size !== banner.poolSpecies.length) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["poolSpecies"],
-      message: "A gacha pool cannot contain duplicate species",
-    });
-  }
-});
+    if (new Set(banner.poolSpecies).size !== banner.poolSpecies.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["poolSpecies"],
+        message: "A gacha pool cannot contain duplicate species",
+      });
+    }
+  });
 
 export type GachaBannerConfig = z.infer<typeof GachaBannerConfigSchema>;
 
@@ -220,5 +222,3 @@ export const GachaConfigSchema = z.object({
   version: z.string(),
   banners: z.array(GachaBannerConfigSchema).min(1),
 });
-
-export type GachaConfig = z.infer<typeof GachaConfigSchema>;

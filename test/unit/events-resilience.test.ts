@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   publishPendingOutboxEvents,
-  publishDomainEvent,
   EVENTS_STREAM_KEY,
 } from "@/lib/events/publisher";
 import {
@@ -12,9 +11,10 @@ import {
   registerEventHandler,
   clearEventHandlers,
 } from "@/worker/event-dispatcher";
-import { createDomainEvent } from "@/lib/events/contracts";
 import { prisma } from "@/lib/prisma";
 import { OutboxStatus } from "@prisma/client";
+import { asRedisClient } from "../helpers/mock-clients";
+import { outboxEvent } from "../helpers/prisma-fixtures";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -34,7 +34,7 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
 
   describe("Scénario 1 : Panne temporaire Redis et reprise par l'Outbox", () => {
     it("conserve l'événement en PENDING lors d'une panne Redis puis le publie avec succès au retour du service", async () => {
-      const mockPendingEvent = {
+      const mockPendingEvent = outboxEvent({
         id: "outbox-resilient-1",
         eventId: "evt_resilient_1",
         eventType: "battle.completed",
@@ -44,17 +44,23 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
         status: OutboxStatus.PENDING,
         retryCount: 0,
         createdAt: new Date("2026-09-01T10:00:00Z"),
-      };
+      });
 
-      (prisma.outboxEvent.findMany as any).mockResolvedValue([mockPendingEvent]);
-      (prisma.outboxEvent.update as any).mockResolvedValue({});
+      vi.mocked(prisma.outboxEvent.findMany).mockResolvedValue([
+        mockPendingEvent,
+      ]);
+      vi.mocked(prisma.outboxEvent.update).mockResolvedValue(mockPendingEvent);
 
       // 1. Échec initial (Redis hors service)
       const offlineRedis = {
-        xadd: vi.fn().mockRejectedValue(new Error("ECONNREFUSED 127.0.0.1:6379")),
+        xadd: vi
+          .fn()
+          .mockRejectedValue(new Error("ECONNREFUSED 127.0.0.1:6379")),
       };
 
-      const failResult = await publishPendingOutboxEvents({ client: offlineRedis as any });
+      const failResult = await publishPendingOutboxEvents({
+        client: asRedisClient(offlineRedis),
+      });
       expect(failResult.failedCount).toBe(1);
       expect(failResult.publishedCount).toBe(0);
       expect(prisma.outboxEvent.update).toHaveBeenCalledWith({
@@ -71,7 +77,9 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
         xadd: vi.fn().mockResolvedValue("1725180000010-0"),
       };
 
-      const successResult = await publishPendingOutboxEvents({ client: onlineRedis as any });
+      const successResult = await publishPendingOutboxEvents({
+        client: asRedisClient(onlineRedis),
+      });
       expect(successResult.publishedCount).toBe(1);
       expect(successResult.failedCount).toBe(0);
       expect(prisma.outboxEvent.update).toHaveBeenCalledWith({
@@ -124,19 +132,21 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
       ];
 
       const mockRedis = {
-        xautoclaim: vi.fn().mockResolvedValue([
-          "0-0",
-          [["1725180000042-0", staleMessageRawFields]],
-        ]),
+        xautoclaim: vi
+          .fn()
+          .mockResolvedValue([
+            "0-0",
+            [["1725180000042-0", staleMessageRawFields]],
+          ]),
         xack: vi.fn().mockResolvedValue(1),
       };
 
       const claimedCount = await claimAndProcessStaleMessages(
-        mockRedis as any,
+        asRedisClient(mockRedis),
         EVENTS_STREAM_KEY,
         "quest-workers",
         "recovery-worker-1",
-        30000
+        30000,
       );
 
       expect(claimedCount).toBe(1);
@@ -144,7 +154,7 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
       expect(mockRedis.xack).toHaveBeenCalledWith(
         EVENTS_STREAM_KEY,
         "quest-workers",
-        "1725180000042-0"
+        "1725180000042-0",
       );
     });
   });
@@ -200,22 +210,22 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
 
       // 1er passage
       const res1 = await processAndAckStreamMessage(
-        mockRedis as any,
+        asRedisClient(mockRedis),
         EVENTS_STREAM_KEY,
         "quest-workers",
         "1725180000099-0",
-        rawFields
+        rawFields,
       );
       expect(res1).toBe(true);
       expect(sideEffectCount).toBe(1);
 
       // 2e passage (rejeu du même événement)
       const res2 = await processAndAckStreamMessage(
-        mockRedis as any,
+        asRedisClient(mockRedis),
         EVENTS_STREAM_KEY,
         "quest-workers",
         "1725180000099-0",
-        rawFields
+        rawFields,
       );
       expect(res2).toBe(true);
       expect(sideEffectCount).toBe(1); // Aucun effet supplémentaire
@@ -240,11 +250,11 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
       ];
 
       const result = await processAndAckStreamMessage(
-        mockRedis as any,
+        asRedisClient(mockRedis),
         EVENTS_STREAM_KEY,
         "quest-workers",
         "1725180000666-0",
-        corruptedRawFields
+        corruptedRawFields,
       );
 
       // Message rejeté, conservé en quarantaine puis acquitté.
@@ -253,7 +263,7 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
       expect(mockRedis.xack).toHaveBeenCalledWith(
         EVENTS_STREAM_KEY,
         "quest-workers",
-        "1725180000666-0"
+        "1725180000666-0",
       );
       expect(mockRedis.xadd.mock.invocationCallOrder[0]).toBeLessThan(
         mockRedis.xack.mock.invocationCallOrder[0],

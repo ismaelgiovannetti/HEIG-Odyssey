@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SpriteProvider, type SpriteVariant } from "@/components/SpriteProvider";
+import {
+  SpriteProvider,
+  type SpriteVariant,
+} from "@/components/pokemon/sprite-provider";
 
 export interface ShowcaseStarterItem {
   speciesId: string;
@@ -78,7 +81,10 @@ export function StarterShowcase({
 
   // Randomiser après le montage, puis utiliser le catalogue complet dès sa réception.
   useEffect(() => {
-    const fresh = getRandomStarters(catalog.length > 0 ? catalog : DEFAULT_STARTERS, 3);
+    const fresh = getRandomStarters(
+      catalog.length > 0 ? catalog : DEFAULT_STARTERS,
+      3,
+    );
     setSpots(
       fresh.map((starter) => ({
         speciesId: starter.speciesId,
@@ -97,9 +103,7 @@ export function StarterShowcase({
       if (!isMounted) return;
 
       // 1. Déclencher la disparition simultanée des 3 Pokémon
-      setSpots((prev) =>
-        prev.map((spot) => ({ ...spot, isExiting: true })),
-      );
+      setSpots((prev) => prev.map((spot) => ({ ...spot, isExiting: true })));
 
       // 2. Changer les 3 Pokémon en même temps avec 3 nouvelles créatures distinctes
       timeoutId = setTimeout(() => {
@@ -107,7 +111,9 @@ export function StarterShowcase({
 
         const currentPool = poolRef.current;
         const currentSpots = spotsRef.current;
-        const currentlyDisplayed = new Set(currentSpots.map((s) => s.speciesId));
+        const currentlyDisplayed = new Set(
+          currentSpots.map((s) => s.speciesId),
+        );
 
         // Sélectionner 3 nouveaux Pokémon différents des 3 précédents
         const nextTrio = getRandomStarters(currentPool, 3, currentlyDisplayed);
@@ -184,9 +190,7 @@ export function StarterShowcase({
                 aria-hidden="true"
               />
 
-              <span className="onboarding-showcase__name">
-                {spot.name}
-              </span>
+              <span className="onboarding-showcase__name">{spot.name}</span>
             </div>
           );
         })}

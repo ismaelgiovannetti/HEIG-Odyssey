@@ -1,5 +1,13 @@
+import "server-only";
+
 import { prisma } from "../prisma";
-import { QuestType, type QuestDefinition, type QuestRotation } from "@prisma/client";
+import {
+  QuestType,
+  type Prisma,
+  type PrismaClient,
+  type QuestDefinition,
+  type QuestRotation,
+} from "@prisma/client";
 import { MVP_QUEST_DEFINITIONS } from "./definitions";
 
 export const QUEST_TIMEZONE = "Europe/Zurich";
@@ -21,7 +29,10 @@ export function getDailyPeriodKey(date: Date = new Date()): string {
 /**
  * Renvoie les bornes de début et fin pour la rotation quotidienne.
  */
-export function getDailyPeriodBounds(date: Date = new Date()): { startDate: Date; endDate: Date } {
+export function getDailyPeriodBounds(date: Date = new Date()): {
+  startDate: Date;
+  endDate: Date;
+} {
   const periodKey = getDailyPeriodKey(date);
   const [year, month, day] = periodKey.split("-").map((v) => parseInt(v, 10));
 
@@ -43,7 +54,8 @@ export function getWeeklyPeriodKey(date: Date = new Date()): string {
   if (target.getUTCDay() !== 4) {
     target.setUTCMonth(0, 1 + ((4 - target.getUTCDay() + 7) % 7));
   }
-  const weekNumber = 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  const weekNumber =
+    1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
   const year = new Date(firstThursday).getUTCFullYear();
   const weekFormatted = weekNumber < 10 ? `0${weekNumber}` : `${weekNumber}`;
   return `${year}-W${weekFormatted}`;
@@ -52,7 +64,10 @@ export function getWeeklyPeriodKey(date: Date = new Date()): string {
 /**
  * Renvoie les bornes de début (lundi 00:00) et de fin (dimanche 23:59) pour la semaine.
  */
-export function getWeeklyPeriodBounds(date: Date = new Date()): { startDate: Date; endDate: Date } {
+export function getWeeklyPeriodBounds(date: Date = new Date()): {
+  startDate: Date;
+  endDate: Date;
+} {
   const dayOfWeek = (date.getUTCDay() + 6) % 7; // 0 = lundi
   const startDate = new Date(date.valueOf());
   startDate.setUTCDate(startDate.getUTCDate() - dayOfWeek);
@@ -84,7 +99,7 @@ function hashString(str: string): number {
 export function selectQuestsDeterministically<T extends { id: string }>(
   items: T[],
   periodKey: string,
-  count: number
+  count: number,
 ): T[] {
   if (items.length <= count) return [...items];
 
@@ -112,12 +127,14 @@ export type ActiveRotationsResult = {
   allRotations: Array<QuestRotation & { quest: QuestDefinition }>;
 };
 
+export type QuestDatabaseClient = PrismaClient | Prisma.TransactionClient;
+
 /**
- * Récupère ou génère les rotations actives pour la date donnée (T-US13-02).
+ * Récupère ou génère les rotations actives pour la date donnée.
  */
 export async function getOrGenerateActiveRotations(
   date: Date = new Date(),
-  client: any = prisma
+  client: QuestDatabaseClient = prisma,
 ): Promise<ActiveRotationsResult> {
   const dailyPeriodKey = getDailyPeriodKey(date);
   const weeklyPeriodKey = getWeeklyPeriodKey(date);
@@ -139,7 +156,9 @@ export async function getOrGenerateActiveRotations(
 
     if (dailyDefinitions.length === 0) {
       // Si la base n'a pas encore été seedée, initialiser depuis le catalogue
-      for (const def of MVP_QUEST_DEFINITIONS.filter((q) => q.type === QuestType.DAILY)) {
+      for (const def of MVP_QUEST_DEFINITIONS.filter(
+        (q) => q.type === QuestType.DAILY,
+      )) {
         await client.questDefinition.upsert({
           where: { id: def.id },
           update: {},
@@ -151,7 +170,11 @@ export async function getOrGenerateActiveRotations(
       });
     }
 
-    const selectedDaily = selectQuestsDeterministically(dailyDefinitions, dailyPeriodKey, 3);
+    const selectedDaily = selectQuestsDeterministically(
+      dailyDefinitions,
+      dailyPeriodKey,
+      3,
+    );
 
     for (const def of selectedDaily) {
       await client.questRotation.upsert({
@@ -190,7 +213,9 @@ export async function getOrGenerateActiveRotations(
     });
 
     if (weeklyDefinitions.length === 0) {
-      for (const def of MVP_QUEST_DEFINITIONS.filter((q) => q.type === QuestType.WEEKLY)) {
+      for (const def of MVP_QUEST_DEFINITIONS.filter(
+        (q) => q.type === QuestType.WEEKLY,
+      )) {
         await client.questDefinition.upsert({
           where: { id: def.id },
           update: {},
@@ -202,7 +227,11 @@ export async function getOrGenerateActiveRotations(
       });
     }
 
-    const selectedWeekly = selectQuestsDeterministically(weeklyDefinitions, weeklyPeriodKey, 2);
+    const selectedWeekly = selectQuestsDeterministically(
+      weeklyDefinitions,
+      weeklyPeriodKey,
+      2,
+    );
 
     for (const def of selectedWeekly) {
       await client.questRotation.upsert({

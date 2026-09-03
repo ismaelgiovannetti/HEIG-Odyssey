@@ -8,7 +8,9 @@ export class TeamPokemonNotOwnedError extends Error {
 
 export class TeamPokemonInBattleError extends Error {
   constructor() {
-    super("Ce Pokémon participe à un combat en cours et ne peut pas être relâché.");
+    super(
+      "Ce Pokémon participe à un combat en cours et ne peut pas être relâché.",
+    );
     this.name = "TeamPokemonInBattleError";
   }
 }
@@ -22,7 +24,9 @@ export class TeamCompositionInvalidError extends Error {
 
 export class TeamRevisionConflictError extends Error {
   constructor() {
-    super("La collection a changé. Rechargez-la avant d'enregistrer vos modifications.");
+    super(
+      "La collection a changé. Rechargez-la avant d'enregistrer vos modifications.",
+    );
     this.name = "TeamRevisionConflictError";
   }
 }

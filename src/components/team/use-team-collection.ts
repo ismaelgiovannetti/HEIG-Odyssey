@@ -17,9 +17,9 @@ import {
 export function useTeamCollection() {
   const [snapshot, setSnapshot] = useState<CollectionSnapshot | null>(null);
   const [draft, setDraft] = useState<TeamDraft>({ team: [], pc: [] });
-  const [pending, setPending] = useState<
-    "load" | "save" | "release" | null
-  >("load");
+  const [pending, setPending] = useState<"load" | "save" | "release" | null>(
+    "load",
+  );
   const [error, setError] = useState<TeamRequestError | null>(null);
   const [notice, setNotice] = useState("");
   const request = useRef<{ id: number; controller: AbortController } | null>(

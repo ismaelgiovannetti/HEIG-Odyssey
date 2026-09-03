@@ -14,7 +14,8 @@ export const TRAINING_DIFFICULTIES: Record<
 > = {
   easy: {
     label: "Facile",
-    shortDescription: "Pour découvrir une équipe ou essayer de nouvelles capacités.",
+    shortDescription:
+      "Pour découvrir une équipe ou essayer de nouvelles capacités.",
     behavior: "L’adversaire varie ses actions sans chercher le meilleur coup.",
   },
   normal: {

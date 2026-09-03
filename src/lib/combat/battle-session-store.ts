@@ -1,3 +1,5 @@
+import "server-only";
+
 import { BattleEngine } from "./battle-engine";
 import { selectAIAction } from "./ai";
 import type {
@@ -12,7 +14,7 @@ import {
   type BattleRewardResult,
 } from "../rewards/reward-service";
 import { snapshotBattleParticipants } from "./battle-participants";
-import type { TrainingDifficulty } from "./training-generator";
+import type { TrainingDifficulty } from "../training/training-generator";
 
 interface ActiveBattleSession {
   engine: BattleEngine;
@@ -24,7 +26,6 @@ interface ActiveBattleSession {
   aiProfile: AIProfile;
   lastAccessed: number;
 }
-
 
 // Cette erreur générique ne révèle pas si le combat appartient à un autre joueur.
 export class BattleSessionUnavailableError extends Error {
@@ -130,7 +131,10 @@ export function isPokemonInActiveBattle(
  * « Quitter », fermeture d'onglet, navigation). Idempotent et silencieux si la
  * session est absente ou appartient à un autre compte.
  */
-export function abandonBattleSession(battleId: string, userId: string): boolean {
+export function abandonBattleSession(
+  battleId: string,
+  userId: string,
+): boolean {
   const session = activeSessions.get(battleId);
   if (!session || session.userId !== userId) {
     return false;
@@ -139,7 +143,9 @@ export function abandonBattleSession(battleId: string, userId: string): boolean 
   return true;
 }
 
-function getLiveBattleSession(battleId: string): ActiveBattleSession | undefined {
+function getLiveBattleSession(
+  battleId: string,
+): ActiveBattleSession | undefined {
   const session = activeSessions.get(battleId);
 
   if (!session) {
@@ -164,7 +170,7 @@ export function registerBattleSession(
   options?: {
     battleType?: "CAMPAIGN" | "TRAINING";
     difficulty?: TrainingDifficulty;
-  }
+  },
 ): void {
   cleanupOldSessions();
   // Un joueur ne peut conserver qu'un seul moteur actif. Démarrer un nouveau
@@ -184,7 +190,9 @@ export function registerBattleSession(
   });
 }
 
-export function getBattleSession(battleId: string): ActiveBattleSession | undefined {
+export function getBattleSession(
+  battleId: string,
+): ActiveBattleSession | undefined {
   const session = getLiveBattleSession(battleId);
   if (session) {
     session.lastAccessed = Date.now();

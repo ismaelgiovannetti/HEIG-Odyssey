@@ -1,10 +1,14 @@
+import "server-only";
+
 import { prisma } from "../prisma";
 import { loadCampaign, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
 import { BattleResult, OutboxStatus, type Prisma } from "@prisma/client";
-import type { CampaignStage } from "../content/schemas";
 import { snapshotBattleParticipants } from "../combat/battle-participants";
-import { createDomainEvent, type BattleCompletedPayload } from "../events/contracts";
+import {
+  createDomainEvent,
+  type BattleCompletedPayload,
+} from "../events/contracts";
 import { triggerOutboxFlush } from "../events/publisher";
 import {
   calculateTrainingReward,
@@ -65,7 +69,8 @@ export async function grantBattleRewards({
   });
 
   if (existingBattle) {
-    if (existingBattle.userId !== userId) throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
+    if (existingBattle.userId !== userId)
+      throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
     const profile = await prisma.userProfile.findUnique({ where: { userId } });
     return {
       isAlreadyClaimed: true,
@@ -82,7 +87,7 @@ export async function grantBattleRewards({
   // suivante peut ainsi appartenir au monde suivant sans perdre cette clé.
   const worlds = loadCampaign();
   const allStages = worlds.flatMap((w) =>
-    w.stages.map((s) => ({ ...s, worldId: w.id }))
+    w.stages.map((s) => ({ ...s, worldId: w.id })),
   );
 
   let stageConfig: (typeof allStages)[number] | null = null;
@@ -133,11 +138,15 @@ export async function grantBattleRewards({
       where: { userId, id: { in: [...participantIds] } },
       orderBy: { id: "asc" },
     });
-    if (participants.length !== participantIds.length) throw new Error("BATTLE_PARTICIPANTS_UNAVAILABLE");
+    if (participants.length !== participantIds.length)
+      throw new Error("BATTLE_PARTICIPANTS_UNAVAILABLE");
 
     // Seuls ces participants reçoivent l'expérience, pas leurs éventuels remplaçants.
     if (winner === "p1" && xpReward > 0) {
-      const xpPerMember = Math.max(1, Math.floor(xpReward / participants.length));
+      const xpPerMember = Math.max(
+        1,
+        Math.floor(xpReward / participants.length),
+      );
 
       for (const member of participants) {
         let currentLevel = member.level;
@@ -157,13 +166,22 @@ export async function grantBattleRewards({
 
         const species = getSpecies(member.speciesId);
         const ivs = member.ivs;
-        const hpIv = ivs && typeof ivs === "object" && !Array.isArray(ivs) && typeof ivs.hp === "number" ? ivs.hp : 15;
+        const hpIv =
+          ivs &&
+          typeof ivs === "object" &&
+          !Array.isArray(ivs) &&
+          typeof ivs.hp === "number"
+            ? ivs.hp
+            : 15;
         const newMaxHp = species
           ? calculateMaxHp(species.baseStats.hp, currentLevel, hpIv, 0)
           : member.maxHp;
 
         // Le gain de PV maximum accompagne la montée de niveau.
-        const newCurrentHp = Math.min(newMaxHp, member.currentHp + (newMaxHp - member.maxHp));
+        const newCurrentHp = Math.min(
+          newMaxHp,
+          member.currentHp + (newMaxHp - member.maxHp),
+        );
 
         await tx.userPokemon.update({
           where: { id: member.id },
@@ -249,7 +267,7 @@ export async function grantBattleRewards({
       },
     });
 
-    // Enregistrement transactionnel de l'événement Outbox (T-US17-02)
+    // L'événement est enregistré dans l'Outbox avec les gains de la transaction.
     const battleEventPayload: BattleCompletedPayload = {
       userId,
       battleId,
@@ -286,7 +304,6 @@ export async function grantBattleRewards({
       },
     });
 
-
     return {
       isAlreadyClaimed: false,
       moneyEarned: moneyReward,
@@ -298,7 +315,7 @@ export async function grantBattleRewards({
     };
   });
 
-  // Déclenchement de la publication vers Redis Streams (T-US17-03)
+  // La publication vers Redis démarre après la validation de la transaction.
   triggerOutboxFlush();
 
   return txResult;
@@ -314,7 +331,7 @@ export interface GrantTrainingRewardsParams {
 }
 
 /**
- * Attribue les récompenses pour un combat d'entraînement et émet training.completed (T-US09-03).
+ * Attribue les récompenses pour un combat d'entraînement et émet training.completed.
  */
 export async function grantTrainingRewards({
   userId,
@@ -331,7 +348,8 @@ export async function grantTrainingRewards({
   });
 
   if (existingBattle) {
-    if (existingBattle.userId !== userId) throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
+    if (existingBattle.userId !== userId)
+      throw new Error("BATTLE_REWARD_OWNER_MISMATCH");
     const profile = await prisma.userProfile.findUnique({ where: { userId } });
     return {
       isAlreadyClaimed: true,
@@ -398,7 +416,12 @@ export async function grantTrainingRewards({
         typeof evs.hp === "number"
           ? evs.hp
           : 0;
-      const newMax = calculateMaxHp(species.baseStats.hp, currentLvl, hpIv, hpEv);
+      const newMax = calculateMaxHp(
+        species.baseStats.hp,
+        currentLvl,
+        hpIv,
+        hpEv,
+      );
 
       if (leveledUp || xpReward > 0) {
         await tx.userPokemon.update({
@@ -453,7 +476,6 @@ export async function grantTrainingRewards({
         completedAt: new Date(),
       },
     });
-
 
     const trainingEventPayload = {
       userId,

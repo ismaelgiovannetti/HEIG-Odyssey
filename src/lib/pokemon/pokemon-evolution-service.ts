@@ -1,11 +1,20 @@
+import "server-only";
+
 import { Dex } from "@pkmn/sim";
 import { prisma } from "../prisma";
 import { getSpecies } from "../content/loader";
 import { getSpeciesFrenchName } from "./species-names-fr";
+import { readStoredStat } from "./stored-stat";
 import { calculateMaxHp } from "../team/team-validator";
 import { isPokemonInActiveBattle } from "../combat/battle-session-store";
-import { toCollectionEntry, type CollectionEntry } from "../team/collection-entry";
-import { getEvolutionOptions, type EvolutionTarget } from "./pokemon-evolution-types";
+import {
+  toCollectionEntry,
+  type CollectionEntry,
+} from "../team/collection-entry";
+import {
+  getEvolutionOptions,
+  type EvolutionTarget,
+} from "./pokemon-evolution-types";
 
 export { getEvolutionOptions, type EvolutionTarget };
 
@@ -28,7 +37,12 @@ export async function evolveUserPokemon(
   userId: string,
   pokemonId: string,
   targetSpeciesId: string,
-): Promise<{ success: boolean; pokemon: CollectionEntry; previousSpeciesName: string; newSpeciesName: string }> {
+): Promise<{
+  success: boolean;
+  pokemon: CollectionEntry;
+  previousSpeciesName: string;
+  newSpeciesName: string;
+}> {
   return prisma.$transaction(async (tx) => {
     const pokemon = await tx.userPokemon.findFirst({
       where: { id: pokemonId, userId },
@@ -48,11 +62,18 @@ export async function evolveUserPokemon(
       );
     }
 
-    const previousSpeciesName = getSpeciesFrenchName(pokemon.speciesId, pokemon.speciesId);
+    const previousSpeciesName = getSpeciesFrenchName(
+      pokemon.speciesId,
+      pokemon.speciesId,
+    );
 
-    const evolutionOptions = getEvolutionOptions(pokemon.speciesId, pokemon.level);
+    const evolutionOptions = getEvolutionOptions(
+      pokemon.speciesId,
+      pokemon.level,
+    );
     const selectedEvolution = evolutionOptions.find(
-      (opt) => opt.targetSpeciesId.toLowerCase() === targetSpeciesId.toLowerCase(),
+      (opt) =>
+        opt.targetSpeciesId.toLowerCase() === targetSpeciesId.toLowerCase(),
     );
 
     if (!selectedEvolution) {
@@ -70,23 +91,27 @@ export async function evolveUserPokemon(
     }
 
     const targetSpec = getSpecies(targetSpeciesId);
-    const targetName = getSpeciesFrenchName(targetSpeciesId, targetSpec?.name || targetSpeciesId);
+    const targetName = getSpeciesFrenchName(
+      targetSpeciesId,
+      targetSpec?.name || targetSpeciesId,
+    );
 
     // Recalcul des points de vie (PV max)
-    const ivsObj = (pokemon.ivs as any) || { hp: 15 };
-    const evsObj = (pokemon.evs as any) || { hp: 0 };
-    const baseHp = targetSpec?.baseStats?.hp || dex.species.get(targetSpeciesId).baseStats.hp;
+    const baseHp =
+      targetSpec?.baseStats?.hp ||
+      dex.species.get(targetSpeciesId).baseStats.hp;
 
     const newMaxHp = calculateMaxHp(
       baseHp,
       pokemon.level,
-      ivsObj.hp ?? 15,
-      evsObj.hp ?? 0,
+      readStoredStat(pokemon.ivs, "hp", 15),
+      readStoredStat(pokemon.evs, "hp", 0),
     );
 
     // Ajustement proportionnel des PV actuels
     const hpRatio = pokemon.maxHp > 0 ? pokemon.currentHp / pokemon.maxHp : 1;
-    const newCurrentHp = pokemon.currentHp === 0 ? 0 : Math.max(1, Math.round(hpRatio * newMaxHp));
+    const newCurrentHp =
+      pokemon.currentHp === 0 ? 0 : Math.max(1, Math.round(hpRatio * newMaxHp));
 
     // Si le surnom était le nom de l'ancienne espèce, on le met à jour avec le nouveau nom
     let updatedNickname = pokemon.nickname;

@@ -67,12 +67,12 @@ describe("Content Validation and Loader (US-15)", () => {
     );
 
     expect(regularTrainers).toHaveLength(56);
-    expect(new Set(regularTrainers.map((trainer) => trainer.victoryCatchline)).size).toBe(
-      regularTrainers.length,
-    );
-    expect(new Set(regularTrainers.map((trainer) => trainer.defeatCatchline)).size).toBe(
-      regularTrainers.length,
-    );
+    expect(
+      new Set(regularTrainers.map((trainer) => trainer.victoryCatchline)).size,
+    ).toBe(regularTrainers.length);
+    expect(
+      new Set(regularTrainers.map((trainer) => trainer.defeatCatchline)).size,
+    ).toBe(regularTrainers.length);
   });
 
   it("should load and validate campaign worlds and stages referential integrity", () => {
@@ -96,7 +96,9 @@ describe("Content Validation and Loader (US-15)", () => {
     const obtainableSpecies = new Set<string>();
     for (const banner of banners) {
       expect(banner.costPokedollars).toBeGreaterThan(0);
-      expect(banner.rates.common + banner.rates.rare + banner.rates.epic).toBeCloseTo(1, 10);
+      expect(
+        banner.rates.common + banner.rates.rare + banner.rates.epic,
+      ).toBeCloseTo(1, 10);
       expect(new Set(banner.poolSpecies).size).toBe(banner.poolSpecies.length);
 
       const poolRarities = new Set(

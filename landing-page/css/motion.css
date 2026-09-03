@@ -1,0 +1,38 @@
+/* ============================================================
+   Apparition au défilement (amélioration progressive)
+   ============================================================ */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-enabled .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 400ms ease-out,
+    transform 400ms ease-out;
+}
+
+.reveal-enabled .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-enabled .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

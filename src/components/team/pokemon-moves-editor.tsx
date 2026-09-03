@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState, useId, useRef } from "react";
-import { Swords, Check, X, LoaderCircle, AlertCircle, Plus, Sparkles } from "lucide-react";
+import {
+  Swords,
+  Check,
+  X,
+  LoaderCircle,
+  AlertCircle,
+  Plus,
+} from "lucide-react";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
-import type { Move } from "@/lib/content/schemas";
 import type { LearnableMove } from "@/lib/pokemon/pokemon-learnset-service";
 import { PokemonTypes } from "./pokemon-summary";
 import styles from "./team-manager.module.css";
@@ -63,9 +69,13 @@ export function PokemonMovesEditor({
         if (isMounted) {
           setLearnableMoves(data.learnableMoves || []);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (isMounted) {
-          setErrorMessage(err?.message || "Erreur lors du chargement des capacités.");
+          setErrorMessage(
+            err instanceof Error
+              ? err.message
+              : "Erreur lors du chargement des capacités.",
+          );
         }
       } finally {
         if (isMounted) {
@@ -86,7 +96,9 @@ export function PokemonMovesEditor({
     if (selectedMoveIds.includes(moveId)) return;
 
     if (selectedMoveIds.length >= 4) {
-      setErrorMessage("4 capacités sont déjà équipées. Retirez-en une pour équiper celle-ci.");
+      setErrorMessage(
+        "4 capacités sont déjà équipées. Retirez-en une pour équiper celle-ci.",
+      );
       return;
     }
 
@@ -124,13 +136,19 @@ export function PokemonMovesEditor({
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "Échec de l'enregistrement des capacités.");
+        throw new Error(
+          data.error || "Échec de l'enregistrement des capacités.",
+        );
       }
 
       onSaved();
       onClose();
-    } catch (err: any) {
-      setErrorMessage(err?.message || "Une erreur est survenue lors de l'enregistrement.");
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue lors de l'enregistrement.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -173,7 +191,8 @@ export function PokemonMovesEditor({
     >
       <header className={styles.dialogHeader}>
         <span id={titleId}>
-          <Swords size={18} aria-hidden="true" /> Modifier les capacités de {pokemon.name}
+          <Swords size={18} aria-hidden="true" /> Modifier les capacités de{" "}
+          {pokemon.name}
         </span>
         <button
           type="button"
@@ -197,7 +216,9 @@ export function PokemonMovesEditor({
         <section className={styles.equippedSection}>
           <div className={styles.sectionHeading}>
             <h3>Capacités actives ({equippedMoves.length}/4)</h3>
-            <small>Choisissez jusqu&apos;à 4 capacités à emmener en combat</small>
+            <small>
+              Choisissez jusqu&apos;à 4 capacités à emmener en combat
+            </small>
           </div>
 
           <div className={styles.equippedGrid}>
@@ -229,7 +250,10 @@ export function PokemonMovesEditor({
               }
 
               return (
-                <div key={`empty-${slotIndex}`} className={styles.emptySlotCard}>
+                <div
+                  key={`empty-${slotIndex}`}
+                  className={styles.emptySlotCard}
+                >
                   <span>Emplacement libre</span>
                 </div>
               );
@@ -279,12 +303,17 @@ export function PokemonMovesEditor({
 
                       <div className={styles.learnableCardStats}>
                         <span>Puissance : {move.power || "-"}</span>
-                        <span>Précision : {move.accuracy ? `${move.accuracy}%` : "-"}</span>
+                        <span>
+                          Précision :{" "}
+                          {move.accuracy ? `${move.accuracy}%` : "-"}
+                        </span>
                         <span>PP max : {move.pp}</span>
                       </div>
 
                       {move.description && (
-                        <p className={styles.moveDescription}>{move.description}</p>
+                        <p className={styles.moveDescription}>
+                          {move.description}
+                        </p>
                       )}
                     </div>
 
@@ -335,7 +364,8 @@ export function PokemonMovesEditor({
         >
           {isSaving ? (
             <>
-              <LoaderCircle size={16} className={styles.loadingSpinner} /> Enregistrement...
+              <LoaderCircle size={16} className={styles.loadingSpinner} />{" "}
+              Enregistrement...
             </>
           ) : (
             "Enregistrer les capacités"

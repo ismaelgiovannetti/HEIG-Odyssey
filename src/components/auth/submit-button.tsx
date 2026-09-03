@@ -14,7 +14,11 @@ export function SubmitButton({
   children,
 }: SubmitButtonProps) {
   return (
-    <button className="auth-submit pixel-btn" type="submit" disabled={isPending}>
+    <button
+      className="auth-submit pixel-btn"
+      type="submit"
+      disabled={isPending}
+    >
       {isPending ? <span className="auth-spinner" aria-hidden="true" /> : null}
       <span>{isPending ? pendingLabel : children}</span>
     </button>

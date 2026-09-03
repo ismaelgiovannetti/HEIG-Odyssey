@@ -37,7 +37,8 @@ export function PlayerBalance({
     }
 
     window.addEventListener(PLAYER_BALANCE_EVENT, updateBalance);
-    return () => window.removeEventListener(PLAYER_BALANCE_EVENT, updateBalance);
+    return () =>
+      window.removeEventListener(PLAYER_BALANCE_EVENT, updateBalance);
   }, []);
 
   // Format déterministe : le premier rendu client doit être identique au SSR.

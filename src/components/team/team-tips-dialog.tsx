@@ -90,8 +90,8 @@ export function TeamTipsDialog({ onClose }: { onClose: () => void }) {
           </h3>
           <ul>
             <li>
-              <strong>Entrée / Espace :</strong> prenez un Pokémon, puis posez-le
-              sur la case choisie.
+              <strong>Entrée / Espace :</strong> prenez un Pokémon, puis
+              posez-le sur la case choisie.
             </li>
             <li>
               <strong>Flèches directionnelles :</strong> passez d’une case à
@@ -119,9 +119,8 @@ export function TeamTipsDialog({ onClose }: { onClose: () => void }) {
               <strong>Échap :</strong> annulez le déplacement en cours.
             </li>
             <li>
-              <strong>Sauvegarde automatique :</strong> l’équipe et le
-              rangement du PC sont enregistrés après chaque déplacement ou
-              échange.
+              <strong>Sauvegarde automatique :</strong> l’équipe et le rangement
+              du PC sont enregistrés après chaque déplacement ou échange.
             </li>
             <li>
               <strong>Relâcher un Pokémon :</strong> utilisez le bouton feuille

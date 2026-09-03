@@ -69,7 +69,9 @@ export function PokemonReleaseDialog({
         }
       }}
     >
-      <header className={`${styles.dialogHeader} ${styles.releaseDialogHeader}`}>
+      <header
+        className={`${styles.dialogHeader} ${styles.releaseDialogHeader}`}
+      >
         <span id={titleId}>
           <Leaf size={22} aria-hidden="true" /> Relâcher dans la nature
         </span>
@@ -101,7 +103,11 @@ export function PokemonReleaseDialog({
             onClick={onConfirm}
           >
             {pending ? (
-              <LoaderCircle className={styles.savingIcon} size={18} aria-hidden="true" />
+              <LoaderCircle
+                className={styles.savingIcon}
+                size={18}
+                aria-hidden="true"
+              />
             ) : (
               <Leaf size={18} aria-hidden="true" />
             )}

@@ -10,7 +10,12 @@ function readSource(relativePath: string): string {
 const applicationLayout = readSource("src/app/layout.tsx");
 const applicationStyles = readSource("src/app/globals.css");
 const landingHtml = readSource("landing-page/index.html");
-const landingStyles = readSource("landing-page/css/style.css");
+const landingStyles = [
+  ...landingHtml.matchAll(/<link\s+rel="stylesheet"\s+href="([^"]+)"/g),
+]
+  .map(([, href]) => href.split("?")[0])
+  .map((href) => readSource(`landing-page/${href}`))
+  .join("\n");
 const landingScript = readSource("landing-page/js/main.js");
 
 describe("palette sombre unique", () => {
@@ -38,11 +43,11 @@ describe("palette sombre unique", () => {
   it("annonce la palette sombre aux navigateurs", () => {
     expect(applicationLayout).toContain('colorScheme: "dark"');
     expect(applicationLayout).toContain('themeColor: "#10141A"');
-    expect(landingHtml).toContain(
-      '<meta name="theme-color" content="#10141A">',
+    expect(landingHtml).toMatch(
+      /<meta name="theme-color" content="#10141A"\s*\/?>/,
     );
-    expect(landingHtml).toContain(
-      '<meta name="color-scheme" content="dark">',
+    expect(landingHtml).toMatch(
+      /<meta name="color-scheme" content="dark"\s*\/?>/,
     );
   });
 });

@@ -61,7 +61,10 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
         resend_api_key: "re_secret_live",
       };
 
-      const sanitized = sanitizeLogData(sensitiveContext) as Record<string, unknown>;
+      const sanitized = sanitizeLogData(sensitiveContext) as Record<
+        string,
+        unknown
+      >;
 
       expect(sanitized.username).toBe("joueur_test");
       expect(sanitized.password).toBe("[REDACTED]");
@@ -74,7 +77,8 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
 
     it("masque les tokens Bearer et chaînes de connexion PostgreSQL dans les strings", () => {
       const headerString = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xyz";
-      const dbUrlString = "postgresql://postgres:mysecretpassword@localhost:5432/heig_odyssey";
+      const dbUrlString =
+        "postgresql://postgres:mysecretpassword@localhost:5432/heig_odyssey";
       const redisUrlString = "redis://worker:redispassword@redis:6379";
 
       const sanitizedHeader = sanitizeLogData(headerString);
@@ -82,7 +86,9 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
       const sanitizedRedisUrl = sanitizeLogData(redisUrlString);
 
       expect(sanitizedHeader).toBe("Bearer [REDACTED]");
-      expect(sanitizedDbUrl).toBe("postgresql://postgres:[REDACTED]@localhost:5432/heig_odyssey");
+      expect(sanitizedDbUrl).toBe(
+        "postgresql://postgres:[REDACTED]@localhost:5432/heig_odyssey",
+      );
       expect(sanitizedRedisUrl).toBe("redis://worker:[REDACTED]@redis:6379");
     });
 
@@ -102,14 +108,22 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
         },
       };
 
-      const sanitized = sanitizeLogData(nested) as any;
+      const sanitized = sanitizeLogData(nested);
 
-      expect(sanitized.user.id).toBe("usr_1");
-      expect(sanitized.user.email).toBe("test@example.com");
-      expect(sanitized.user.credentials.passwordHash).toBe("[REDACTED]");
-      expect(sanitized.user.credentials.recoveryToken).toBe("[REDACTED]");
-      expect(sanitized.payload.speciesId).toBe("garchomp");
-      expect(sanitized.payload.level).toBe(50);
+      expect(sanitized).toEqual({
+        user: {
+          id: "usr_1",
+          email: "test@example.com",
+          credentials: {
+            passwordHash: "[REDACTED]",
+            recoveryToken: "[REDACTED]",
+          },
+        },
+        payload: {
+          speciesId: "garchomp",
+          level: 50,
+        },
+      });
     });
   });
 
@@ -118,7 +132,12 @@ describe("Structured Logging & Secret Redaction (T-US20-06)", () => {
       const testError = new Error("Connexion Redis interrompue");
       testError.name = "RedisConnectionError";
 
-      const log = createStructuredLog("error", "Échec d'envoi", { requestId: "req_err" }, testError);
+      const log = createStructuredLog(
+        "error",
+        "Échec d'envoi",
+        { requestId: "req_err" },
+        testError,
+      );
 
       expect(log.level).toBe("error");
       expect(log.error).toBeDefined();

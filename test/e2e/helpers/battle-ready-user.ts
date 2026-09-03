@@ -2,12 +2,13 @@ import { randomUUID } from "node:crypto";
 
 import { hashPassword } from "better-auth/crypto";
 
-import { prisma } from "../../../src/lib/prisma";
-import { calculateMaxHp } from "../../../src/lib/team/team-validator";
+import { prisma } from "./prisma";
 
 const LOCAL_DATABASE_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
 export const E2E_PASSWORD = "MainLoop-E2E!2026";
+// Formule Gen 4 : base 35, niveau 50, IV 31 et aucun EV.
+const PIKACHU_LEVEL_50_MAX_HP = 110;
 
 export type BattleReadyTestUser = {
   id: string;
@@ -70,15 +71,14 @@ export async function createBattleReadyTestUser(): Promise<BattleReadyTestUser> 
     },
   });
 
-  const maxHp = calculateMaxHp(35, 50, 31, 0);
   const pokemon = await prisma.userPokemon.create({
     data: {
       userId: id,
       speciesId: "pikachu",
       level: 50,
       experience: 0,
-      currentHp: maxHp,
-      maxHp,
+      currentHp: PIKACHU_LEVEL_50_MAX_HP,
+      maxHp: PIKACHU_LEVEL_50_MAX_HP,
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [

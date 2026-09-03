@@ -52,8 +52,16 @@ describe("Quest Rotations Service (T-US13-02)", () => {
   it("sélectionne les quêtes de manière 100% déterministe pour une même clé de période", () => {
     const dailyQuests = MVP_QUEST_DEFINITIONS.filter((q) => q.type === "DAILY");
 
-    const selection1 = selectQuestsDeterministically(dailyQuests, "2026-09-01", 3);
-    const selection2 = selectQuestsDeterministically(dailyQuests, "2026-09-01", 3);
+    const selection1 = selectQuestsDeterministically(
+      dailyQuests,
+      "2026-09-01",
+      3,
+    );
+    const selection2 = selectQuestsDeterministically(
+      dailyQuests,
+      "2026-09-01",
+      3,
+    );
 
     expect(selection1.map((q) => q.id)).toEqual(selection2.map((q) => q.id));
     expect(selection1.length).toBe(3);
@@ -62,8 +70,16 @@ describe("Quest Rotations Service (T-US13-02)", () => {
   it("produit des sélections différentes pour deux dates différentes", () => {
     const dailyQuests = MVP_QUEST_DEFINITIONS.filter((q) => q.type === "DAILY");
 
-    const selectionDay1 = selectQuestsDeterministically(dailyQuests, "2026-09-01", 3);
-    const selectionDay2 = selectQuestsDeterministically(dailyQuests, "2026-09-02", 3);
+    const selectionDay1 = selectQuestsDeterministically(
+      dailyQuests,
+      "2026-09-01",
+      3,
+    );
+    const selectionDay2 = selectQuestsDeterministically(
+      dailyQuests,
+      "2026-09-02",
+      3,
+    );
 
     expect(selectionDay1).toBeDefined();
     expect(selectionDay2).toBeDefined();

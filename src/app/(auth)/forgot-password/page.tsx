@@ -5,7 +5,8 @@ import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export const metadata: Metadata = {
   title: "Mot de passe oublié - HEIG Odyssey",
-  description: "Demandez un lien sécurisé pour récupérer votre compte HEIG Odyssey.",
+  description:
+    "Demandez un lien sécurisé pour récupérer votre compte HEIG Odyssey.",
   robots: { index: false, follow: false },
 };
 

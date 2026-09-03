@@ -13,12 +13,14 @@ describe("BattleCatchlines Component (T-US08-02)", () => {
         victoryCatchline="Bien joué !"
         defeatCatchline="Mes routeurs ont surchauffé..."
         currentPhase="intro"
-      />
+      />,
     );
 
     expect(screen.getByText("Fouad")).toBeDefined();
     expect(screen.getByText(/Professeur Réseau/)).toBeDefined();
-    expect(screen.getByText(/Prépare-toi à une tempête de paquets !/)).toBeDefined();
+    expect(
+      screen.getByText(/Prépare-toi à une tempête de paquets !/),
+    ).toBeDefined();
     expect(screen.getByText("Début du combat")).toBeDefined();
   });
 
@@ -30,10 +32,12 @@ describe("BattleCatchlines Component (T-US08-02)", () => {
         victoryCatchline="Tu as franchi ma défense, félicitations !"
         defeatCatchline="Reviens réviser le modèle OSI !"
         currentPhase="victory"
-      />
+      />,
     );
 
-    expect(screen.getByText(/Tu as franchi ma défense, félicitations !/)).toBeDefined();
+    expect(
+      screen.getByText(/Tu as franchi ma défense, félicitations !/),
+    ).toBeDefined();
     expect(screen.getByText("Victoire !")).toBeDefined();
   });
 
@@ -45,7 +49,7 @@ describe("BattleCatchlines Component (T-US08-02)", () => {
         victoryCatchline="Tu as franchi ma défense, félicitations !"
         defeatCatchline="Reviens réviser le modèle OSI !"
         currentPhase="defeat"
-      />
+      />,
     );
 
     expect(screen.getByText(/Reviens réviser le modèle OSI !/)).toBeDefined();
@@ -60,7 +64,7 @@ describe("BattleCatchlines Component (T-US08-02)", () => {
         victoryCatchline="Victoire"
         defeatCatchline="Défaite"
         currentPhase="turn"
-      />
+      />,
     );
 
     expect(container.firstChild).toBeNull();

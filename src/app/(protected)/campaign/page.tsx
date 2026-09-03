@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import "../../battle.css";
+
 import { ApplicationShell } from "@/components/application/application-shell";
 import { CampaignMap } from "@/components/campaign/campaign-map";
 import { getCampaignProgressForUser } from "@/lib/campaign/campaign-service";

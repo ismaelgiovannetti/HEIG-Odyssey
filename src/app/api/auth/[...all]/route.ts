@@ -21,7 +21,9 @@ function authBodyError(status: 400 | 413, message: string): Response {
  * Better Auth lit ses corps en mémoire. On borne donc le flux brut avant de
  * lui reconstruire une Request équivalente, sans se fier au seul Content-Length.
  */
-async function readBoundedAuthRequest(request: Request): Promise<Request | Response> {
+async function readBoundedAuthRequest(
+  request: Request,
+): Promise<Request | Response> {
   const declaredLength = request.headers.get("content-length");
   if (declaredLength !== null) {
     if (!/^\d+$/.test(declaredLength)) {

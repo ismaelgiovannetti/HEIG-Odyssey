@@ -13,7 +13,8 @@ vi.mock("react", async (importOriginal) => {
   const react = await importOriginal<typeof import("react")>();
   return {
     ...react,
-    cache: <T extends (...arguments_: never[]) => unknown>(callback: T) => callback,
+    cache: <T extends (...arguments_: never[]) => unknown>(callback: T) =>
+      callback,
   };
 });
 
@@ -37,7 +38,9 @@ describe("lecture de la session serveur", () => {
   });
 
   it("transmet les en-têtes de la requête à Better Auth", async () => {
-    const requestHeaders = new Headers({ cookie: "better-auth.session_token=test" });
+    const requestHeaders = new Headers({
+      cookie: "better-auth.session_token=test",
+    });
     const validSession = { user: { id: "user-1", name: "Kim" } };
     serverSessionMocks.headers.mockResolvedValue(requestHeaders);
     serverSessionMocks.getSession.mockResolvedValue(validSession);

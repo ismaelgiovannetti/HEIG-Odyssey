@@ -12,6 +12,7 @@ import {
   dispatchDomainEvent,
 } from "@/lib/../worker/event-dispatcher";
 import { createDomainEvent } from "@/lib/events/contracts";
+import { asRedisClient } from "../helpers/mock-clients";
 
 describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
   beforeEach(() => {
@@ -20,7 +21,14 @@ describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
   });
 
   it("parse correctement un tableau de champs bruts clé-valeur Redis", () => {
-    const raw = ["eventId", "evt_123", "eventType", "battle.completed", "payload", '{"foo":"bar"}'];
+    const raw = [
+      "eventId",
+      "evt_123",
+      "eventType",
+      "battle.completed",
+      "payload",
+      '{"foo":"bar"}',
+    ];
     const fields = parseStreamFields(raw);
     expect(fields).toEqual({
       eventId: "evt_123",
@@ -129,18 +137,18 @@ describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
     ];
 
     const success = await processAndAckStreamMessage(
-      mockRedis as any,
+      asRedisClient(mockRedis),
       "heig-odyssey:events",
       "quest-workers",
       "1725180000000-0",
-      rawFields
+      rawFields,
     );
 
     expect(success).toBe(true);
     expect(mockRedis.xack).toHaveBeenCalledWith(
       "heig-odyssey:events",
       "quest-workers",
-      "1725180000000-0"
+      "1725180000000-0",
     );
   });
 
@@ -183,11 +191,11 @@ describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
     ];
 
     const success = await processAndAckStreamMessage(
-      mockRedis as any,
+      asRedisClient(mockRedis),
       "heig-odyssey:events",
       "quest-workers",
       "1725180000000-0",
-      rawFields
+      rawFields,
     );
 
     expect(success).toBe(false);
@@ -196,10 +204,16 @@ describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
 
   it("gère l'erreur BUSYGROUP de manière idempotente lors de l'initialisation du groupe", async () => {
     const mockRedis = {
-      xgroup: vi.fn().mockRejectedValue(new Error("BUSYGROUP Consumer Group name already exists")),
+      xgroup: vi
+        .fn()
+        .mockRejectedValue(
+          new Error("BUSYGROUP Consumer Group name already exists"),
+        ),
     };
 
-    await expect(initConsumerGroup(mockRedis as any)).resolves.not.toThrow();
+    await expect(
+      initConsumerGroup(asRedisClient(mockRedis)),
+    ).resolves.not.toThrow();
   });
 
   it("réclame et acquitte les messages abandonnés avec XAUTOCLAIM", async () => {
@@ -237,26 +251,25 @@ describe("Quest Worker & Event Dispatcher (T-US17-04)", () => {
     ];
 
     const mockRedis = {
-      xautoclaim: vi.fn().mockResolvedValue([
-        "0-0",
-        [["1725180000099-0", rawFields]],
-      ]),
+      xautoclaim: vi
+        .fn()
+        .mockResolvedValue(["0-0", [["1725180000099-0", rawFields]]]),
       xack: vi.fn().mockResolvedValue(1),
     };
 
     const count = await claimAndProcessStaleMessages(
-      mockRedis as any,
+      asRedisClient(mockRedis),
       "heig-odyssey:events",
       "quest-workers",
       "worker_test",
-      60000
+      60000,
     );
 
     expect(count).toBe(1);
     expect(mockRedis.xack).toHaveBeenCalledWith(
       "heig-odyssey:events",
       "quest-workers",
-      "1725180000099-0"
+      "1725180000099-0",
     );
   });
 });

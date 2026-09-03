@@ -18,36 +18,45 @@ import { publishQuestProgressInvalidated } from "@/lib/quests/quest-progress-eve
 
 function questState(currentCount = 0) {
   const isCompleted = currentCount >= 1;
+  const dailyQuest = {
+    rotationId: "daily-rotation",
+    questId: "daily-win",
+    title: "Première victoire",
+    description: "Remportez un combat.",
+    type: "DAILY" as const,
+    targetType: "WIN_BATTLES_ANY",
+    targetCount: 1,
+    currentCount,
+    isCompleted,
+    rewardClaimed: false,
+    claimedAt: null,
+    rewardPokedollars: 50,
+    rewardXp: 100,
+    startDate: "2099-09-03T00:00:00.000Z",
+    endDate: "2099-09-04T00:00:00.000Z",
+  };
+
   return {
-    dailyQuests: [
-      {
-        rotationId: "daily-rotation",
-        questId: "daily-win",
-        title: "Première victoire",
-        description: "Remportez un combat.",
-        type: "DAILY" as const,
-        targetCount: 1,
-        currentCount,
-        isCompleted,
-        rewardClaimed: false,
-        rewardPokedollars: 50,
-        rewardXp: 100,
-        endDate: "2099-09-04T00:00:00.000Z",
-      },
-    ],
+    dailyPeriodKey: "2099-09-03",
+    weeklyPeriodKey: "2099-W36",
+    dailyQuests: [dailyQuest],
     weeklyQuests: [],
+    allQuests: [dailyQuest],
   };
 }
 
 function response(currentCount: number, syncPending: boolean) {
-  return new Response(JSON.stringify({
-    success: true,
-    data: questState(currentCount),
-    syncPending,
-  }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      success: true,
+      data: questState(currentCount),
+      syncPending,
+    }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
 }
 
 describe("QuestPanel live progress", () => {
@@ -75,14 +84,20 @@ describe("QuestPanel live progress", () => {
 
     fireEvent.mouseEnter(menu!);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(screen.getByRole("region", {
-      name: "Missions quotidiennes et hebdomadaires",
-    })).toBeDefined();
+    expect(
+      screen.getByRole("region", {
+        name: "Missions quotidiennes et hebdomadaires",
+      }),
+    ).toBeDefined();
 
     fireEvent.mouseLeave(menu!);
-    await waitFor(() => expect(screen.queryByRole("region", {
-      name: "Missions quotidiennes et hebdomadaires",
-    })).toBeNull());
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("region", {
+          name: "Missions quotidiennes et hebdomadaires",
+        }),
+      ).toBeNull(),
+    );
 
     fireEvent.mouseEnter(menu!);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
@@ -96,19 +111,34 @@ describe("QuestPanel live progress", () => {
         (event as CustomEvent<PlayerBalanceEventDetail>).detail.balance,
       );
     };
-    window.addEventListener(PLAYER_BALANCE_EVENT, handleBalance, { once: true });
-    fetchMock.mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
-      if (input === "/api/quests/claim" && init?.method === "POST") {
-        return Promise.resolve(new Response(JSON.stringify({
-          success: true,
-          data: { newBalance: 1_275 },
-        }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }));
-      }
-      return Promise.resolve(response(1, false));
+    window.addEventListener(PLAYER_BALANCE_EVENT, handleBalance, {
+      once: true,
     });
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) => {
+        if (input === "/api/quests/claim" && init?.method === "POST") {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                success: true,
+                data: {
+                  success: true,
+                  rotationId: "daily-rotation",
+                  rewardPokedollars: 50,
+                  rewardXp: 100,
+                  newBalance: 1_275,
+                },
+              }),
+              {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              },
+            ),
+          );
+        }
+        return Promise.resolve(response(1, false));
+      },
+    );
 
     render(<QuestPanel />);
     const trigger = await screen.findByRole("button", {
@@ -118,18 +148,26 @@ describe("QuestPanel live progress", () => {
     expect(menu).not.toBeNull();
 
     fireEvent.mouseEnter(menu!);
-    const claimButton = await screen.findByRole("button", { name: "Récupérer" });
+    const claimButton = await screen.findByRole("button", {
+      name: "Récupérer",
+    });
     act(() => claimButton.focus());
     fireEvent.blur(claimButton, { relatedTarget: null });
-    expect(screen.getByRole("region", {
-      name: "Missions quotidiennes et hebdomadaires",
-    })).toBeDefined();
+    expect(
+      screen.getByRole("region", {
+        name: "Missions quotidiennes et hebdomadaires",
+      }),
+    ).toBeDefined();
 
     fireEvent.click(claimButton);
-    await screen.findByText("Récompense récupérée. Votre solde a été mis à jour.");
-    expect(screen.getByRole("region", {
-      name: "Missions quotidiennes et hebdomadaires",
-    })).toBeDefined();
+    await screen.findByText(
+      "Récompense récupérée. Votre solde a été mis à jour.",
+    );
+    expect(
+      screen.getByRole("region", {
+        name: "Missions quotidiennes et hebdomadaires",
+      }),
+    ).toBeDefined();
     expect(screen.queryByRole("button", { name: "Récupérer" })).toBeNull();
     expect(balanceEvents).toEqual([1_275]);
   });
@@ -161,10 +199,14 @@ describe("QuestPanel live progress", () => {
     await act(async () => vi.advanceTimersByTimeAsync(1));
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(screen.getByRole("button", {
-      name: "Missions : 1/1 terminées",
-    })).toBeDefined();
-    expect(screen.getByText("Progression des missions actualisée.")).toBeDefined();
+    expect(
+      screen.getByRole("button", {
+        name: "Missions : 1/1 terminées",
+      }),
+    ).toBeDefined();
+    expect(
+      screen.getByText("Progression des missions actualisée."),
+    ).toBeDefined();
 
     await act(async () => vi.advanceTimersByTimeAsync(10_000));
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -200,9 +242,11 @@ describe("QuestPanel live progress", () => {
     fireEvent.mouseEnter(trigger.parentElement!);
     await act(async () => vi.advanceTimersByTimeAsync(0));
     expect(fetchMock).toHaveBeenCalledTimes(10);
-    expect(screen.getByRole("button", {
-      name: "Missions : 1/1 terminées",
-    })).toBeDefined();
+    expect(
+      screen.getByRole("button", {
+        name: "Missions : 1/1 terminées",
+      }),
+    ).toBeDefined();
   });
 
   it("annule les nouvelles tentatives au démontage", async () => {

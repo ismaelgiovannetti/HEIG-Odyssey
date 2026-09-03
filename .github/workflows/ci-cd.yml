@@ -74,6 +74,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -f package.json
+          test -f package-lock.json
+          test -f tsconfig.json
+          test -f eslint.config.mjs
+          test -f vitest.config.ts
+          test -f playwright.config.ts
+          test -f prisma.config.ts
+          test -f prisma/schema.prisma
+          test -f prisma/migrations/migration_lock.toml
           test -f Dockerfile
           test -f compose.ci.yml
           test -f compose.prod.yml
@@ -81,41 +90,39 @@ jobs:
           test -f landing-page/Dockerfile
           test -f landing-page/index.html
           test -f src/worker/index.ts
-          test -f scripts/worker-healthcheck.mjs
-
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les contrôles npm ne sont pas encore applicables."
-          fi
+          test -f scripts/ops/worker-healthcheck.mjs
 
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
       - name: Audit dependencies for high-severity vulnerabilities
-        if: steps.app.outputs.exists == 'true'
         run: npm audit --audit-level=high
 
       - name: Require essential npm scripts
-        if: steps.app.outputs.exists == 'true'
         shell: bash
         run: |
           node - <<'NODE'
           const scripts = require('./package.json').scripts ?? {};
-          const required = ['lint', 'typecheck', 'test:unit', 'build', 'worker'];
+          const required = [
+            'lint',
+            'format:check',
+            'typecheck',
+            'test',
+            'test:coverage',
+            'test:performance',
+            'test:integration',
+            'test:e2e',
+            'test:a11y',
+            'landing:assets:check',
+            'build',
+            'worker',
+          ];
           const missing = required.filter((name) => !scripts[name]);
           if (missing.length) {
             throw new Error('Scripts npm manquants : ' + missing.join(', '));
@@ -123,19 +130,24 @@ jobs:
           NODE
 
       - name: Lint
-        if: steps.app.outputs.exists == 'true'
         run: npm run lint
 
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Validate duplicated landing assets
+        run: npm run landing:assets:check
+
       - name: Typecheck
-        if: steps.app.outputs.exists == 'true'
         run: npm run typecheck
 
-      - name: Unit tests
-        if: steps.app.outputs.exists == 'true'
-        run: npm run test:unit
+      - name: Unit and combat tests with coverage thresholds
+        run: npm run test:coverage
+
+      - name: Performance thresholds
+        run: npm run test:performance
 
       - name: Build Next.js
-        if: steps.app.outputs.exists == 'true'
         # Better Auth exige un secret pendant l'analyse des routes au build.
         env:
           BETTER_AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -184,54 +196,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les tests d'intégration ne sont pas encore applicables."
-          fi
-
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
       - name: Apply Prisma Migrations to Ephemeral Database
-        if: steps.app.outputs.exists == 'true'
         run: npx prisma migrate deploy
 
-      - name: Run Combat and Integration Tests
-        if: steps.app.outputs.exists == 'true'
-        run: |
-          npm run test:combat
-          npm run test:integration
+      - name: Run PostgreSQL and Redis integration tests
+        run: npm run test:integration
 
       - name: Validate Docker Compose Configuration
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            # Vérifie la structure sans exiger les secrets de production.
-            docker compose config --no-interpolate
-            docker compose config --variables
-          else
-            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
-          fi
+          # Le fichier est déjà exigé par le contrôle de structure du dépôt.
+          docker compose config --no-interpolate
+          docker compose config --variables
 
-  # Exécute les contrôles complets pour une release de dev vers main.
+  # Exécute les contrôles navigateur et conteneurs sur chaque Pull Request.
   release-validation:
     name: Full release validation
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request'
     needs:
       - pull-request-policy
       - quick-checks
@@ -277,54 +268,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Detect Next.js application
-        id: app
-        shell: bash
-        run: |
-          if [[ -f package.json ]]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Application Next.js non initialisée : les contrôles navigateur ne sont pas encore applicables."
-          fi
-
       - name: Setup Node.js
-        if: steps.app.outputs.exists == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies from lockfile
-        if: steps.app.outputs.exists == 'true'
         run: npm ci
 
       - name: Apply Prisma migrations to E2E database
-        if: steps.app.outputs.exists == 'true'
         run: npx prisma migrate deploy
 
       - name: Install Chromium for Playwright
-        if: steps.app.outputs.exists == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run Pull Request browser checks
-        if: steps.app.outputs.exists == 'true'
-        shell: bash
-        run: |
-          npm run test:e2e -- --project=chromium
-          npm run test:a11y --if-present
+        run: npm run test:e2e
+
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/playwright/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Validate Docker Compose when available
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f compose.yaml || -f compose.yml || -f docker-compose.yaml || -f docker-compose.yml ]]; then
-            # Vérifie la structure sans exiger les secrets de production.
-            docker compose config --no-interpolate
-            docker compose config --variables
-          else
-            echo "Docker Compose n'est pas encore versionné ; contrôle différé à T-US18-02."
-          fi
+          # Le fichier est déjà exigé par le contrôle de structure du dépôt.
+          docker compose config --no-interpolate
+          docker compose config --variables
 
           # Valide également les substitutions sans utiliser de secret réel.
           export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
@@ -547,7 +526,7 @@ jobs:
               if [[ "$required" != "true" ]]; then
                 return 0
               fi
-              dc exec -T worker node scripts/worker-healthcheck.mjs >/dev/null 2>&1
+              dc exec -T worker node scripts/ops/worker-healthcheck.mjs >/dev/null 2>&1
             }
 
             smoke_test() {

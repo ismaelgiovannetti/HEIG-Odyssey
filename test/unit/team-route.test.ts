@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TeamCompositionInvalidError, TeamPokemonInBattleError, TeamPokemonNotOwnedError, TeamRevisionConflictError, TeamOnboardingRequiredError, PcCapacityExceededError } from "@/lib/team/team-errors";
+import {
+  TeamCompositionInvalidError,
+  TeamPokemonInBattleError,
+  TeamPokemonNotOwnedError,
+  TeamRevisionConflictError,
+  TeamOnboardingRequiredError,
+  PcCapacityExceededError,
+} from "@/lib/team/team-errors";
 
 const mocks = vi.hoisted(() => ({
   session: vi.fn(),
@@ -8,9 +15,13 @@ const mocks = vi.hoisted(() => ({
   release: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: mocks.session } } }));
-vi.mock("@/lib/auth/environment", () => ({ getApplicationOrigin: () => "http://localhost:3000" }));
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
 vi.mock("@/lib/team/team-service", async () => ({
-  ...await vi.importActual<typeof import("@/lib/team/team-errors")>("@/lib/team/team-errors"),
+  ...(await vi.importActual<typeof import("@/lib/team/team-errors")>(
+    "@/lib/team/team-errors",
+  )),
   getPlayerCollection: mocks.read,
   updateActiveTeam: mocks.save,
   releasePokemon: mocks.release,
@@ -25,44 +36,82 @@ function request(
   method = "PUT",
 ): Request {
   return new Request("http://localhost:3000/api/team", {
-    method, body: JSON.stringify(body),
-    headers: { "Content-Type": "application/json", Origin: "http://localhost:3000", ...headers },
+    method,
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+      ...headers,
+    },
   });
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.session.mockResolvedValue({ user: { id: "owner", emailVerified: true } });
-  mocks.read.mockResolvedValue({ revision: 4, count: 1, pokemon: [{ id: "p1" }], team: [{ id: "p1" }] });
-  mocks.save.mockResolvedValue({ revision: 5, count: 1, pokemon: [{ id: "p1" }], team: [{ id: "p1" }] });
-  mocks.release.mockResolvedValue({ revision: 5, count: 0, pokemon: [], team: [] });
+  mocks.session.mockResolvedValue({
+    user: { id: "owner", emailVerified: true },
+  });
+  mocks.read.mockResolvedValue({
+    revision: 4,
+    count: 1,
+    pokemon: [{ id: "p1" }],
+    team: [{ id: "p1" }],
+  });
+  mocks.save.mockResolvedValue({
+    revision: 5,
+    count: 1,
+    pokemon: [{ id: "p1" }],
+    team: [{ id: "p1" }],
+  });
+  mocks.release.mockResolvedValue({
+    revision: 5,
+    count: 0,
+    pokemon: [],
+    team: [],
+  });
 });
 
 describe("API privée de l'équipe", () => {
   it("refuse lecture et écriture sans session", async () => {
     mocks.session.mockResolvedValue(null);
-    expect((await GET(new Request("http://localhost:3000/api/team"))).status).toBe(401);
+    expect(
+      (await GET(new Request("http://localhost:3000/api/team"))).status,
+    ).toBe(401);
     expect((await PUT(request())).status).toBe(401);
-    expect((await DELETE(request(validRelease, {}, "DELETE"))).status).toBe(401);
+    expect((await DELETE(request(validRelease, {}, "DELETE"))).status).toBe(
+      401,
+    );
     expect(mocks.read).not.toHaveBeenCalled();
     expect(mocks.save).not.toHaveBeenCalled();
     expect(mocks.release).not.toHaveBeenCalled();
   });
 
   it("refuse un compte non vérifié", async () => {
-    mocks.session.mockResolvedValue({ user: { id: "owner", emailVerified: false } });
-    expect((await GET(new Request("http://localhost:3000/api/team"))).status).toBe(403);
+    mocks.session.mockResolvedValue({
+      user: { id: "owner", emailVerified: false },
+    });
+    expect(
+      (await GET(new Request("http://localhost:3000/api/team"))).status,
+    ).toBe(403);
     expect((await PUT(request())).status).toBe(403);
-    expect((await DELETE(request(validRelease, {}, "DELETE"))).status).toBe(403);
+    expect((await DELETE(request(validRelease, {}, "DELETE"))).status).toBe(
+      403,
+    );
     expect(mocks.save).not.toHaveBeenCalled();
     expect(mocks.release).not.toHaveBeenCalled();
   });
 
   it("ignore un userId dans l'URL et interdit la mise en cache", async () => {
-    const response = await GET(new Request("http://localhost:3000/api/team?userId=victim"));
+    const response = await GET(
+      new Request("http://localhost:3000/api/team?userId=victim"),
+    );
     expect(mocks.read).toHaveBeenCalledWith("owner");
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(await response.json()).toMatchObject({ success: true, revision: 4, count: 1 });
+    expect(await response.json()).toMatchObject({
+      success: true,
+      revision: 4,
+      count: 1,
+    });
   });
 
   it.each([
@@ -73,22 +122,42 @@ describe("API privée de l'équipe", () => {
     { ...valid, moves: [] },
     { teamPokemonIds: ["p1"] },
     { ...valid, expectedRevision: -1 },
-    { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 21, boxSlot: 1 }] },
-    { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 1, boxSlot: 36 }] },
+    {
+      ...valid,
+      pcPlacements: [{ pokemonId: "p2", boxNumber: 21, boxSlot: 1 }],
+    },
+    {
+      ...valid,
+      pcPlacements: [{ pokemonId: "p2", boxNumber: 1, boxSlot: 36 }],
+    },
   ])("refuse un corps invalide avant le service (%#)", async (body) => {
     expect((await PUT(request(body))).status).toBe(400);
     expect(mocks.save).not.toHaveBeenCalled();
   });
 
-  it.each(["https://other.example", "null", ""])("refuse une origine absente ou étrangère : %s", async (origin) => {
-    expect((await PUT(request(valid, { Origin: origin }))).status).toBe(403);
-    expect(mocks.save).not.toHaveBeenCalled();
-  });
+  it.each(["https://other.example", "null", ""])(
+    "refuse une origine absente ou étrangère : %s",
+    async (origin) => {
+      expect((await PUT(request(valid, { Origin: origin }))).status).toBe(403);
+      expect(mocks.save).not.toHaveBeenCalled();
+    },
+  );
 
   it("refuse un corps non JSON ou trop volumineux", async () => {
-    expect((await PUT(request(valid, { "Content-Type": "text/plain" }))).status).toBe(415);
-    expect((await PUT(request({ content: "a".repeat(256 * 1024) }))).status).toBe(413);
-    const invalidJson = new Request("http://localhost:3000/api/team", { method: "PUT", headers: { Origin: "http://localhost:3000", "Content-Type": "application/json" }, body: "{" });
+    expect(
+      (await PUT(request(valid, { "Content-Type": "text/plain" }))).status,
+    ).toBe(415);
+    expect(
+      (await PUT(request({ content: "a".repeat(256 * 1024) }))).status,
+    ).toBe(413);
+    const invalidJson = new Request("http://localhost:3000/api/team", {
+      method: "PUT",
+      headers: {
+        Origin: "http://localhost:3000",
+        "Content-Type": "application/json",
+      },
+      body: "{",
+    });
     expect((await PUT(invalidJson)).status).toBe(400);
     expect(mocks.save).not.toHaveBeenCalled();
   });
@@ -96,12 +165,19 @@ describe("API privée de l'équipe", () => {
   it("sauvegarde avec l'identité de session et renvoie le nouvel instantané", async () => {
     const response = await PUT(request());
     expect(mocks.save).toHaveBeenCalledWith("owner", valid);
-    expect(await response.json()).toMatchObject({ success: true, revision: 5, team: [{ id: "p1" }] });
+    expect(await response.json()).toMatchObject({
+      success: true,
+      revision: 5,
+      team: [{ id: "p1" }],
+    });
     expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
   it("transmet la dernière case de la vingtième boîte au service", async () => {
-    const body = { ...valid, pcPlacements: [{ pokemonId: "p2", boxNumber: 20, boxSlot: 35 }] };
+    const body = {
+      ...valid,
+      pcPlacements: [{ pokemonId: "p2", boxNumber: 20, boxSlot: 35 }],
+    };
     expect((await PUT(request(body))).status).toBe(200);
     expect(mocks.save).toHaveBeenCalledWith("owner", body);
   });
@@ -136,17 +212,26 @@ describe("API privée de l'équipe", () => {
     mocks.save.mockRejectedValue(error);
     const response = await PUT(request());
     expect(response.status).toBe(status);
-    expect(await response.json()).toMatchObject({ success: false, error: error.message });
+    expect(await response.json()).toMatchObject({
+      success: false,
+      error: error.message,
+    });
   });
 
   it("ne révèle jamais une erreur interne", async () => {
-    const logger = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const logger = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
     try {
       mocks.save.mockRejectedValue(new Error("internal-secret-value"));
       const response = await PUT(request());
       expect(response.status).toBe(500);
       expect(await response.text()).not.toContain("internal-secret-value");
-      expect(JSON.stringify(logger.mock.calls)).not.toContain("internal-secret-value");
-    } finally { logger.mockRestore(); }
+      expect(JSON.stringify(logger.mock.calls)).not.toContain(
+        "internal-secret-value",
+      );
+    } finally {
+      logger.mockRestore();
+    }
   });
 });

@@ -3,6 +3,7 @@ import { BattleEngine } from "@/lib/combat/battle-engine";
 import { selectAIAction } from "@/lib/combat/ai";
 import type { AIProfile } from "@/lib/combat/types";
 import type { TrainerPokemonInput, PokemonType } from "@/lib/content/schemas";
+import { measureMedianDurationMs } from "../helpers/performance";
 
 /**
  * Seuils fixés par T-NFR03-01 à partir de la mesure d'une tranche verticale
@@ -20,9 +21,19 @@ function move(
   name: string,
   type: PokemonType,
   category: "physical" | "special" | "status",
-  power: number
+  power: number,
 ) {
-  return { id, name, type, category, power, accuracy: 100, pp: 20, maxPp: 20, priority: 0 };
+  return {
+    id,
+    name,
+    type,
+    category,
+    power,
+    accuracy: 100,
+    pp: 20,
+    maxPp: 20,
+    priority: 0,
+  };
 }
 
 // Équipe complète de 6 Pokémon à 4 capacités, représentative d'un combat de fin de campagne
@@ -101,40 +112,45 @@ function newRepresentativeEngine(): BattleEngine {
 
 describe("Seuils de performance de la tranche verticale (T-NFR03-01)", () => {
   it.each(ALL_PROFILES)(
-    "la décision de l'IA '%s' reste sous le budget de %dms sur une équipe complète",
+    `la décision de l'IA '%s' reste sous le budget médian de ${AI_DECISION_BUDGET_MS}ms sur une équipe complète`,
     (profile) => {
-      const engine = newRepresentativeEngine();
-      const start = performance.now();
-      const action = selectAIAction(profile, engine, "p2");
-      const elapsed = performance.now() - start;
+      const elapsed = measureMedianDurationMs(
+        newRepresentativeEngine,
+        (engine) => selectAIAction(profile, engine, "p2"),
+      );
+      const action = selectAIAction(profile, newRepresentativeEngine(), "p2");
 
       expect(action).toBeDefined();
       expect(elapsed).toBeLessThan(AI_DECISION_BUDGET_MS);
-    }
+    },
   );
 
   it.each(ALL_PROFILES)(
-    "un tour complet (action joueur + décision IA '%s' + résolution) reste sous %dms",
+    `un tour complet avec l'IA '%s' reste sous le budget médian de ${BATTLE_TURN_BUDGET_MS}ms`,
     (profile) => {
-      const engine = newRepresentativeEngine();
-
-      const start = performance.now();
-      engine.submitAction("p1", { type: "move", moveIndex: 0 });
-      const aiAction = selectAIAction(profile, engine, "p2");
-      engine.submitAction("p2", aiAction);
-      const result = engine.executeTurn();
-      const elapsed = performance.now() - start;
+      const playTurn = (engine: BattleEngine) => {
+        engine.submitAction("p1", { type: "move", moveIndex: 0 });
+        const aiAction = selectAIAction(profile, engine, "p2");
+        engine.submitAction("p2", aiAction);
+        return engine.executeTurn();
+      };
+      const elapsed = measureMedianDurationMs(
+        newRepresentativeEngine,
+        playTurn,
+      );
+      const result = playTurn(newRepresentativeEngine());
 
       expect(result.state.turn).toBeGreaterThanOrEqual(1);
       expect(elapsed).toBeLessThan(BATTLE_TURN_BUDGET_MS);
-    }
+    },
   );
 
   it("le démarrage d'un combat (construction du moteur + état initial) reste sous le budget", () => {
-    const start = performance.now();
-    const engine = newRepresentativeEngine();
-    const state = engine.getState();
-    const elapsed = performance.now() - start;
+    const elapsed = measureMedianDurationMs(
+      () => undefined,
+      () => newRepresentativeEngine().getState(),
+    );
+    const state = newRepresentativeEngine().getState();
 
     expect(state.phase).toBe("action_selection");
     expect(elapsed).toBeLessThan(BATTLE_INIT_BUDGET_MS);

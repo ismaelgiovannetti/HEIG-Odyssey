@@ -1,3 +1,5 @@
+import "server-only";
+
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 
@@ -55,7 +57,9 @@ export const BattleCompletedPayloadSchema = z
   .strict()
   .superRefine(validateBattleOutcome);
 
-export type BattleCompletedPayload = z.infer<typeof BattleCompletedPayloadSchema>;
+export type BattleCompletedPayload = z.infer<
+  typeof BattleCompletedPayloadSchema
+>;
 
 /**
  * Schéma et type du payload pour l'événement de fin de combat d'entraînement.
@@ -78,7 +82,9 @@ export const TrainingCompletedPayloadSchema = z
   .strict()
   .superRefine(validateBattleOutcome);
 
-export type TrainingCompletedPayload = z.infer<typeof TrainingCompletedPayloadSchema>;
+export type TrainingCompletedPayload = z.infer<
+  typeof TrainingCompletedPayloadSchema
+>;
 
 const DomainEventMetadataSchema = {
   eventId: z.string().min(1).max(128),

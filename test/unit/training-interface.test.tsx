@@ -23,7 +23,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Les tests portent sur le parcours et les requêtes, pas sur next/image.
-vi.mock("@/components/SpriteProvider", () => ({
+vi.mock("@/components/pokemon/sprite-provider", () => ({
   SpriteProvider: ({ speciesId, alt }: { speciesId?: string; alt: string }) => (
     <span role={alt ? "img" : undefined} aria-label={alt || undefined}>
       {speciesId}
@@ -110,7 +110,14 @@ function startedBattle(): BattleStartPayload {
         sideId: "p2",
         name: "IA d'Entraînement",
         activePokemonIndex: 0,
-        team: [pokemon("p2", { id: "p2-squirtle", speciesId: "squirtle", name: "Carapuce", types: ["Water"] })],
+        team: [
+          pokemon("p2", {
+            id: "p2-squirtle",
+            speciesId: "squirtle",
+            name: "Carapuce",
+            types: ["Water"],
+          }),
+        ],
       },
     },
   };
@@ -138,7 +145,9 @@ describe("interface d'entraînement et de combat", () => {
     vi.clearAllMocks();
     globalThis.fetch = vi.fn();
     vi.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue();
-    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(
+      () => {},
+    );
   });
 
   afterEach(() => {
@@ -177,11 +186,11 @@ describe("interface d'entraînement et de combat", () => {
         }),
       );
     });
-    expect(
-      await screen.findByText(/Que doit faire Bulbizarre/i),
-    ).toBeDefined();
+    expect(await screen.findByText(/Que doit faire Bulbizarre/i)).toBeDefined();
     expect(screen.queryByText("Simulation prête")).toBeNull();
-    expect(screen.getByRole("region", { name: /Réplique de IA d'Entraînement/i })).toBeDefined();
+    expect(
+      screen.getByRole("region", { name: /Réplique de IA d'Entraînement/i }),
+    ).toBeDefined();
     const audio = document.querySelector("audio");
     expect(audio?.src).toContain("battle-theme-1.mp3");
     expect(audio?.loop).toBe(true);
@@ -214,7 +223,11 @@ describe("interface d'entraînement et de combat", () => {
       success: true,
       turn: 3,
       events: [
-        { type: "battle_end", turn: 3, message: "Joueur remporte la victoire !" },
+        {
+          type: "battle_end",
+          turn: 3,
+          message: "Joueur remporte la victoire !",
+        },
       ],
       state: {
         ...initial.state,
@@ -273,8 +286,8 @@ describe("interface d'entraînement et de combat", () => {
       await screen.findByRole("heading", { name: "Victoire confirmée !" }),
     ).toBeDefined();
     await waitFor(() => expect(questRefreshListener).toHaveBeenCalledTimes(1));
-    const refreshEvent = questRefreshListener.mock.calls[0][0] as
-      CustomEvent<QuestProgressInvalidatedEventDetail>;
+    const refreshEvent = questRefreshListener.mock
+      .calls[0][0] as CustomEvent<QuestProgressInvalidatedEventDetail>;
     expect(refreshEvent.detail).toEqual({ battleId: "battle-training-42" });
     expect(screen.getByText("+130 ₽")).toBeDefined();
     expect(screen.getByText("+320 XP")).toBeDefined();
@@ -288,9 +301,7 @@ describe("interface d'entraînement et de combat", () => {
       expect(audio?.src).toContain("victory-theme.mp3");
       expect(audio?.loop).toBe(false);
     });
-    expect(
-      screen.queryByText(/Valeurs confirmées par le serveur/i),
-    ).toBeNull();
+    expect(screen.queryByText(/Valeurs confirmées par le serveur/i)).toBeNull();
 
     await user.click(
       screen.getByRole("button", { name: /Retour à l’entraînement/i }),
@@ -306,7 +317,9 @@ describe("interface d'entraînement et de combat", () => {
     const switched = {
       success: true,
       turn: 1,
-      events: [{ type: "switch", turn: 1, message: "Salamèche entre au combat !" }],
+      events: [
+        { type: "switch", turn: 1, message: "Salamèche entre au combat !" },
+      ],
       state: {
         ...initial.state,
         turn: 1,
@@ -325,7 +338,11 @@ describe("interface d'entraînement et de combat", () => {
     );
 
     render(
-      <BattleArena initialBattle={initial} mode="campaign" onReturn={vi.fn()} />,
+      <BattleArena
+        initialBattle={initial}
+        mode="campaign"
+        onReturn={vi.fn()}
+      />,
     );
     await user.click(
       screen.getByRole("button", { name: /Changer de Pokémon/i }),
@@ -367,15 +384,17 @@ describe("interface d'entraînement et de combat", () => {
     );
 
     render(
-      <BattleArena initialBattle={initial} mode="training" onReturn={vi.fn()} />,
+      <BattleArena
+        initialBattle={initial}
+        mode="training"
+        onReturn={vi.fn()}
+      />,
     );
     await user.click(screen.getByRole("button", { name: /Charge/i }));
 
     expect((await screen.findByRole("alert")).textContent).toMatch(
       /combat a déjà avancé/i,
     );
-    expect(
-      screen.getByRole("button", { name: /Salamèche/i }),
-    ).toBeDefined();
+    expect(screen.getByRole("button", { name: /Salamèche/i })).toBeDefined();
   });
 });

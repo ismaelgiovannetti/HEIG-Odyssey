@@ -24,10 +24,9 @@ function playAudio(audio: HTMLAudioElement) {
 }
 
 /**
- * Lecteur de musique de combat avec boucle (loop) et transition de victoire
- * (T-US08-03). En cas de défaite, la musique du dresseur continue de jouer,
- * fidèlement aux jeux Pokémon originaux. Le volume et le mute sont pilotés par
- * la barre de son globale de la navbar.
+ * Lance la piste associée à la phase du combat. Les phases de victoire et de
+ * défaite utilisent leur propre thème ; le volume et le mode muet restent
+ * pilotés par le contrôle audio global.
  */
 export function SoundtrackPlayer({
   trackId,

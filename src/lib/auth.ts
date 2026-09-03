@@ -1,3 +1,5 @@
+import "server-only";
+
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -16,7 +18,10 @@ import {
   USERNAME_MAX_LENGTH,
   USERNAME_MIN_LENGTH,
 } from "@/lib/auth/constants";
-import { getApplicationOrigin, getBetterAuthSecret } from "@/lib/auth/environment";
+import {
+  getApplicationOrigin,
+  getBetterAuthSecret,
+} from "@/lib/auth/environment";
 import { deliverPasswordResetEmail } from "@/lib/email/password-reset-email";
 import { deliverVerificationEmail } from "@/lib/email/verification-email";
 import { prisma } from "@/lib/prisma";
@@ -61,10 +66,14 @@ export const auth = betterAuth({
         resetUrl: url,
       }).catch((error: unknown) => {
         // Le journal ne contient ni adresse, ni URL, ni jeton de récupération.
-        logger.error("Échec de l'envoi de l'e-mail de récupération", {
-          eventId: logger.generateEventId(),
-          action: "auth.password-reset-email",
-        }, error);
+        logger.error(
+          "Échec de l'envoi de l'e-mail de récupération",
+          {
+            eventId: logger.generateEventId(),
+            action: "auth.password-reset-email",
+          },
+          error,
+        );
       });
     },
   },
@@ -82,10 +91,14 @@ export const auth = betterAuth({
         verificationUrl: url,
       }).catch((error: unknown) => {
         // Seul un code contrôlé est journalisé : ni adresse, ni jeton, ni clé API.
-        logger.error("Échec de l'envoi de l'e-mail de vérification", {
-          eventId: logger.generateEventId(),
-          action: "auth.verification-email",
-        }, error);
+        logger.error(
+          "Échec de l'envoi de l'e-mail de vérification",
+          {
+            eventId: logger.generateEventId(),
+            action: "auth.verification-email",
+          },
+          error,
+        );
       });
     },
   },
@@ -132,14 +145,19 @@ export const auth = betterAuth({
     before: createAuthMiddleware(async (context) => {
       const isSignUpRequest = context.path === "/sign-up/email";
       const isPasswordMutationRequest =
-        context.path === "/reset-password" || context.path === "/change-password";
+        context.path === "/reset-password" ||
+        context.path === "/change-password";
 
       if (!isSignUpRequest && !isPasswordMutationRequest) {
         return;
       }
 
       // La validation reste côté serveur, même si les formulaires contrôlent déjà les valeurs.
-      if (!context.body || typeof context.body !== "object" || Array.isArray(context.body)) {
+      if (
+        !context.body ||
+        typeof context.body !== "object" ||
+        Array.isArray(context.body)
+      ) {
         throw new APIError("BAD_REQUEST", {
           message: "Les données d'authentification sont invalides.",
         });
@@ -156,7 +174,8 @@ export const auth = betterAuth({
         });
       }
 
-      const passwordValidationError = getPasswordValidationError(submittedPassword);
+      const passwordValidationError =
+        getPasswordValidationError(submittedPassword);
       if (passwordValidationError) {
         throw new APIError("BAD_REQUEST", {
           message: passwordValidationError,
@@ -170,7 +189,10 @@ export const auth = betterAuth({
 
       const submittedUsername = requestBody.username;
 
-      if (typeof submittedUsername !== "string" || !isValidUsername(submittedUsername)) {
+      if (
+        typeof submittedUsername !== "string" ||
+        !isValidUsername(submittedUsername)
+      ) {
         throw new APIError("BAD_REQUEST", {
           message: "Le nom d'utilisateur est invalide.",
         });

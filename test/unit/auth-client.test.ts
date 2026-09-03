@@ -45,7 +45,7 @@ import {
   signInWithIdentifier,
   signOutCurrentSession,
   signUpWithEmail,
-} from "@/lib/auth-client";
+} from "@/lib/auth/client";
 
 describe("adaptateur client d'authentification", () => {
   beforeEach(() => {
@@ -57,10 +57,10 @@ describe("adaptateur client d'authentification", () => {
   // Une destination reçue depuis l'URL ne doit jamais permettre de sortir du site.
   it("construit une reprise interne et refuse une redirection externe", () => {
     expect(buildPostSignInCallback("/campaign?world=bachelor-1")).toBe(
-      "/auth/continue?next=%2Fcampaign%3Fworld%3Dbachelor-1"
+      "/auth/continue?next=%2Fcampaign%3Fworld%3Dbachelor-1",
     );
     expect(buildPostSignInCallback("https://malicious.example")).toBe(
-      "/auth/continue?next=%2Fdashboard"
+      "/auth/continue?next=%2Fdashboard",
     );
   });
 
@@ -136,7 +136,10 @@ describe("adaptateur client d'authentification", () => {
 
   // Le renvoi utilise la même normalisation que l'inscription initiale.
   it("normalise le renvoi de vérification et utilise une destination fixe", async () => {
-    authClientMocks.sendVerificationEmail.mockResolvedValue({ data: {}, error: null });
+    authClientMocks.sendVerificationEmail.mockResolvedValue({
+      data: {},
+      error: null,
+    });
 
     await requestVerificationEmail("  Player@Example.COM  ");
 
@@ -149,7 +152,10 @@ describe("adaptateur client d'authentification", () => {
   // Le retour de récupération reste fixé côté application : une valeur fournie
   // par l'utilisateur ne peut pas transformer le lien reçu en redirection externe.
   it("normalise la demande de récupération et utilise une destination interne", async () => {
-    authClientMocks.requestPasswordReset.mockResolvedValue({ data: {}, error: null });
+    authClientMocks.requestPasswordReset.mockResolvedValue({
+      data: {},
+      error: null,
+    });
 
     await requestPasswordRecovery("  Player@Example.COM  ");
 
@@ -184,7 +190,7 @@ describe("adaptateur client d'authentification", () => {
       signInWithIdentifier({
         identifier: "player@example.com",
         password: "TestPassword!2026",
-      })
+      }),
     ).rejects.toBe(serviceError);
   });
 

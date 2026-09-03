@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createHash } from "node:crypto";
 
 import { Resend } from "resend";
@@ -59,7 +61,10 @@ export function assertTrustedApplicationUrl(url: string): void {
  * Une empreinte permet à Resend d'ignorer un double envoi sans placer le
  * jeton sensible dans sa clé d'idempotence.
  */
-export function createEmailIdempotencyKey(namespace: string, url: string): string {
+export function createEmailIdempotencyKey(
+  namespace: string,
+  url: string,
+): string {
   const linkHash = createHash("sha256").update(url).digest("hex");
   return `${namespace}/${linkHash}`;
 }

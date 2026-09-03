@@ -46,13 +46,17 @@ describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
 
   it("active la lecture en boucle (loop = true) pendant le combat", () => {
     const { container } = render(
-      <SoundtrackPlayer trackId="hooh-battle-hgss" phase="turn" autoPlay={false} />,
+      <SoundtrackPlayer
+        trackId="hooh-battle-hgss"
+        phase="turn"
+        autoPlay={false}
+      />,
     );
 
     const audio = container.querySelector("audio");
-    expect(audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src).toContain(
-      "hooh-battle-hgss.mp3",
-    );
+    expect(
+      audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src,
+    ).toContain("hooh-battle-hgss.mp3");
     expect(audio?.loop).toBe(true);
   });
 
@@ -66,9 +70,9 @@ describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
     );
 
     const audio = container.querySelector("audio");
-    expect(audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src).toContain(
-      "victory-theme.mp3",
-    );
+    expect(
+      audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src,
+    ).toContain("victory-theme.mp3");
     expect(audio?.loop).toBe(false);
   });
 
@@ -82,9 +86,9 @@ describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
     );
 
     const audio = container.querySelector("audio");
-    expect(audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src).toContain(
-      "defeat-theme.mp3",
-    );
+    expect(
+      audio?.getAttribute("src") || (audio as HTMLAudioElement)?.src,
+    ).toContain("defeat-theme.mp3");
     expect(audio?.loop).toBe(false);
   });
 

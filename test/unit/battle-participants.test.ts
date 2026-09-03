@@ -10,9 +10,13 @@ describe("participants figés du combat", () => {
     expect(Object.isFrozen(snapshot)).toBe(true);
   });
 
-  it.each([[], ["p1", "p1"], [" "], ["1", "2", "3", "4", "5", "6", "7"]].map((ids) => ({ ids })))(
-    "refuse une liste invalide (%#)", ({ ids }) => {
-      expect(() => snapshotBattleParticipants(ids)).toThrow("BATTLE_PARTICIPANTS_INVALID");
-    },
-  );
+  it.each(
+    [[], ["p1", "p1"], [" "], ["1", "2", "3", "4", "5", "6", "7"]].map(
+      (ids) => ({ ids }),
+    ),
+  )("refuse une liste invalide (%#)", ({ ids }) => {
+    expect(() => snapshotBattleParticipants(ids)).toThrow(
+      "BATTLE_PARTICIPANTS_INVALID",
+    );
+  });
 });
