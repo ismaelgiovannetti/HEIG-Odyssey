@@ -44,7 +44,13 @@ describe("Quest Multiplayer Isolation & Rotation Testing (T-US13-05)", () => {
         upsert: vi.fn().mockImplementation(({ where, create, update }) => {
           const key = `${where.userId_rotationId.userId}_${where.userId_rotationId.rotationId}`;
           const current = playerProgressStore.get(key);
-          const data = current ? { ...current, ...update } : { ...create, id: `prog-${key}` };
+          const data = current
+            ? {
+                ...current,
+                currentCount:
+                  current.currentCount + (update.currentCount.increment ?? 0),
+              }
+            : { ...create, id: `prog-${key}` };
           playerProgressStore.set(key, data);
           return Promise.resolve(data);
         }),
@@ -103,7 +109,13 @@ describe("Quest Multiplayer Isolation & Rotation Testing (T-US13-05)", () => {
         upsert: vi.fn().mockImplementation(({ where, create, update }) => {
           const key = `${where.userId_rotationId.userId}_${where.userId_rotationId.rotationId}`;
           const current = progressStore.get(key);
-          const data = current ? { ...current, ...update } : { ...create, id: `prog-${key}` };
+          const data = current
+            ? {
+                ...current,
+                currentCount:
+                  current.currentCount + (update.currentCount.increment ?? 0),
+              }
+            : { ...create, id: `prog-${key}` };
           progressStore.set(key, data);
           return Promise.resolve(data);
         }),
@@ -168,9 +180,10 @@ describe("Quest Multiplayer Isolation & Rotation Testing (T-US13-05)", () => {
             },
           })
         ),
-        update: vi.fn().mockImplementation(() => {
+        updateMany: vi.fn().mockImplementation(() => {
+          if (isClaimed) return Promise.resolve({ count: 0 });
           isClaimed = true;
-          return Promise.resolve({});
+          return Promise.resolve({ count: 1 });
         }),
       },
       userProfile: {

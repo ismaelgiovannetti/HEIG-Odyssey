@@ -103,6 +103,13 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
         }),
       })
     );
+    const storedPayload = (mockTx.outboxEvent.create as any).mock.calls[0]?.[0]?.data?.payload;
+    expect(storedPayload).toMatchObject({
+      userId: "user-1",
+      battleId: "battle-uuid-12345",
+      battleType: "CAMPAIGN",
+    });
+    expect(storedPayload).not.toHaveProperty("payload");
   });
 
 

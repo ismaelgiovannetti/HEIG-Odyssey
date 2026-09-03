@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { prisma } from "../prisma";
 import { loadStarters, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
@@ -36,19 +37,19 @@ export async function selectStarter(
   }
 
   const initialIvs = {
-    hp: Math.floor(Math.random() * 16) + 16, // 16-31
-    atk: Math.floor(Math.random() * 16) + 16,
-    def: Math.floor(Math.random() * 16) + 16,
-    spa: Math.floor(Math.random() * 16) + 16,
-    spd: Math.floor(Math.random() * 16) + 16,
-    spe: Math.floor(Math.random() * 16) + 16,
+    hp: randomInt(16, 32), // 16-31
+    atk: randomInt(16, 32),
+    def: randomInt(16, 32),
+    spa: randomInt(16, 32),
+    spd: randomInt(16, 32),
+    spe: randomInt(16, 32),
   };
 
   const initialEvs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
   const maxHp = calculateMaxHp(species.baseStats.hp, 5, initialIvs.hp, 0);
 
   // 1/512 shiny chance for starter recruitment
-  const isShiny = Math.random() < 1 / 512;
+  const isShiny = randomInt(512) === 0;
 
   // Execute atomic transaction
   const result = await prisma.$transaction(async (tx) => {

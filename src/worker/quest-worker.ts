@@ -1,13 +1,19 @@
 import type Redis from "ioredis";
+import { randomUUID } from "node:crypto";
 import {
   DomainEventEnvelopeSchema,
   type DomainEventEnvelope,
 } from "@/lib/events/contracts";
+import { isPermanentDomainEventError } from "@/lib/events/errors";
 import { dispatchDomainEvent } from "./event-dispatcher";
-import { EVENTS_STREAM_KEY } from "@/lib/events/publisher";
+import {
+  EVENTS_DEAD_LETTER_STREAM_KEY,
+  EVENTS_STREAM_KEY,
+} from "@/lib/events/publisher";
 import { logger } from "@/lib/logger";
 
 export const DEFAULT_GROUP_NAME = "quest-workers";
+const DEAD_LETTER_MAX_LENGTH = 1_000;
 
 export interface QuestWorkerOptions {
   streamKey?: string;
@@ -102,6 +108,51 @@ export async function initConsumerGroup(
 }
 
 /**
+ * Conserve les métadonnées minimales d'un événement irrécupérable avant de
+ * l'acquitter. Si l'écriture DLQ échoue, XACK n'est pas exécuté et le message
+ * reste récupérable dans la PEL.
+ */
+export async function deadLetterAndAckStreamMessage(
+  redis: Redis,
+  streamKey: string,
+  groupName: string,
+  messageId: string,
+  details: {
+    eventId?: string;
+    eventType?: string;
+    reasonCode: string;
+  },
+): Promise<void> {
+  const deadLetterStreamKey =
+    streamKey === EVENTS_STREAM_KEY
+      ? EVENTS_DEAD_LETTER_STREAM_KEY
+      : `${streamKey}:dead-letter`;
+
+  await redis.xadd(
+    deadLetterStreamKey,
+    "MAXLEN",
+    "~",
+    DEAD_LETTER_MAX_LENGTH,
+    "*",
+    "sourceStream",
+    streamKey,
+    "sourceMessageId",
+    messageId,
+    "groupName",
+    groupName,
+    "eventId",
+    details.eventId ?? "unknown",
+    "eventType",
+    details.eventType ?? "unknown",
+    "reasonCode",
+    details.reasonCode,
+    "failedAt",
+    new Date().toISOString(),
+  );
+  await redis.xack(streamKey, groupName, messageId);
+}
+
+/**
  * Traite un message du stream : validation, exécution des handlers et acquittement (XACK).
  */
 export async function processAndAckStreamMessage(
@@ -113,9 +164,14 @@ export async function processAndAckStreamMessage(
 ): Promise<boolean> {
   const envelope = parseStreamEnvelope(messageId, rawFields);
 
-  // Si le message est corrompu ou invalide, on l'acquitte pour ne pas bloquer la file
+  // Un message corrompu est mis en quarantaine puis acquitté pour ne pas bloquer la file.
   if (!envelope) {
-    await redis.xack(streamKey, groupName, messageId);
+    const fields = parseStreamFields(rawFields);
+    await deadLetterAndAckStreamMessage(redis, streamKey, groupName, messageId, {
+      eventId: fields.eventId,
+      eventType: fields.eventType,
+      reasonCode: "INVALID_ENVELOPE",
+    });
     return false;
   }
 
@@ -125,6 +181,20 @@ export async function processAndAckStreamMessage(
     // Acquittement immédiat dans Redis
     await redis.xack(streamKey, groupName, messageId);
     return true;
+  } else if (!dispatchResult.retryable) {
+    const permanentError = dispatchResult.errors.find(isPermanentDomainEventError);
+    await deadLetterAndAckStreamMessage(redis, streamKey, groupName, messageId, {
+      eventId: envelope.eventId,
+      eventType: envelope.eventType,
+      reasonCode: permanentError?.code ?? "PERMANENT_HANDLER_FAILURE",
+    });
+    logger.warn("Événement Redis irrécupérable déplacé en quarantaine", {
+      eventId: envelope.eventId,
+      action: "quest-worker.dead-letter",
+      eventType: envelope.eventType,
+      messageId,
+    });
+    return false;
   } else {
     // En cas d'erreur de traitement, le message reste non acquitté dans le PEL (Pending Entry List)
     logger.error("Échec du dispatch d'un événement Redis", {
@@ -208,7 +278,7 @@ export class QuestWorker {
     this.groupName = options.groupName || DEFAULT_GROUP_NAME;
     this.consumerName =
       options.consumerName ||
-      `worker_${process.pid}_${Math.random().toString(36).substring(2, 7)}`;
+      `worker_${process.pid}_${randomUUID().slice(0, 8)}`;
     this.blockTimeoutMs = options.blockTimeoutMs ?? 2000;
     this.claimMinIdleMs = options.claimMinIdleMs ?? 60000;
     this.pollIntervalMs = options.pollIntervalMs ?? 100;

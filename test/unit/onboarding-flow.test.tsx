@@ -66,6 +66,12 @@ const catalogResponse = {
 describe("interface d'onboarding", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.spyOn(window.HTMLMediaElement.prototype, "play").mockImplementation(
+      async () => undefined,
+    );
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(
+      () => undefined,
+    );
     onboardingMocks.useRouter.mockReturnValue({
       prefetch: onboardingMocks.prefetch,
       refresh: onboardingMocks.refresh,
@@ -75,6 +81,7 @@ describe("interface d'onboarding", () => {
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { signUpWithEmail } from "@/lib/auth-client";
+import { checkUsernameAvailability, signUpWithEmail } from "@/lib/auth-client";
 import {
   getPasswordValidationError,
   isValidUsername,
@@ -19,8 +19,12 @@ import { SubmitButton } from "@/components/auth/submit-button";
 type FieldErrors = Partial<
   Record<"username" | "email" | "password" | "passwordConfirmation", string>
 >;
+type UsernameAvailabilityStatus = "idle" | "checking" | "available" | "taken" | "error";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_AVAILABILITY_DELAY_MS = 450;
+const USERNAME_REQUIREMENTS_MESSAGE =
+  "3 à 30 caractères : lettres, chiffres, point ou tiret bas.";
 
 /**
  * Collecte et valide les informations nécessaires à Better Auth, puis conduit
@@ -33,9 +37,43 @@ export function SignupForm() {
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [usernameAvailability, setUsernameAvailability] =
+    useState<UsernameAvailabilityStatus>("idle");
   const [formError, setFormError] = useState<string | null>(null);
   const [feedbackRevision, setFeedbackRevision] = useState(0);
   const [isPending, setIsPending] = useState(false);
+
+  useEffect(() => {
+    if (!isValidUsername(username)) {
+      setUsernameAvailability("idle");
+      return;
+    }
+
+    let shouldIgnoreResult = false;
+    setUsernameAvailability("checking");
+
+    const timeoutId = window.setTimeout(() => {
+      void checkUsernameAvailability(username)
+        .then((result) => {
+          if (shouldIgnoreResult) return;
+
+          if (result.error || !result.data) {
+            setUsernameAvailability("error");
+            return;
+          }
+
+          setUsernameAvailability(result.data.available ? "available" : "taken");
+        })
+        .catch(() => {
+          if (!shouldIgnoreResult) setUsernameAvailability("error");
+        });
+    }, USERNAME_AVAILABILITY_DELAY_MS);
+
+    return () => {
+      shouldIgnoreResult = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [username]);
 
   // Cette validation donne un retour immédiat. Better Auth et la base restent
   // responsables de la validation définitive côté serveur.
@@ -45,6 +83,8 @@ export function SignupForm() {
     if (!isValidUsername(username)) {
       errors.username =
         `Utilisez ${USERNAME_MIN_LENGTH} à ${USERNAME_MAX_LENGTH} caractères : lettres, chiffres, point ou tiret bas.`;
+    } else if (usernameAvailability === "taken") {
+      errors.username = "Ce nom d'utilisateur est déjà pris.";
     }
 
     if (!EMAIL_PATTERN.test(email.trim())) {
@@ -91,8 +131,8 @@ export function SignupForm() {
       });
 
       if (result.error) {
-        // Le détail du refus n'est pas affiché afin de limiter l'énumération
-        // des adresses et noms d'utilisateur déjà enregistrés.
+        // Le refus final reste générique : la disponibilité du nom est publique,
+        // mais l'adresse enregistrée et les détails du serveur restent privés.
         setFormError(
           "Impossible de créer le compte avec ces informations. Vérifiez les champs ou essayez une autre adresse."
         );
@@ -118,6 +158,38 @@ export function SignupForm() {
     }
   }
 
+  function handleUsernameChange(nextUsername: string) {
+    setUsername(nextUsername);
+    setUsernameAvailability("idle");
+    setFieldErrors((currentErrors) => {
+      if (!currentErrors.username) return currentErrors;
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors.username;
+      return nextErrors;
+    });
+  }
+
+  let usernameFeedback = USERNAME_REQUIREMENTS_MESSAGE;
+  let usernameFeedbackClassName = "auth-field__hint";
+
+  if (fieldErrors.username) {
+    usernameFeedback = fieldErrors.username;
+    usernameFeedbackClassName = "auth-field__error";
+  } else if (usernameAvailability === "checking") {
+    usernameFeedback = "Vérification de la disponibilité…";
+    usernameFeedbackClassName = "auth-field__availability auth-field__availability--checking";
+  } else if (usernameAvailability === "available") {
+    usernameFeedback = "Ce nom d'utilisateur est disponible.";
+    usernameFeedbackClassName = "auth-field__availability auth-field__availability--available";
+  } else if (usernameAvailability === "taken") {
+    usernameFeedback = "Ce nom d'utilisateur est déjà pris.";
+    usernameFeedbackClassName = "auth-field__availability auth-field__availability--taken";
+  } else if (usernameAvailability === "error") {
+    usernameFeedback = "La disponibilité ne peut pas être vérifiée pour le moment.";
+    usernameFeedbackClassName = "auth-field__availability auth-field__availability--error";
+  }
+
   return (
     <form className="auth-form auth-form--signup" onSubmit={handleSubmit} noValidate>
       {formError ? (
@@ -133,23 +205,26 @@ export function SignupForm() {
           name="username"
           type="text"
           value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          onChange={(event) => handleUsernameChange(event.target.value)}
           minLength={USERNAME_MIN_LENGTH}
           maxLength={USERNAME_MAX_LENGTH}
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
           placeholder="Dresseur42"
-          aria-invalid={Boolean(fieldErrors.username)}
+          aria-invalid={Boolean(fieldErrors.username) || usernameAvailability === "taken"}
+          aria-busy={usernameAvailability === "checking"}
           aria-describedby="username-help"
           required
           autoFocus
         />
         <p
-          className={fieldErrors.username ? "auth-field__error" : "auth-field__hint"}
+          className={usernameFeedbackClassName}
           id="username-help"
+          aria-live="polite"
+          aria-atomic="true"
         >
-          {fieldErrors.username ?? "3 à 30 caractères : lettres, chiffres, point ou tiret bas."}
+          {usernameFeedback}
         </p>
       </div>
 

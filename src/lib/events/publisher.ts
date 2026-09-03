@@ -6,10 +6,36 @@ import type { DomainEventEnvelope } from "./contracts";
 import { logger, sanitizeLogData } from "../logger";
 
 export const EVENTS_STREAM_KEY = "heig-odyssey:events";
+export const EVENTS_DEAD_LETTER_STREAM_KEY = `${EVENTS_STREAM_KEY}:dead-letter`;
 
 export interface PublishPendingResult {
   publishedCount: number;
   failedCount: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Les anciennes lignes Outbox contenaient par erreur l'enveloppe complète.
+ * Ce déballage maintient leur compatibilité pendant le déploiement de la correction.
+ */
+function unwrapLegacyOutboxPayload(
+  payload: unknown,
+  eventId: string,
+  eventType: string,
+): unknown {
+  if (
+    isRecord(payload) &&
+    payload.eventId === eventId &&
+    payload.eventType === eventType &&
+    "payload" in payload
+  ) {
+    return payload.payload;
+  }
+
+  return payload;
 }
 
 /**
@@ -87,7 +113,11 @@ export async function publishPendingOutboxEvents(options: {
         aggregateId: outboxItem.aggregateId,
         version: 1,
         occurredAt: outboxItem.createdAt.toISOString(),
-        payload: outboxItem.payload,
+        payload: unwrapLegacyOutboxPayload(
+          outboxItem.payload,
+          outboxItem.eventId,
+          outboxItem.eventType,
+        ),
       };
 
       await publishDomainEvent(envelope, redis);

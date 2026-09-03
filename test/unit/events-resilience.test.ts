@@ -226,6 +226,7 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
   describe("Scénario 4 : Message empoisonné (Poison pill) sans blocage", () => {
     it("acquitte un message JSON corrompu pour éviter de bloquer la consommation des messages suivants", async () => {
       const mockRedis = {
+        xadd: vi.fn().mockResolvedValue("1725180000667-0"),
         xack: vi.fn().mockResolvedValue(1),
       };
 
@@ -246,12 +247,16 @@ describe("Redis Streams Resilience & Idempotency (T-US17-05)", () => {
         corruptedRawFields
       );
 
-      // Message rejeté mais acquitté pour débloquer le stream
+      // Message rejeté, conservé en quarantaine puis acquitté.
       expect(result).toBe(false);
+      expect(mockRedis.xadd).toHaveBeenCalled();
       expect(mockRedis.xack).toHaveBeenCalledWith(
         EVENTS_STREAM_KEY,
         "quest-workers",
         "1725180000666-0"
+      );
+      expect(mockRedis.xadd.mock.invocationCallOrder[0]).toBeLessThan(
+        mockRedis.xack.mock.invocationCallOrder[0],
       );
     });
   });

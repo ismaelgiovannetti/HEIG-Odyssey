@@ -103,6 +103,41 @@ describe("Redis Streams & Outbox Publisher (T-US17-03)", () => {
     });
   });
 
+  it("déplie les anciennes enveloppes Outbox avant de publier leur payload", async () => {
+    (prisma.outboxEvent.findMany as any).mockResolvedValue([
+      {
+        id: "outbox-legacy",
+        eventId: "evt_legacy",
+        eventType: "battle.completed",
+        aggregateType: "BATTLE",
+        aggregateId: "btl_legacy",
+        payload: {
+          eventId: "evt_legacy",
+          eventType: "battle.completed",
+          aggregateType: "BATTLE",
+          aggregateId: "btl_legacy",
+          version: 1,
+          occurredAt: "2026-09-01T10:00:00.000Z",
+          payload: { userId: "usr_legacy", battleId: "btl_legacy" },
+        },
+        status: OutboxStatus.PENDING,
+        retryCount: 0,
+        createdAt: new Date("2026-09-01T10:00:00Z"),
+      },
+    ]);
+    (prisma.outboxEvent.update as any).mockResolvedValue({});
+    const mockRedis = { xadd: vi.fn().mockResolvedValue("1-0") };
+
+    await publishPendingOutboxEvents({ client: mockRedis as any });
+
+    const args = mockRedis.xadd.mock.calls[0];
+    const payloadIndex = args.indexOf("payload") + 1;
+    expect(JSON.parse(args[payloadIndex])).toEqual({
+      userId: "usr_legacy",
+      battleId: "btl_legacy",
+    });
+  });
+
   it("gère l'erreur lors de l'envoi Redis et incrémente le retryCount", async () => {
     const pendingEvents = [
       {

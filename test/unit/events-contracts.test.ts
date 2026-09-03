@@ -104,4 +104,40 @@ describe("Events Contracts (T-US17-01)", () => {
     const validated = DomainEventEnvelopeSchema.safeParse(event);
     expect(validated.success).toBe(true);
   });
+
+  it("refuse une enveloppe dont l'agrégat ne correspond pas au payload", () => {
+    const event = createDomainEvent({
+      eventType: "training.completed",
+      aggregateType: "TRAINING",
+      aggregateId: "battle-forged",
+      payload: {
+        userId: "usr_123",
+        battleId: "battle-real",
+        battleType: "TRAINING",
+        opponentId: "training-bot",
+        result: "VICTORY",
+        winner: "p1",
+        turnsCount: 2,
+        xpGained: 10,
+        moneyGained: 5,
+        playerPokemonIds: ["poke_1"],
+      },
+    });
+
+    expect(DomainEventEnvelopeSchema.safeParse(event).success).toBe(false);
+  });
+
+  it("refuse un payload arbitraire pour un type d'événement connu", () => {
+    const forged = {
+      eventId: "evt_forged",
+      eventType: "battle.completed",
+      aggregateType: "BATTLE",
+      aggregateId: "battle-1",
+      version: 1,
+      occurredAt: new Date().toISOString(),
+      payload: { userId: "victim" },
+    };
+
+    expect(DomainEventEnvelopeSchema.safeParse(forged).success).toBe(false);
+  });
 });

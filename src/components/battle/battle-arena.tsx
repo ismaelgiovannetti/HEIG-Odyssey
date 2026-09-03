@@ -369,11 +369,11 @@ export function BattleArena({
         typeof navigator !== "undefined" &&
         typeof navigator.sendBeacon === "function"
       ) {
-        navigator.sendBeacon(
+        const queued = navigator.sendBeacon(
           "/api/battle/abandon",
-          new Blob([body], { type: "text/plain" }),
+          new Blob([body], { type: "application/json" }),
         );
-        return;
+        if (queued) return;
       }
       try {
         const pending = fetch("/api/battle/abandon", {

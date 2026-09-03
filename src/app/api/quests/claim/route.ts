@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { getApplicationOrigin } from "@/lib/auth/environment";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 import {
   claimQuestReward,
@@ -34,21 +34,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Défense anti-CSRF : l'origine attendue vient de la configuration validée,
-    // et non de l'en-tête Host potentiellement réécrit par un reverse proxy.
-    if (req.headers.get("origin") !== getApplicationOrigin()) {
-      return json({ success: false, error: "Origine de la requête refusée." }, 403);
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return json({ success: false, error: body.error }, body.status);
     }
 
-    if (
-      req.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
-      "application/json"
-    ) {
-      return json({ success: false, error: "Un corps JSON est requis." }, 415);
-    }
-
-    const raw = await req.json().catch(() => null);
-    const parsed = ClaimQuestBodySchema.safeParse(raw);
+    const parsed = ClaimQuestBodySchema.safeParse(body.value);
 
     if (!parsed.success) {
       return json(

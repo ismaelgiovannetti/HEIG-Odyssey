@@ -29,7 +29,7 @@ const APPLICATION_AREAS = [
   },
   {
     href: "/gacha",
-    heading: /^Boutique gacha$/,
+    heading: /^Invocations Pokémon$/,
     navigationLabel: "Gacha",
   },
 ] as const;

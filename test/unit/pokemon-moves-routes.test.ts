@@ -13,6 +13,10 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     userPokemon: {
@@ -85,6 +89,10 @@ describe("Pokemon Moves & Evolution API Routes", () => {
       const res = await updateMovesRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          },
           body: JSON.stringify({ moveIds: [] }),
         }),
         { params: Promise.resolve({ id: "pkmn-1" }) },
@@ -93,6 +101,27 @@ describe("Pokemon Moves & Evolution API Routes", () => {
       expect(res.status).toBe(400);
       const json = await res.json();
       expect(json.success).toBe(false);
+    });
+
+    it("returns 400 when a move identifier is not a bounded string", async () => {
+      vi.mocked(auth.api.getSession).mockResolvedValue({
+        user: { id: "user-123" },
+      } as any);
+
+      const res = await updateMovesRoute(
+        new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          },
+          body: JSON.stringify({ moveIds: [{}] }),
+        }),
+        { params: Promise.resolve({ id: "pkmn-1" }) },
+      );
+
+      expect(res.status).toBe(400);
+      expect(prisma.userPokemon.findFirst).not.toHaveBeenCalled();
     });
 
     it("updates moves successfully when valid", async () => {
@@ -133,6 +162,10 @@ describe("Pokemon Moves & Evolution API Routes", () => {
       const res = await updateMovesRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/moves", {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          },
           body: JSON.stringify({ moveIds: ["tackle", "vinewhip"] }),
         }),
         { params: Promise.resolve({ id: "pkmn-1" }) },
@@ -180,6 +213,10 @@ describe("Pokemon Moves & Evolution API Routes", () => {
       const res = await evolveRoute(
         new Request("http://localhost:3000/api/pokemon/pkmn-1/evolve", {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          },
           body: JSON.stringify({ targetSpeciesId: "ivysaur" }),
         }),
         { params: Promise.resolve({ id: "pkmn-1" }) },
@@ -190,6 +227,30 @@ describe("Pokemon Moves & Evolution API Routes", () => {
       expect(json.success).toBe(true);
       expect(json.newSpeciesName).toBe("Herbizarre");
       expect(json.pokemon.speciesId).toBe("ivysaur");
+    });
+
+    it("does not expose an unexpected database error", async () => {
+      vi.mocked(auth.api.getSession).mockResolvedValue({
+        user: { id: "user-123" },
+      } as any);
+      vi.mocked(prisma.userPokemon.findFirst).mockRejectedValue(
+        new Error("postgres-secret-detail"),
+      );
+
+      const res = await evolveRoute(
+        new Request("http://localhost:3000/api/pokemon/pkmn-1/evolve", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          },
+          body: JSON.stringify({ targetSpeciesId: "ivysaur" }),
+        }),
+        { params: Promise.resolve({ id: "pkmn-1" }) },
+      );
+
+      expect(res.status).toBe(500);
+      expect(await res.text()).not.toContain("postgres-secret-detail");
     });
   });
 });

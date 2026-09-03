@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 import { selectStarter } from "@/lib/starter/starter-service";
 
@@ -36,10 +37,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Un JSON invalide est traité comme une mauvaise requête et non comme une
-    // erreur interne du serveur.
-    const rawBody: unknown = await req.json().catch(() => null);
-    const parsed = StarterChooseBodySchema.safeParse(rawBody);
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return NextResponse.json(
+        { success: false, error: body.error },
+        { status: body.status },
+      );
+    }
+
+    const parsed = StarterChooseBodySchema.safeParse(body.value);
 
     if (!parsed.success) {
       return NextResponse.json(

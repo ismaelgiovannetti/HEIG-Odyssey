@@ -17,6 +17,17 @@ vi.mock("@/lib/auth", () => ({
   },
 }));
 
+vi.mock("@/lib/auth/environment", () => ({
+  getApplicationOrigin: () => "http://localhost:3000",
+}));
+
+vi.mock("@/lib/security/rate-limit", () => ({
+  consumeFixedWindowRateLimit: vi.fn().mockResolvedValue({
+    allowed: true,
+    retryAfter: null,
+  }),
+}));
+
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     userPokemon: {
@@ -208,6 +219,10 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
       const req = new Request("http://localhost:3000/api/battle/start", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "http://localhost:3000",
+        },
         body: JSON.stringify({
           mode: "training",
           difficulty: "hard",

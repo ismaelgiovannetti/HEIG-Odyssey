@@ -64,6 +64,10 @@ battleSessionGlobal.__heigOdysseyBattleSessions = activeSessions;
 // Une session inactive expire après trente minutes.
 const SESSION_TTL_MS = 30 * 60 * 1000;
 
+// Une borne globale protège le processus d'une accumulation de moteurs lourds,
+// même si de nombreux comptes démarrent simultanément des combats.
+const MAX_ACTIVE_SESSIONS = 500;
+
 // Au-delà de ce délai sans action de combat, une session ne verrouille plus
 // l'édition des attaques / de l'équipe / des évolutions : le joueur a quitté
 // l'arène (fermeture d'onglet, navigation) sans que le combat se conclue.
@@ -75,6 +79,29 @@ function cleanupOldSessions() {
     if (now - session.lastAccessed > SESSION_TTL_MS) {
       activeSessions.delete(id);
     }
+  }
+}
+
+function removeExistingSessionForUser(userId: string): void {
+  for (const [battleId, session] of activeSessions.entries()) {
+    if (session.userId === userId) {
+      activeSessions.delete(battleId);
+    }
+  }
+}
+
+function evictOldestSessionAtCapacity(): void {
+  if (activeSessions.size < MAX_ACTIVE_SESSIONS) return;
+
+  let oldest: [string, ActiveBattleSession] | undefined;
+  for (const entry of activeSessions.entries()) {
+    if (!oldest || entry[1].lastAccessed < oldest[1].lastAccessed) {
+      oldest = entry;
+    }
+  }
+
+  if (oldest) {
+    activeSessions.delete(oldest[0]);
   }
 }
 
@@ -140,6 +167,10 @@ export function registerBattleSession(
   }
 ): void {
   cleanupOldSessions();
+  // Un joueur ne peut conserver qu'un seul moteur actif. Démarrer un nouveau
+  // combat remplace le précédent et empêche un épuisement mémoire authentifié.
+  removeExistingSessionForUser(userId);
+  evictOldestSessionAtCapacity();
   const battleType = options?.battleType ?? (stageId ? "CAMPAIGN" : "TRAINING");
   activeSessions.set(engine.battleId, {
     engine,
@@ -282,6 +313,7 @@ export async function processBattleTurn(
         battleId,
         stageId,
         winner,
+        turnsCount: turnResult.turn,
         playerPokemonIds,
       });
     }
@@ -294,4 +326,3 @@ export async function processBattleTurn(
     rewards,
   };
 }
-

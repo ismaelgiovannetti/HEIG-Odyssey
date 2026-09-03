@@ -100,6 +100,7 @@ test.describe("premier lancement du joueur", () => {
 
     // Un rejeu authentifié est refusé et ne crée aucune deuxième créature.
     const replay = await page.context().request.post("/api/starter/choose", {
+      headers: { Origin: new URL(page.url()).origin },
       data: { speciesId: "charmander" },
     });
     expect(replay.status()).toBe(409);

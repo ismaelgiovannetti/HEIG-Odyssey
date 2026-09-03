@@ -38,7 +38,13 @@ export function createRedisClient(customOptions?: RedisOptions): Redis {
  */
 export function getRedisClient(): Redis {
   if (!redisClientInstance) {
-    redisClientInstance = createRedisClient();
+    // Les workers utilisent volontairement des commandes bloquantes, mais une
+    // requête HTTP ne doit jamais rester suspendue indéfiniment si Redis tombe.
+    redisClientInstance = createRedisClient({
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2_000,
+      commandTimeout: 2_000,
+    });
   }
   return redisClientInstance;
 }

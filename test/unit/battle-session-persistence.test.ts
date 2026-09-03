@@ -90,6 +90,32 @@ describe("persistance en mémoire d'une session de combat", () => {
     expect(store.abandonBattleSession("battle-quit", "user-1")).toBe(false);
   });
 
+  it("remplace l'ancienne session lorsqu'un joueur démarre un nouveau combat", async () => {
+    const store = await import("@/lib/combat/battle-session-store");
+
+    store.registerBattleSession(
+      { battleId: "battle-old" } as Parameters<typeof store.registerBattleSession>[0],
+      "user-1",
+      ["pk-1"],
+      undefined,
+      "random",
+      { battleType: "TRAINING", difficulty: "easy" },
+    );
+    store.registerBattleSession(
+      { battleId: "battle-new" } as Parameters<typeof store.registerBattleSession>[0],
+      "user-1",
+      ["pk-2"],
+      undefined,
+      "random",
+      { battleType: "TRAINING", difficulty: "normal" },
+    );
+
+    expect(store.getBattleSession("battle-old")).toBeUndefined();
+    expect(store.getBattleSession("battle-new")).toBeDefined();
+    expect(store.isPokemonInActiveBattle("user-1", "pk-1")).toBe(false);
+    expect(store.isPokemonInActiveBattle("user-1", "pk-2")).toBe(true);
+  });
+
   it("une session inactive cesse de verrouiller après la fenêtre d'activité", async () => {
     vi.useFakeTimers();
     try {

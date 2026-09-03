@@ -11,6 +11,16 @@ export { getEvolutionOptions, type EvolutionTarget };
 
 const dex = Dex.forGen(4);
 
+export class PokemonEvolutionError extends Error {
+  constructor(
+    message: string,
+    readonly status: 400 | 404 | 409,
+  ) {
+    super(message);
+    this.name = "PokemonEvolutionError";
+  }
+}
+
 /**
  * Fait évoluer un Pokémon possédé vers une espèce cible éligible.
  */
@@ -25,11 +35,17 @@ export async function evolveUserPokemon(
     });
 
     if (!pokemon) {
-      throw new Error("Pokémon introuvable dans votre collection.");
+      throw new PokemonEvolutionError(
+        "Pokémon introuvable dans votre collection.",
+        404,
+      );
     }
 
     if (isPokemonInActiveBattle(userId, pokemonId)) {
-      throw new Error("Ce Pokémon est actuellement engagé dans un combat actif.");
+      throw new PokemonEvolutionError(
+        "Ce Pokémon est actuellement engagé dans un combat actif.",
+        409,
+      );
     }
 
     const previousSpeciesName = getSpeciesFrenchName(pokemon.speciesId, pokemon.speciesId);
@@ -40,14 +56,16 @@ export async function evolveUserPokemon(
     );
 
     if (!selectedEvolution) {
-      throw new Error(
+      throw new PokemonEvolutionError(
         `"${targetSpeciesId}" n'est pas une évolution valide pour ${previousSpeciesName}.`,
+        400,
       );
     }
 
     if (!selectedEvolution.canEvolve) {
-      throw new Error(
+      throw new PokemonEvolutionError(
         `${previousSpeciesName} requiert le niveau ${selectedEvolution.requiredLevel} pour évoluer en ${selectedEvolution.targetName} (niveau actuel : ${pokemon.level}).`,
+        400,
       );
     }
 
@@ -78,7 +96,7 @@ export async function evolveUserPokemon(
 
     // Mise à jour de la créature
     const updated = await tx.userPokemon.update({
-      where: { id: pokemonId },
+      where: { id: pokemonId, userId },
       data: {
         speciesId: targetSpeciesId.toLowerCase(),
         nickname: updatedNickname,

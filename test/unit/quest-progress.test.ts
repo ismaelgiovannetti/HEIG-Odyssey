@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   calculateQuestIncrement,
   claimQuestReward,
+  handleBattleCompletedEventForQuests,
   getUserQuests,
   QuestNotFoundError,
   QuestNotCompletedError,
@@ -107,7 +108,7 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
               quest: { rewardPokedollars: 150, rewardXp: 300 },
             },
           }),
-          update: vi.fn().mockResolvedValue({}),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
         userProfile: {
           upsert: vi.fn().mockResolvedValue({ pokedollars: 450 }),
@@ -123,8 +124,13 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
       expect(result.rewardPokedollars).toBe(150);
       expect(result.newBalance).toBe(450);
 
-      expect(mockTx.userQuestProgress.update).toHaveBeenCalledWith({
-        where: { id: "prog-1" },
+      expect(mockTx.userQuestProgress.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: "prog-1",
+          userId: "user-1",
+          isCompleted: true,
+          rewardClaimed: false,
+        },
         data: {
           rewardClaimed: true,
           claimedAt: expect.any(Date),
@@ -142,6 +148,106 @@ describe("Quest Progress & Claim Service (T-US13-03)", () => {
           pokedollars: { increment: 150 },
         },
       });
+    });
+
+    it("ne crédite rien si une requête concurrente a déjà réclamé la récompense", async () => {
+      const mockTx = {
+        userQuestProgress: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "prog-1",
+            isCompleted: true,
+            rewardClaimed: false,
+            rotation: {
+              quest: { rewardPokedollars: 150, rewardXp: 300 },
+            },
+          }),
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        userProfile: {
+          upsert: vi.fn(),
+        },
+      };
+      const mockPrisma = {
+        $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
+      };
+
+      await expect(
+        claimQuestReward("user-1", "rot-1", mockPrisma as any),
+      ).rejects.toThrow(QuestRewardAlreadyClaimedError);
+      expect(mockTx.userProfile.upsert).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("event idempotency", () => {
+    it("ignore un événement dont le reçu existe déjà", async () => {
+      const mockTx = {
+        processedDomainEvent: {
+          createMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        userQuestProgress: {
+          upsert: vi.fn(),
+        },
+      };
+      const mockPrisma = {
+        $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
+      };
+
+      const result = await handleBattleCompletedEventForQuests(
+        "evt-already-processed",
+        {
+          userId: "user-1",
+          battleId: "battle-1",
+          battleType: "TRAINING",
+          opponentId: "training-easy",
+          result: "VICTORY",
+          winner: "p1",
+          turnsCount: 2,
+          xpGained: 10,
+          moneyGained: 5,
+          playerPokemonIds: ["pokemon-1"],
+        },
+        mockPrisma as any,
+      );
+
+      expect(result).toBe(0);
+      expect(mockTx.userQuestProgress.upsert).not.toHaveBeenCalled();
+    });
+
+    it("refuse un événement qui ne correspond à aucun combat enregistré", async () => {
+      const mockTx = {
+        processedDomainEvent: {
+          createMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        battleRecord: {
+          findUnique: vi.fn().mockResolvedValue(null),
+        },
+        userQuestProgress: {
+          upsert: vi.fn(),
+        },
+      };
+      const mockPrisma = {
+        $transaction: vi.fn().mockImplementation((cb) => cb(mockTx)),
+      };
+
+      await expect(
+        handleBattleCompletedEventForQuests(
+          "evt-forged",
+          {
+            userId: "victim",
+            battleId: "battle-forged",
+            battleType: "TRAINING",
+            opponentId: "training-easy",
+            result: "VICTORY",
+            winner: "p1",
+            turnsCount: 2,
+            xpGained: 10,
+            moneyGained: 5,
+            playerPokemonIds: ["pokemon-1"],
+          },
+          mockPrisma as any,
+        ),
+      ).rejects.toThrow("QUEST_EVENT_BATTLE_MISMATCH");
+      expect(mockTx.userQuestProgress.upsert).not.toHaveBeenCalled();
     });
   });
 });

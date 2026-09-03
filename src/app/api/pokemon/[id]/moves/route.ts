@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { readProtectedJsonBody } from "@/lib/http/request-security";
 import { getRequestId, logger } from "@/lib/logger";
 import { isPokemonInActiveBattle } from "@/lib/combat/battle-session-store";
 import { validateAndHydrateSelectedMoves } from "@/lib/pokemon/pokemon-learnset-service";
 import { toCollectionEntry } from "@/lib/team/collection-entry";
+
+const UpdateMovesBodySchema = z
+  .object({
+    moveIds: z
+      .array(z.string().trim().min(1).max(100))
+      .min(1)
+      .max(4),
+  })
+  .strict();
 
 function json(body: unknown, status = 200) {
   return NextResponse.json(body, {
@@ -26,8 +37,13 @@ export async function PUT(
       return json({ success: false, error: "Authentification requise." }, 401);
     }
 
-    const body = await req.json().catch(() => null);
-    if (!body || !Array.isArray(body.moveIds)) {
+    const body = await readProtectedJsonBody(req, 8 * 1024);
+    if (!body.ok) {
+      return json({ success: false, error: body.error }, body.status);
+    }
+
+    const parsed = UpdateMovesBodySchema.safeParse(body.value);
+    if (!parsed.success) {
       return json({ success: false, error: "Liste des capacités invalide." }, 400);
     }
 
@@ -52,7 +68,7 @@ export async function PUT(
     const validation = await validateAndHydrateSelectedMoves(
       pokemon.speciesId,
       pokemon.level,
-      body.moveIds,
+      parsed.data.moveIds,
     );
 
     if (!validation.isValid || !validation.moves) {
@@ -60,7 +76,7 @@ export async function PUT(
     }
 
     const updated = await prisma.userPokemon.update({
-      where: { id },
+      where: { id, userId: session.user.id },
       data: {
         moves: validation.moves as any,
       },
