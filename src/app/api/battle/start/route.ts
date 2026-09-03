@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BattleEngine } from "@/lib/combat/battle-engine";
 import { registerBattleSession } from "@/lib/combat/battle-session-store";
+import { arenaThemeForStage } from "@/lib/campaign/arena-theme";
 import { canUserAccessStage } from "@/lib/campaign/campaign-service";
 import { getTrainer } from "@/lib/content/loader";
 import {
@@ -203,6 +204,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       battleId: engine.battleId,
+      // Décor de l'arène : type du monde en campagne, générique en entraînement.
+      arena: isTraining ? "training" : arenaThemeForStage(stageId),
       trainer: {
         id: opponentTrainer.id,
         name: opponentTrainer.name,

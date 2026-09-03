@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 
 import { ApplicationShell } from "@/components/application/application-shell";
+import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
 import { SpriteProvider } from "@/components/SpriteProvider";
+import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
 import {
   getCampaignStagePoint,
   getCampaignWorldMap,
@@ -165,6 +167,7 @@ export default async function DashboardPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
+      <MenuSoundtrack trackId={MENU_TRACKS.dashboard} />
       <div className="dashboard-home">
         <header className="dashboard-heading">
           <p className="dashboard-heading__eyebrow">

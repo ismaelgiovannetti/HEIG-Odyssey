@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
   Coins,
   RefreshCw,
   ShieldCheck,
@@ -38,6 +39,10 @@ interface BattleArenaProps {
   initialBattle: BattleStartPayload;
   mode: BattleMode;
   onReturn: () => void;
+  /** Étape de campagne qui suit celle jouée, si elle existe. */
+  nextStageId?: string | null;
+  /** Enchaîne directement sur `nextStageId` depuis l'écran de résultat. */
+  onAdvance?: () => void;
 }
 
 const TYPE_LABELS_FR: Record<string, string> = {
@@ -85,6 +90,15 @@ function hpTone(percent: number) {
   return "healthy";
 }
 
+/** Normalise un champ `sprite` de dresseur en URL exploitable. */
+function trainerSpriteUrl(sprite?: string): string | null {
+  if (!sprite) return null;
+  if (sprite.startsWith("/") || sprite.startsWith("http")) return sprite;
+  return `/sprites/${sprite}${sprite.endsWith(".png") ? "" : ".png"}`;
+}
+
+type OpponentIntroPhase = "trainer" | "leaving" | "pokemon";
+
 interface HpOverride {
   currentHp: number;
   maxHp: number;
@@ -96,10 +110,12 @@ function PokemonStatus({
   pokemon,
   hpOverride,
   statusOverride,
+  className = "",
 }: {
   pokemon: BattlePokemonPayload;
   hpOverride?: HpOverride | null;
   statusOverride?: string | null;
+  className?: string;
 }) {
   const currentHp =
     hpOverride !== null && hpOverride !== undefined
@@ -122,7 +138,7 @@ function PokemonStatus({
   const effectiveStatus = statusOverride !== undefined ? statusOverride : pokemon.status;
 
   return (
-    <div className="battle-pokemon-status">
+    <div className={`battle-pokemon-status ${className}`}>
       <div className="battle-pokemon-status__heading">
         <strong>{displayName}</strong>
         <span>Niv. {pokemon.level}</span>
@@ -163,14 +179,19 @@ function BattleResult({
   trainer,
   mode,
   onReturn,
+  canAdvance,
+  onAdvance,
 }: {
   state: BattleStatePayload;
   rewards?: BattleRewardPayload;
   trainer: BattleStartPayload["trainer"];
   mode: BattleMode;
   onReturn: () => void;
+  canAdvance: boolean;
+  onAdvance?: () => void;
 }) {
   const won = state.winner === "p1";
+  const showAdvance = won && canAdvance && !!onAdvance;
   const title = won
     ? "Victoire confirmée !"
     : mode === "training"
@@ -248,7 +269,23 @@ function BattleResult({
             disponible. Revenez à l’espace précédent pour actualiser vos données.
           </p>
         )}
-        <button className="battle-primary-button" type="button" onClick={onReturn}>
+        {showAdvance && (
+          <button
+            className="battle-primary-button battle-result__next"
+            type="button"
+            onClick={onAdvance}
+          >
+            <ArrowRight aria-hidden="true" size={18} />
+            Combat suivant
+          </button>
+        )}
+        <button
+          className={
+            showAdvance ? "battle-quiet-button" : "battle-primary-button"
+          }
+          type="button"
+          onClick={onReturn}
+        >
           <ArrowLeft aria-hidden="true" size={18} />
           Retour {mode === "training" ? "à l’entraînement" : "à la campagne"}
         </button>
@@ -269,6 +306,8 @@ export function BattleArena({
   initialBattle,
   mode,
   onReturn,
+  nextStageId,
+  onAdvance,
 }: Readonly<BattleArenaProps>) {
   const [state, setState] = useState(initialBattle.state);
   const [currentMessage, setCurrentMessage] = useState<string>(
@@ -284,6 +323,13 @@ export function BattleArena({
   const [playerAnim, setPlayerAnim] = useState<string>("");
   const [opponentAnim, setOpponentAnim] = useState<string>("");
 
+  // Lancement du combat : le dresseur adverse reste en scène le temps de sa
+  // réplique, glisse hors champ, puis laisse place à son Pokémon.
+  const introTrainerUrl = trainerSpriteUrl(initialBattle.trainer.sprite);
+  const [opponentIntro, setOpponentIntro] = useState<OpponentIntroPhase>(
+    introTrainerUrl ? "trainer" : "pokemon",
+  );
+
   // Jauges de PV dynamiques interpolées pendant les animations
   const [playerHp, setPlayerHp] = useState<HpOverride | null>(null);
   const [opponentHp, setOpponentHp] = useState<HpOverride | null>(null);
@@ -298,6 +344,11 @@ export function BattleArena({
 
   const player = activePokemon(state.p1);
   const opponent = activePokemon(state.p2);
+  // Un combattant K.O. reste absent du terrain une fois son animation de chute
+  // terminée, jusqu'à ce qu'un remplaçant prenne sa place : son sprite ne doit
+  // pas réapparaître pendant le choix du Pokémon suivant.
+  const hidePlayerField = player.isFainted && playerAnim !== "is-fainting";
+  const hideOpponentField = opponent.isFainted && opponentAnim !== "is-fainting";
   const finished = state.phase === "finished" && !isAnimating;
   const switchRequired = state.phase === "switch_required" && !isAnimating;
   const soundtrackPhase: SoundtrackPhase = finished
@@ -315,20 +366,53 @@ export function BattleArena({
     />
   );
 
-  const introTriggered = useRef(false);
-
+  // Séquence de lancement. Pas de garde par ref : sous React.StrictMode le
+  // cycle monter → nettoyer → remonter annule puis reprogramme proprement les
+  // minuteries (une garde figerait l'intro après le premier nettoyage).
   useEffect(() => {
-    if (introTriggered.current) return;
-    introTriggered.current = true;
+    const timers: number[] = [];
 
-    // Animation d'entrée en combat (sortie de Pokéball).
-    setPlayerAnim("is-entering-pokeball");
-    setOpponentAnim("is-entering-pokeball");
-    const t = setTimeout(() => {
-      setPlayerAnim("");
-      setOpponentAnim("");
-    }, 380);
-    return () => clearTimeout(t);
+    // Sortie de Pokéball : on repart de "" puis on repose la classe au tick
+    // suivant pour forcer le redémarrage de l'animation (utile sous StrictMode).
+    const pokeballEntrance = (
+      setAnim: (value: string) => void,
+      delay = 0,
+    ) => {
+      timers.push(window.setTimeout(() => setAnim(""), delay));
+      timers.push(
+        window.setTimeout(() => setAnim("is-entering-pokeball"), delay + 20),
+      );
+      timers.push(window.setTimeout(() => setAnim(""), delay + 420));
+    };
+
+    // Sans dresseur à l'écran : les deux Pokémon entrent tout de suite.
+    if (!introTrainerUrl) {
+      setOpponentIntro("pokemon");
+      pokeballEntrance(setPlayerAnim);
+      pokeballEntrance(setOpponentAnim);
+      return () => timers.forEach((id) => clearTimeout(id));
+    }
+
+    // Le dresseur reste 1,5 s en scène, glisse hors champ (420 ms), puis les
+    // deux Pokémon apparaissent une fois son animation terminée.
+    const HOLD_MS = 1500;
+    const SLIDE_MS = 420;
+    timers.push(
+      window.setTimeout(() => {
+        setOpponentIntro("leaving");
+        playBattleSfx("switch");
+      }, HOLD_MS),
+    );
+    timers.push(
+      window.setTimeout(() => {
+        setOpponentIntro("pokemon");
+        pokeballEntrance(setPlayerAnim);
+        pokeballEntrance(setOpponentAnim);
+      }, HOLD_MS + SLIDE_MS),
+    );
+
+    return () => timers.forEach((id) => clearTimeout(id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -406,7 +490,14 @@ export function BattleArena({
   }, [initialBattle.battleId]);
 
   async function submitAction(action: PlayerAction) {
-    if (requestLock.current || finished || isAnimating) return;
+    if (
+      requestLock.current ||
+      finished ||
+      isAnimating ||
+      opponentIntro !== "pokemon"
+    ) {
+      return;
+    }
     requestLock.current = true;
     setPending(true);
     setIsAnimating(true);
@@ -440,6 +531,10 @@ export function BattleArena({
       let pendingCrit = false;
       let pendingEffectiveness: { multiplier: number; message: string } | null = null;
       let consecutiveHits = 0;
+      // Camps dont le combattant vient d'être mis K.O. ce tour : leur
+      // remplacement ne doit pas rejouer l'animation de rappel (le Pokémon a
+      // déjà disparu via l'animation de K.O.).
+      const faintedThisTurn = new Set<string>();
 
       const targetIsPlayer = (evt: { side?: string; message?: string }) =>
         evt.side === "p1" ||
@@ -643,6 +738,7 @@ export function BattleArena({
 
         if (type === "faint") {
           const playerFaint = targetIsPlayer(event);
+          faintedThisTurn.add(playerFaint ? "p1" : "p2");
 
           // 8. Les PV affichent 0 / max (jamais 0/0), puis chute et fondu.
           if (playerFaint) {
@@ -689,9 +785,16 @@ export function BattleArena({
                 }
               : null;
 
-          // Beat 1 — rappel explicite du combattant sortant (sauf s'il est K.O.,
-          // auquel cas il a déjà quitté le terrain).
-          if (!outgoing.isFainted && outgoing.currentHp > 0) {
+          // Beat 1 — rappel explicite du combattant sortant. On le saute quand
+          // il vient d'être mis K.O. ce tour (l'animation de K.O. l'a déjà fait
+          // disparaître) : `outgoing` est un instantané d'avant le tour et peut
+          // encore le montrer vivant.
+          const switchSide = event.side ?? (playerSwitch ? "p1" : "p2");
+          const outgoingFainted =
+            faintedThisTurn.has(switchSide) ||
+            outgoing.isFainted ||
+            outgoing.currentHp <= 0;
+          if (!outgoingFainted) {
             setCurrentMessage(`${outgoing.nickname || outgoing.name}, reviens !`);
             setAnim("is-recalling");
             await sleep(360);
@@ -776,13 +879,17 @@ export function BattleArena({
             trainer={initialBattle.trainer}
             mode={mode}
             onReturn={onReturn}
+            canAdvance={mode === "campaign" && !!nextStageId}
+            onAdvance={onAdvance}
           />
         </div>
       </>
     );
   }
 
-  const controlsDisabled = pending || isAnimating;
+  // Aucune action tant que le dresseur n'a pas cédé la place à son Pokémon.
+  const introPlaying = opponentIntro !== "pokemon";
+  const controlsDisabled = pending || isAnimating || introPlaying;
 
   return (
     <>
@@ -814,7 +921,14 @@ export function BattleArena({
         />
 
         <div className="battle-interface__body">
-          <div className="battle-scene" aria-label="Arène de combat">
+          <div
+            className="battle-scene"
+            aria-label="Arène de combat"
+            data-arena={
+              initialBattle.arena ??
+              (mode === "training" ? "training" : "neutral")
+            }
+          >
             {/* Combattant adverse */}
             {(() => {
               const effectiveOpponentStatus =
@@ -825,8 +939,31 @@ export function BattleArena({
                     pokemon={opponent}
                     hpOverride={opponentHp}
                     statusOverride={opponentStatus}
+                    className={introPlaying ? "is-intro-hidden" : ""}
                   />
-                  <div className={`battle-combatant__sprite ${opponentAnim}`}>
+                  <div className="battle-combatant__stage">
+                  <div
+                    className="battle-combatant__platform"
+                    aria-hidden="true"
+                  />
+                  {opponentIntro !== "pokemon" && introTrainerUrl && (
+                    <div
+                      className={`battle-combatant__trainer ${
+                        opponentIntro === "leaving" ? "is-trainer-leaving" : ""
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={introTrainerUrl}
+                        alt={initialBattle.trainer.name}
+                        width={210}
+                        height={210}
+                      />
+                    </div>
+                  )}
+                  <div
+                    className={`battle-combatant__sprite ${opponentAnim} ${hideOpponentField ? "is-fainted-hidden" : ""} ${introPlaying ? "is-intro-hidden" : ""}`}
+                  >
                     {effectiveOpponentStatus && (
                       <div
                         className={`status-overlay status-overlay--${effectiveOpponentStatus}`}
@@ -849,6 +986,7 @@ export function BattleArena({
                       priority
                     />
                   </div>
+                  </div>
                 </div>
               );
             })()}
@@ -859,7 +997,14 @@ export function BattleArena({
                 playerStatus !== undefined ? playerStatus : player.status;
               return (
                 <div className="battle-combatant battle-combatant--player">
-                  <div className={`battle-combatant__sprite ${playerAnim}`}>
+                  <div className="battle-combatant__stage">
+                  <div
+                    className="battle-combatant__platform"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className={`battle-combatant__sprite ${playerAnim} ${hidePlayerField ? "is-fainted-hidden" : ""} ${introPlaying ? "is-intro-hidden" : ""}`}
+                  >
                     {effectivePlayerStatus && (
                       <div
                         className={`status-overlay status-overlay--${effectivePlayerStatus}`}
@@ -882,10 +1027,12 @@ export function BattleArena({
                       priority
                     />
                   </div>
+                  </div>
                   <PokemonStatus
                     pokemon={player}
                     hpOverride={playerHp}
                     statusOverride={playerStatus}
+                    className={introPlaying ? "is-intro-hidden" : ""}
                   />
                 </div>
               );

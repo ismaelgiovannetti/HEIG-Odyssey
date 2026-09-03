@@ -37,7 +37,7 @@ export type BattleSfxType =
 export function playBattleSfx(type: BattleSfxType) {
   if (typeof window === "undefined") return;
 
-  const prefs = getSavedAudioPreferences("battle");
+  const prefs = getSavedAudioPreferences();
   if (prefs.isMuted || prefs.volume <= 0) return;
 
   const ctx = getAudioContext();

@@ -16,6 +16,11 @@ import {
   Zap,
 } from "lucide-react";
 import { BattleArena } from "@/components/battle/battle-arena";
+import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
+import {
+  CAMPAIGN_TRACKS,
+  DEFAULT_CAMPAIGN_TRACK,
+} from "@/lib/audio/soundtrack-tracks";
 import {
   BattleRequestError,
   readBattleStartResponse,
@@ -64,6 +69,21 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
   const [activeBattle, setActiveBattle] = useState<BattleStartPayload | null>(
     null,
   );
+  // Étape effectivement lancée : sert à proposer « Combat suivant » à l'issue.
+  const [battleStageId, setBattleStageId] = useState<string | null>(null);
+
+  // L'ordre du contenu est l'unique ordre de progression, frontières de mondes
+  // comprises : la même règle que le service de récompenses côté serveur.
+  const orderedStageIds = overview.worlds.flatMap((item) =>
+    item.stages.map((stage) => stage.id),
+  );
+  const nextStageId = (() => {
+    if (!battleStageId) return null;
+    const index = orderedStageIds.indexOf(battleStageId);
+    return index !== -1 && index + 1 < orderedStageIds.length
+      ? orderedStageIds[index + 1]
+      : null;
+  })();
 
   const world =
     overview.worlds.find((item) => item.id === worldId) ?? overview.worlds[0];
@@ -88,11 +108,8 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
     setMessage(null);
   }
 
-  async function launch(target: CampaignStageView) {
-    if (target.isLocked || launching) return;
-    setLaunching(target.id);
+  async function startBattleForStage(stageId: string) {
     setMessage(null);
-
     try {
       // Seul l'identifiant de l'étape est transmis : le serveur contrôle
       // l'accès, choisit le dresseur et relit l'équipe du compte connecté.
@@ -101,15 +118,24 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
         credentials: "same-origin",
         cache: "no-store",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stageId: target.id }),
+        body: JSON.stringify({ stageId }),
       });
       setActiveBattle(await readBattleStartResponse(response));
+      setBattleStageId(stageId);
     } catch (cause) {
       setMessage(
         cause instanceof BattleRequestError
           ? cause.message
           : "Une erreur de communication est survenue lors du démarrage du combat.",
       );
+    }
+  }
+
+  async function launch(target: CampaignStageView) {
+    if (target.isLocked || launching) return;
+    setLaunching(target.id);
+    try {
+      await startBattleForStage(target.id);
     } finally {
       setLaunching(null);
     }
@@ -121,15 +147,30 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
         key={activeBattle.battleId}
         initialBattle={activeBattle}
         mode="campaign"
+        nextStageId={nextStageId}
         onReturn={() => {
           setActiveBattle(null);
+          setBattleStageId(null);
           setMessage(null);
           // Les gains et le déblocage de l'étape suivante viennent du serveur.
           router.refresh();
         }}
+        onAdvance={
+          nextStageId
+            ? () => {
+                // On enchaîne sur l'étape suivante ; l'accès reste vérifié par
+                // le serveur, et la carte se rafraîchira au prochain retour.
+                router.refresh();
+                void startBattleForStage(nextStageId);
+              }
+            : undefined
+        }
       />
     );
   }
+
+  const campaignTrack =
+    CAMPAIGN_TRACKS[world.degree] ?? DEFAULT_CAMPAIGN_TRACK;
 
   return (
     <section
@@ -141,6 +182,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
         } as CSSProperties
       }
     >
+      <MenuSoundtrack trackId={campaignTrack} />
       <header className={styles.heading}>
         <p className={styles.eyebrow}>
           <MapPinned aria-hidden="true" size={16} /> Parcours académique

@@ -10,6 +10,8 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { AudioControls } from "@/components/audio/audio-controls";
+import { UiSoundEffects } from "@/components/audio/ui-sound-effects";
 import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
@@ -68,6 +70,7 @@ export function ApplicationShell({
 }: Readonly<ApplicationShellProps>) {
   return (
     <div className="application-page">
+      <UiSoundEffects />
       <div
         className="application-background-mark application-background-mark--one"
         aria-hidden="true"
@@ -122,6 +125,7 @@ export function ApplicationShell({
                 même ordre sur chacune des pages authentifiées. */}
             <QuestPanel />
             <PlayerBalance initialBalance={pokedollars} />
+            <AudioControls className="application-player__audio" />
             <span className="application-player__name">{playerName}</span>
             <Link
               className="application-player__logout"

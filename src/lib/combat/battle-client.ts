@@ -109,6 +109,9 @@ export const EventSchema = z.object({
 const StartResponseSchema = z.object({
   success: z.literal(true),
   battleId: z.string().min(1),
+  // Thème du décor d'arène ; valeur libre tolérée, l'interface retombe sur un
+  // décor neutre si elle ne la connaît pas.
+  arena: z.string().min(1).optional(),
   trainer: TrainerSchema,
   state: BattleStateSchema,
 });

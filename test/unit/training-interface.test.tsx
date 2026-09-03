@@ -77,8 +77,8 @@ function startedBattle(): BattleStartPayload {
       name: "IA d'Entraînement",
       title: "Niveau Difficile (Expectiminimax)",
       introCatchline: "Début de la simulation.",
-      victoryCatchline: "Vous pouvez encore progresser.",
-      defeatCatchline: "Votre stratégie a triomphé.",
+      victoryCatchline: "Votre stratégie a triomphé.",
+      defeatCatchline: "Vous pouvez encore progresser.",
       musicTrack: "battle-theme-1",
     },
     state: {
@@ -168,7 +168,6 @@ describe("interface d'entraînement et de combat", () => {
     const audio = document.querySelector("audio");
     expect(audio?.src).toContain("battle-theme-1.mp3");
     expect(audio?.loop).toBe(true);
-    expect(screen.getByRole("button", { name: /Couper le son du jeu/i })).toBeDefined();
   });
 
   it("affiche une erreur compréhensible et permet de relancer le chargement", async () => {

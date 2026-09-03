@@ -904,6 +904,28 @@ async function generateCampaignAndTrainers() {
     stages: docStages,
   });
 
+  // Musique de combat propre à chaque boss (fichiers dans public/audio/tracks).
+  // Les dresseurs ordinaires gardent battle-theme-1.
+  const BOSS_MUSIC_TRACKS: Record<string, string> = {
+    "boss-fouad": "gym-leader-hgss",
+    "boss-nastaran": "gym-leader-rse",
+    "boss-mosqueron": "gym-leader-dpp",
+    "boss-augier": "zinnia-battle-oras",
+    "boss-tori": "boss-lysandre-xy",
+    "boss-gamba": "boss-giovanni-usum",
+    "boss-auberson": "giratina-battle-pla",
+    "boss-doc-tiago": "champion-diantha-xy",
+    "boss-doc-mo": "champion-alder-bw",
+    "boss-doc-ismael": "champion-cynthia-dpp",
+    "boss-doc-evan": "chairman-rose-swsh",
+    "boss-doc-donini": "hooh-battle-hgss",
+    "boss-doc-heche": "n-final-battle-bw",
+  };
+  for (const trainer of trainers) {
+    const bossTrack = BOSS_MUSIC_TRACKS[trainer.id];
+    if (bossTrack) trainer.musicTrack = bossTrack;
+  }
+
   // Write content/trainers.json
   const trainersFile = path.join(process.cwd(), "content", "trainers.json");
   fs.writeFileSync(

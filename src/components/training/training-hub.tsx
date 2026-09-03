@@ -12,6 +12,8 @@ import {
   UsersRound,
 } from "lucide-react";
 import { BattleArena } from "@/components/battle/battle-arena";
+import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
+import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
 import {
   PokemonSprite,
   PokemonTypes,
@@ -236,6 +238,7 @@ export function TrainingHub() {
 
   return (
     <section className="training-hub" aria-labelledby="training-title">
+      <MenuSoundtrack trackId={MENU_TRACKS.training} />
       <header className="training-hub__hero">
         <p className="application-eyebrow">
           <BrainCircuit aria-hidden="true" size={16} /> Simulation tactique

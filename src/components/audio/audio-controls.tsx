@@ -1,81 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
-import {
-  getSavedAudioPreferences,
-  saveAudioPreferences,
-  type AudioPreferenceScope,
-  type AudioPreferences,
-} from "@/lib/audio/audio-preferences";
+import { Volume1, Volume2, VolumeX } from "lucide-react";
+import { saveAudioPreferences } from "@/lib/audio/audio-preferences";
+import { useAudioPreferences } from "@/lib/audio/use-audio-preferences";
 
 interface AudioControlsProps {
   className?: string;
-  preferenceScope?: AudioPreferenceScope;
-  onPreferencesChange?: (prefs: AudioPreferences) => void;
 }
 
 /**
- * Bouton accessible pour activer/désactiver le son et persister la préférence (T-US08-03, T-US14-02).
+ * Barre de son unique du jeu, affichée dans la navbar. Elle pilote l'ensemble
+ * de l'audio (musique et bruitages de combat, sons du gacha, cris des Pokémon)
+ * via les préférences globales persistées (T-US08-03, T-US14-02).
  */
-export function AudioControls({
-  className = "",
-  preferenceScope = "app",
-  onPreferencesChange,
-}: Readonly<AudioControlsProps>) {
-  const [preferences, setPreferences] = useState<AudioPreferences>({
-    isMuted: false,
-    volume: 0.7,
-  });
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    const saved = getSavedAudioPreferences(preferenceScope);
-    setPreferences(saved);
-    setIsHydrated(true);
-    onPreferencesChange?.(saved);
-  }, [onPreferencesChange, preferenceScope]);
+export function AudioControls({ className = "" }: Readonly<AudioControlsProps>) {
+  const preferences = useAudioPreferences();
+  const effectiveVolume = preferences.isMuted ? 0 : preferences.volume;
 
   const toggleMute = () => {
-    const nextMuted = !preferences.isMuted;
-    const updated = saveAudioPreferences({ isMuted: nextMuted }, preferenceScope);
-    setPreferences(updated);
-    onPreferencesChange?.(updated);
+    saveAudioPreferences({ isMuted: !preferences.isMuted });
   };
 
-  const handleVolumeChange = (newVolume: number) => {
-    const updated = saveAudioPreferences(
-      { volume: newVolume, isMuted: newVolume === 0 },
-      preferenceScope,
-    );
-    setPreferences(updated);
-    onPreferencesChange?.(updated);
+  const handleVolumeChange = (nextVolume: number) => {
+    saveAudioPreferences({ volume: nextVolume, isMuted: nextVolume === 0 });
   };
 
-  if (!isHydrated) {
-    return (
-      <div className={`audio-controls ${className}`} aria-hidden="true">
-        <span className="p-2 text-slate-400">
-          <Volume2 size={20} />
-        </span>
-      </div>
-    );
-  }
+  const VolumeIcon = preferences.isMuted
+    ? VolumeX
+    : effectiveVolume <= 0.5
+      ? Volume1
+      : Volume2;
 
   return (
-    <div className={`audio-controls flex items-center gap-2 ${className}`}>
+    <div className={`audio-controls ${className}`}>
       <button
         type="button"
         onClick={toggleMute}
-        aria-label={preferences.isMuted ? "Activer le son du jeu" : "Couper le son du jeu (Muet)"}
+        aria-label={
+          preferences.isMuted
+            ? "Activer le son du jeu"
+            : "Couper le son du jeu (Muet)"
+        }
         aria-pressed={preferences.isMuted}
-        className="p-2 text-slate-300 hover:text-white rounded-md bg-slate-800/80 hover:bg-slate-700 transition focus:outline-none focus:ring-2 focus:ring-amber-400"
+        className="audio-controls__toggle"
       >
-        {preferences.isMuted ? (
-          <VolumeX size={20} className="text-red-400" />
-        ) : (
-          <Volume2 size={20} className="text-emerald-400" />
-        )}
+        <VolumeIcon size={18} aria-hidden="true" />
       </button>
 
       <input
@@ -83,10 +52,10 @@ export function AudioControls({
         min="0"
         max="1"
         step="0.05"
-        value={preferences.isMuted ? 0 : preferences.volume}
-        onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-        aria-label={preferenceScope === "battle" ? "Volume des combats" : "Volume audio principal"}
-        className="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+        value={effectiveVolume}
+        onChange={(event) => handleVolumeChange(parseFloat(event.target.value))}
+        aria-label="Volume du jeu"
+        className="audio-controls__slider"
       />
     </div>
   );
