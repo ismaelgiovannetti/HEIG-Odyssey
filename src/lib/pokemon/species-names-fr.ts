@@ -194,7 +194,7 @@ export const FRENCH_SPECIES_NAMES: Record<string, string> = {
   buneary: "Laporeille", lopunny: "Lockpin",
   mismagius: "Magirêve", honchkrow: "Corboss",
   glameow: "Chaglam", purugly: "Chaffreux",
-  chingling: "Korillon", stunky: "Moufouette", skutank: "Moufflair",
+  chingling: "Korillon", stunky: "Moufouette", skuntank: "Moufflair",
   bronzor: "Archéomire", bronzong: "Archéodong",
   bonsly: "Manzaï", mimejr: "Mime Jr.",
   happiny: "Ptiravi", chatot: "Pijako",
@@ -218,7 +218,38 @@ export const FRENCH_SPECIES_NAMES: Record<string, string> = {
   shaymin: "Shaymin", arceus: "Arceus"
 };
 
+/**
+ * Espèces à formes alternatives (Motisma-Chaleur, Arceus-Feu, Deoxys-Attaque,
+ * Giratina-Origine...). En combat, toutes ces formes portent le nom de
+ * l'espèce de base. Trié du préfixe le plus long au plus court.
+ */
+const FORME_BASE_IDS = [
+  "gastrodon",
+  "castform",
+  "giratina",
+  "wormadam",
+  "cherrim",
+  "shellos",
+  "shaymin",
+  "arceus",
+  "deoxys",
+  "rotom",
+  "burmy",
+  "pichu",
+] as const;
+
 export function getSpeciesFrenchName(speciesId: string, fallbackName?: string): string {
   const normalized = speciesId.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return FRENCH_SPECIES_NAMES[normalized] || fallbackName || speciesId;
+  const direct = FRENCH_SPECIES_NAMES[normalized];
+  if (direct) return direct;
+
+  // Repli sur le nom de l'espèce de base pour une forme alternative.
+  for (const baseId of FORME_BASE_IDS) {
+    if (normalized.length > baseId.length && normalized.startsWith(baseId)) {
+      const base = FRENCH_SPECIES_NAMES[baseId];
+      if (base) return base;
+    }
+  }
+
+  return fallbackName || speciesId;
 }

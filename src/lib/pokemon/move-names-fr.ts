@@ -60,7 +60,7 @@ export const FRENCH_MOVE_NAMES: Record<string, string> = {
   surf: "Surf", hydropump: "Hydrocanon", waterpulse: "Vibraqua",
   muddywater: "Ocroupi", waterfall: "Cascade", aquatail: "Hydroqueue",
   aquajet: "Aqua-Jet", whirlpool: "Siphon", waterspout: "Giclédo",
-  scald: "Ébullition", raindance: "Danse Pluie", hydrocannon: "Hydroblast",
+  scald: "Ébullition", raindance: "Danse Pluie", hydrocannon: "Hydro Canon",
   aquaring: "Anneau Hydro", waterring: "Anneau Hydro",
 
   // Électrik
@@ -85,9 +85,9 @@ export const FRENCH_MOVE_NAMES: Record<string, string> = {
   focuspunch: "Mitra-Poing", submission: "Sacrifice", vitalthrow: "Corps Perdu",
   reversal: "Contre", counter: "Riposte", vacuumwave: "Onde Vide",
   rocksmash: "Éclate-Roc", karatechop: "Poing-Karaté", armthrust: "Cogne",
-  skyuppercut: "Stratopercut", hijumpkick: "Pied Sauté", jumpkick: "Pied Voltige",
+  skyuppercut: "Stratopercut", highjumpkick: "Pied Voltige", jumpkick: "Pied Sauté",
   doublekick: "Double Pied", triplekick: "Triple Pied", bulkup: "Gonflette",
-  wakeupslap: "Réveil Forcé",
+  wakeupslap: "Réveil Forcé", rollingkick: "Mawashi Geri",
 
   // Poison
   poisonsting: "Dard-Venin", acid: "Acide", acidarmor: "Acidarmure",
@@ -163,6 +163,42 @@ export const FRENCH_MOVE_NAMES: Record<string, string> = {
   irondefense: "Mur de Fer", flashcannon: "Luminocanon", gyroball: "Gyroballe",
   bulletpunch: "Pisto-Poing", meteormash: "Poing Météore", doomdesire: "Carnareket",
   magnetbomb: "Bombaimant", mirrorshot: "Miroi-Tir", metalsound: "Strido-Son",
+  irontail: "Queue de Fer",
+
+  // Compléments Gen 1 à 4
+  aeroblast: "Aéroblast", attackorder: "Appel Attaque", defendorder: "Appel Défense",
+  healorder: "Appel Soin", barrage: "Barrage", block: "Barrage",
+  blazekick: "Pied Brûlure", brine: "Saumure", camouflage: "Camouflage",
+  clamp: "Claquoir", cometpunch: "Poing Comète", conversion: "Conversion",
+  conversion2: "Conversion 2", crabhammer: "Pince-Masse", darkvoid: "Trou Noir",
+  defensecurl: "Boul'Armure", dive: "Plongée", doublehit: "Coup Double",
+  doubleslap: "Torgnoles", eggbomb: "Bomb'Œuf", explosion: "Explosion",
+  selfdestruct: "Destruction", falseswipe: "Faux-Chage", flail: "Fléau",
+  flamewheel: "Roue de Feu", focusenergy: "Puissance", followme: "Par Ici",
+  foresight: "Clairvoyance", frenzyplant: "Végé-Attaque", furyattack: "Furie",
+  furyswipes: "Combo-Griffe", futuresight: "Prescience", glare: "Regard Médusant",
+  grasswhistle: "Siffl'Herbe", guardswap: "Échange Garde", powerswap: "Échange Force",
+  guillotine: "Guillotine", harden: "Armure", healingwish: "Vœu Soin",
+  heartswap: "Permucœur", helpinghand: "Coup d'Main", hornattack: "Koud'Korne",
+  horndrill: "Empal'Korne", howl: "Grondement", iceball: "Ball'Glace",
+  iciclespear: "Stalagtite", imprison: "Possessif", kinesis: "Télékinésie",
+  lastresort: "Dernier Recours", lovelykiss: "Grobisou", sweetkiss: "Bisou Malin",
+  lunardance: "Danse Lune", lusterpurge: "Lumi-Éclat", magiccoat: "Voile Magik",
+  mirrorcoat: "Voile Miroir", meanlook: "Regard Noir", meditate: "Yoga",
+  metalburst: "Fulmétal", mirrormove: "Mimique", moonlight: "Rayon Lune",
+  morningsun: "Aurore", mudsport: "Lance-Boue", watersport: "Tourniquet",
+  needlearm: "Poing Dard", nightmare: "Cauchemar", octazooka: "Octazooka",
+  odorsleuth: "Flair", payday: "Jackpot", pluck: "Picore",
+  poisongas: "Gaz Toxik", powertrick: "Force-Ruse", powerwhip: "Mégafouet",
+  psychoboost: "Psycho Boost", psychoshift: "Transfert", psywave: "Vague Psy",
+  punishment: "Punition", rapidspin: "Tour Rapide", razorwind: "Coupe-Vent",
+  refresh: "Régénération", revenge: "Vendetta", rockwrecker: "Fracas Rocher",
+  scaryface: "Grimace", seismictoss: "Frappe Atlas",
+  skillswap: "Échange", smellingsalts: "Stimulant", sonicboom: "Sonicboom",
+  spikecannon: "Épine", spitup: "Relâche", swallow: "Avale",
+  stockpile: "Stockage", stomp: "Écrasement", thrash: "Mania",
+  tickle: "Chatouille", trumpcard: "Atout", visegrip: "Force Poigne",
+  withdraw: "Repli",
 };
 
 export function getMoveFrenchName(id: string, fallbackName?: string): string {
