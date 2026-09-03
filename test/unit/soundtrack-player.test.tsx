@@ -48,14 +48,14 @@ describe("SoundtrackPlayer Component & Looping (T-US08-03)", () => {
     expect(audio?.loop).toBe(false);
   });
 
-  it("maintient la musique du dresseur en boucle lors d'une défaite comme dans les jeux Pokémon", () => {
+  it("joue la fanfare de défaite lors d'une défaite", () => {
     const { container } = render(
       <SoundtrackPlayer trackId="hooh-battle-hgss" phase="defeat" autoPlay={false} />
     );
 
     const audio = container.querySelector("audio");
-    expect(audio?.getAttribute("src") || (audio as any)?.src).toContain("hooh-battle-hgss.mp3");
-    expect(audio?.loop).toBe(true);
+    expect(audio?.getAttribute("src") || (audio as any)?.src).toContain("defeat-theme.mp3");
+    expect(audio?.loop).toBe(false);
   });
 
   it("arrête la piste lorsque le joueur quitte le combat", () => {

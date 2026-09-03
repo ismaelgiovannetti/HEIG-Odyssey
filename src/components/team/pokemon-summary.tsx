@@ -1,8 +1,11 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Swords } from "lucide-react";
 import { SpriteProvider } from "@/components/SpriteProvider";
 import type { CollectionEntry } from "@/lib/team/collection-entry";
 import type { PokemonType } from "@/lib/content/schemas";
+import type { EvolutionTarget } from "@/lib/pokemon/pokemon-evolution-types";
 import { formatGameInteger } from "@/lib/format-number";
+import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
+import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
 import styles from "./team-manager.module.css";
 
 const TYPE_LABELS: Record<PokemonType, string> = {
@@ -62,13 +65,19 @@ export function PokemonSprite({
   );
 }
 
-/** Contenu de la fenêtre : informations serveur en lecture seule, sans modifier les attaques. */
+/** Contenu de la fiche Pokémon avec actions de modification des attaques et d'évolution */
 export function PokemonSummary({
   pokemon,
   titleId,
+  evolutions = [],
+  onOpenMovesEditor,
+  onOpenEvolution,
 }: {
   pokemon: CollectionEntry;
   titleId: string;
+  evolutions?: EvolutionTarget[];
+  onOpenMovesEditor?: () => void;
+  onOpenEvolution?: (evo: EvolutionTarget) => void;
 }) {
   const stats = pokemon.stats;
   return (
@@ -96,6 +105,32 @@ export function PokemonSummary({
               PV : {pokemon.currentHp} / {pokemon.maxHp}
               {pokemon.currentHp === 0 ? " · K.O." : ""}
             </p>
+
+            {/* Actions d'évolution disponibles */}
+            {evolutions.length > 0 && onOpenEvolution && (
+              <div className={styles.summaryHeaderActions}>
+                {evolutions.map((evo) => (
+                  <button
+                    key={evo.targetSpeciesId}
+                    type="button"
+                    className={`${styles.evolveActionBtn} ${
+                      !evo.canEvolve ? styles.notReady : ""
+                    }`}
+                    onClick={() => onOpenEvolution(evo)}
+                    title={
+                      evo.canEvolve
+                        ? `Faire évoluer en ${evo.targetName} maintenant`
+                        : `Évolution disponible au niveau ${evo.requiredLevel}`
+                    }
+                  >
+                    <Sparkles size={12} />
+                    {evo.canEvolve
+                      ? `Évoluer en ${evo.targetName}`
+                      : `Niv. ${evo.requiredLevel} : ${evo.targetName}`}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className={styles.stats}>
@@ -127,13 +162,26 @@ export function PokemonSummary({
         {/* La limite du jeu est de quatre capacités : deux colonnes et deux
             rangées gardent chaque carte lisible sans créer de case factice. */}
         <div className={styles.moves}>
-          <h3>Capacités actuelles</h3>
+          <div className={styles.movesSectionHeader}>
+            <h3>Capacités actuelles</h3>
+            {onOpenMovesEditor && (
+              <button
+                type="button"
+                className={styles.editMovesBtn}
+                onClick={onOpenMovesEditor}
+                title="Modifier les attaques du Pokémon"
+              >
+                <Swords size={12} /> Modifier
+              </button>
+            )}
+          </div>
+
           {pokemon.moves.length ? (
             <ul>
               {pokemon.moves.map((move) => (
                 <li key={move.id}>
                   <div className={styles.moveHeading}>
-                    <strong>{move.name}</strong>
+                    <strong>{getMoveFrenchName(move.id, move.name)}</strong>
                     <span>
                       {move.pp}/{move.maxPp} PP
                     </span>
@@ -182,3 +230,4 @@ export function PokemonSummary({
     </section>
   );
 }
+
