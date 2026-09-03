@@ -3542,8 +3542,8 @@ body {
   transform-origin: top left;
 }
 
-/* Le copyright et les crédits restent à gauche ; les mentions légales
-   occupent la partie droite sans ajouter une troisième colonne. */
+/* Les crédits constituent l'unique contenu du pied de page et restent centrés
+   quelle que soit la largeur du shell. */
 .application-footer {
   position: relative;
   z-index: 40;
@@ -3555,14 +3555,14 @@ body {
 }
 
 .application-footer__inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 12px 24px;
+  justify-content: center;
   width: min(calc(100% - clamp(32px, 5vw, 96px)), 1800px);
   min-height: 36px;
   margin: 0 auto;
   padding-block: 6px;
+  text-align: center;
 }
 
 .application-footer__copyright {
@@ -3570,27 +3570,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.application-footer__links {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.application-footer__links li + li::before {
-  margin-right: 14px;
-  color: var(--color-border);
-  content: "·";
-}
-
-.application-footer__links span {
-  color: var(--color-text-muted);
-}
-
 
 @media (max-width: 1400px) {
   .application-navbar {
@@ -3611,11 +3590,6 @@ body {
 
   .application-player__name {
     display: none;
-  }
-
-  .application-footer__inner {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 4px;
   }
 
 }
@@ -3659,16 +3633,6 @@ body {
 
   .application-footer__inner {
     width: calc(100% - 32px);
-    column-gap: 14px;
-  }
-
-  .application-footer__links {
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  .application-footer__links li + li::before {
-    margin-right: 8px;
   }
 }
 
