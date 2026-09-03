@@ -39,3 +39,6 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma generated (keep schema and migrations, ignore generated client if in node_modules)
+
+# claude code local config
+/.claude/

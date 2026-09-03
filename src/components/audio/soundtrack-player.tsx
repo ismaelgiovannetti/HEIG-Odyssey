@@ -57,8 +57,12 @@ export function SoundtrackPlayer({
     // Victoire du joueur : fanfare triomphale jouée une seule fois
     currentSrc = "/audio/tracks/victory-theme.mp3";
     isLooping = false;
+  } else if (phase === "defeat") {
+    // Défaite du joueur : jingle de défaite joué en fin de combat
+    currentSrc = "/audio/tracks/defeat-theme.mp3";
+    isLooping = false;
   } else {
-    // Intro, tours de combat et défaite : la musique du dresseur continue en boucle
+    // Intro et tours de combat : la musique du dresseur continue en boucle
     currentSrc = `/audio/tracks/${trackId}.mp3`;
     isLooping = true;
   }

@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 
 import { SpriteProvider } from "@/components/SpriteProvider";
+import { StarterShowcase } from "@/components/onboarding/starter-showcase";
+import { playPokemonCry } from "@/lib/audio/pokemon-cry";
 
 type BaseStats = {
   hp: number;
@@ -284,10 +286,12 @@ export function OnboardingFlow() {
   function selectStarter(starter: StarterView) {
     setSelectedSpeciesId(starter.speciesId);
     setClaimError(null);
+    playPokemonCry(starter.speciesId, starter.dexNumber);
   }
 
   function openConfirmation() {
     if (!selectedStarter) return;
+    playPokemonCry(selectedStarter.speciesId, selectedStarter.dexNumber);
     setCandidate(selectedStarter);
     setNickname("");
     setClaimError(null);
@@ -426,32 +430,7 @@ export function OnboardingFlow() {
               </div>
             </div>
 
-            <div
-              className="onboarding-arena"
-              aria-label="Trois partenaires Pokémon dans une arène"
-            >
-              <SpriteProvider
-                speciesId="turtwig"
-                alt="Tortipouss"
-                width={104}
-                height={104}
-                priority
-              />
-              <SpriteProvider
-                speciesId="chimchar"
-                alt="Ouisticram"
-                width={112}
-                height={112}
-                priority
-              />
-              <SpriteProvider
-                speciesId="piplup"
-                alt="Tiplouf"
-                width={104}
-                height={104}
-                priority
-              />
-            </div>
+            <StarterShowcase catalog={catalog} />
           </div>
 
           <div
@@ -685,7 +664,27 @@ export function OnboardingFlow() {
                 <aside className="starter-detail" aria-live="polite">
                   {selectedStarter ? (
                     <>
-                      <div className="starter-detail__portrait">
+                      <div
+                        className="starter-detail__portrait"
+                        onClick={() =>
+                          playPokemonCry(
+                            selectedStarter.speciesId,
+                            selectedStarter.dexNumber,
+                          )
+                        }
+                        style={{ cursor: "pointer" }}
+                        title={`Écouter le cri de ${selectedStarter.name}`}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            playPokemonCry(
+                              selectedStarter.speciesId,
+                              selectedStarter.dexNumber,
+                            );
+                          }
+                        }}
+                      >
                         <span>
                           #
                           {String(selectedStarter.dexNumber ?? 0).padStart(

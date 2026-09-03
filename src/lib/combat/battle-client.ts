@@ -24,7 +24,13 @@ const BattlePokemonSchema = z.object({
   currentHp: z.number().nonnegative(),
   maxHp: z.number().positive(),
   hpPercent: z.number().min(0).max(100),
-  status: z.enum(["brn", "par", "slp", "psn", "tox", "frz"]).nullable(),
+  // Champ purement décoratif : une valeur inattendue (« fnt » d'un combattant
+  // K.O., statut d'une génération ultérieure...) ne doit jamais invalider tout
+  // le tour et figer l'arène. On retombe alors sur « aucune altération ».
+  status: z
+    .enum(["brn", "par", "slp", "psn", "tox", "frz"])
+    .nullable()
+    .catch(null),
   moves: z.array(BattleMoveSchema).max(4),
   isShiny: z.boolean(),
   isActive: z.boolean(),
@@ -86,10 +92,18 @@ const RewardSchema = z.object({
   })),
 });
 
-const EventSchema = z.object({
+export const EventSchema = z.object({
   type: z.string().min(1),
   turn: z.number().int().nonnegative(),
   message: z.string(),
+  side: z.enum(["p1", "p2"]).optional(),
+  currentHp: z.number().optional(),
+  maxHp: z.number().optional(),
+  multiplier: z.number().optional(),
+  status: z.string().optional(),
+  hitCount: z.number().optional(),
+  residual: z.boolean().optional(),
+  fromEffect: z.string().optional(),
 }).passthrough();
 
 const StartResponseSchema = z.object({

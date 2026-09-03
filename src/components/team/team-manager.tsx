@@ -873,6 +873,9 @@ export function TeamManager({ playerName }: { playerName: string }) {
               key={detailsPokemon.id}
               pokemon={detailsPokemon}
               onClose={closeDetails}
+              onUpdated={() => {
+                void collection.reload();
+              }}
             />
           )}
           {releaseCandidate && (
