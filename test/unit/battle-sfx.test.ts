@@ -16,6 +16,7 @@ describe("battle-sfx", () => {
       "status_slp",
       "status_psn",
       "status_brn",
+      "status_frz",
       "faint",
       "switch",
       "miss",

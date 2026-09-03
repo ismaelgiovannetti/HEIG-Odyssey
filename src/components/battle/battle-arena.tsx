@@ -321,13 +321,13 @@ export function BattleArena({
     if (introTriggered.current) return;
     introTriggered.current = true;
 
-    // Animation d'entrée en combat (sortie de Pokéball)
+    // Animation d'entrée en combat (sortie de Pokéball).
     setPlayerAnim("is-entering-pokeball");
     setOpponentAnim("is-entering-pokeball");
     const t = setTimeout(() => {
       setPlayerAnim("");
       setOpponentAnim("");
-    }, 320);
+    }, 380);
     return () => clearTimeout(t);
   }, []);
 
@@ -342,6 +342,68 @@ export function BattleArena({
     },
     [],
   );
+
+  // Quitter l'arène sans conclure le combat doit libérer la session serveur,
+  // sinon l'équipe / les attaques restent verrouillées comme « en combat ».
+  const battleConcludedRef = useRef(false);
+  const realMountRef = useRef(false);
+
+  useEffect(() => {
+    if (state.phase === "finished") battleConcludedRef.current = true;
+  }, [state.phase]);
+
+  useEffect(() => {
+    // Le cycle simulé de React.StrictMode (montage → démontage immédiat →
+    // remontage) ne laisse jamais ce drapeau passer à true : seul un vrai
+    // démontage libère la session.
+    const flagId = window.setTimeout(() => {
+      realMountRef.current = true;
+    }, 0);
+
+    const battleId = initialBattle.battleId;
+    const releaseSession = (viaBeacon: boolean) => {
+      if (battleConcludedRef.current) return;
+      const body = JSON.stringify({ battleId });
+      if (
+        viaBeacon &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.sendBeacon === "function"
+      ) {
+        navigator.sendBeacon(
+          "/api/battle/abandon",
+          new Blob([body], { type: "text/plain" }),
+        );
+        return;
+      }
+      try {
+        const pending = fetch("/api/battle/abandon", {
+          method: "POST",
+          credentials: "same-origin",
+          keepalive: true,
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body,
+        }) as Promise<Response> | undefined;
+        void pending?.catch?.(() => {});
+      } catch {
+        /* best effort : la fenêtre d'inactivité serveur prend le relais */
+      }
+    };
+
+    const onPageHide = (event: PageTransitionEvent) => {
+      // Mise en cache bfcache : la page peut revenir telle quelle, on ne libère
+      // pas encore (la fenêtre d'inactivité serveur prendra le relais au besoin).
+      if (event.persisted) return;
+      releaseSession(true);
+    };
+    window.addEventListener("pagehide", onPageHide);
+
+    return () => {
+      window.clearTimeout(flagId);
+      window.removeEventListener("pagehide", onPageHide);
+      if (realMountRef.current) releaseSession(false);
+    };
+  }, [initialBattle.battleId]);
 
   async function submitAction(action: PlayerAction) {
     if (requestLock.current || finished || isAnimating) return;
@@ -371,160 +433,300 @@ export function BattleArena({
       const next = await readBattleActionResponse(response);
       setPending(false);
 
-      // Déroulement séquentiel et immersif des événements du tour
-      if (next.events && next.events.length > 0) {
-        for (let i = 0; i < next.events.length; i++) {
-          const event = next.events[i];
-          if (event.message) {
-            setCurrentMessage(event.message);
-          }
+      // Déroulement séquentiel et immersif des événements du tour.
+      // Les marqueurs d'efficacité et de coup critique précèdent les dégâts dans
+      // le protocole : on les diffère pour respecter le rythme cinématographique
+      // (impact → efficacité → coup critique → suite du tour).
+      let pendingCrit = false;
+      let pendingEffectiveness: { multiplier: number; message: string } | null = null;
+      let consecutiveHits = 0;
 
-          if (event.type === "move") {
-            const isPlayerAttacker =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
+      const targetIsPlayer = (evt: { side?: string; message?: string }) =>
+        evt.side === "p1" ||
+        (!evt.side &&
+          !!evt.message &&
+          evt.message.includes(player.nickname || player.name));
 
-            // Animation d'attaque (élan vers l'avant net)
-            if (isPlayerAttacker) {
-              setPlayerAnim("is-attacking-player");
-              await sleep(280);
-              setPlayerAnim("");
-            } else {
-              setOpponentAnim("is-attacking-opponent");
-              await sleep(280);
-              setOpponentAnim("");
-            }
-            await sleep(350);
-          } else if (event.type === "damage") {
-            const isPlayerTarget =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
-
-            const targetMaxHp = isPlayerTarget ? player.maxHp : opponent.maxHp;
-            const finalMaxHp =
-              typeof event.maxHp === "number" && event.maxHp > 0
-                ? event.maxHp
-                : targetMaxHp > 0
-                  ? targetMaxHp
-                  : 1;
-            const finalCurrHp =
-              typeof event.currentHp === "number" ? event.currentHp : 0;
-            const finalPercent = Math.round((finalCurrHp / finalMaxHp) * 100);
-
-            // Mise à jour de la jauge et recul d'impact franc
-            if (isPlayerTarget) {
-              setPlayerHp({
-                currentHp: finalCurrHp,
-                maxHp: finalMaxHp,
-                hpPercent: finalPercent,
-              });
-              setPlayerAnim("is-taking-damage-player");
-              await sleep(240);
-              setPlayerAnim("");
-            } else {
-              setOpponentHp({
-                currentHp: finalCurrHp,
-                maxHp: finalMaxHp,
-                hpPercent: finalPercent,
-              });
-              setOpponentAnim("is-taking-damage-opponent");
-              await sleep(240);
-              setOpponentAnim("");
-            }
-
-            // Laisser le temps à la barre de PV de descendre (y compris jusqu'à 0)
-            await sleep(650);
-          } else if (event.type === "effectiveness") {
-            // Affichage du message d'efficacité après que les dégâts soient visibles
-            await sleep(1350);
-          } else if (event.type === "critical_hit") {
-            await sleep(1250);
-          } else if (event.type === "status_inflicted") {
-            const isPlayerTarget =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
-
-            if (isPlayerTarget) {
-              setPlayerStatus(event.status || null);
-            } else {
-              setOpponentStatus(event.status || null);
-            }
-
-            if (event.status === "par") playBattleSfx("status_par");
-            else if (event.status === "slp") playBattleSfx("status_slp");
-            else if (event.status === "brn") playBattleSfx("status_brn");
-            else if (event.status === "psn" || event.status === "tox") playBattleSfx("status_psn");
-            await sleep(1350);
-          } else if (event.type === "status_cleared") {
-            const isPlayerTarget =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
-
-            if (isPlayerTarget) {
-              setPlayerStatus(null);
-            } else {
-              setOpponentStatus(null);
-            }
-            await sleep(1000);
-          } else if (event.type === "faint") {
-            const isPlayerFaint =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
-
-            // S'assurer que les PV sont bien à 0/maxHp lors de l'annonce du K.O.
-            if (isPlayerFaint) {
-              setPlayerHp({
-                currentHp: 0,
-                maxHp: player.maxHp > 0 ? player.maxHp : 1,
-                hpPercent: 0,
-              });
-              setPlayerAnim("is-fainting");
-              setPlayerStatus(null);
-            } else {
-              setOpponentHp({
-                currentHp: 0,
-                maxHp: opponent.maxHp > 0 ? opponent.maxHp : 1,
-                hpPercent: 0,
-              });
-              setOpponentAnim("is-fainting");
-              setOpponentStatus(null);
-            }
-
-            playBattleSfx("faint");
-            await sleep(1500);
-          } else if (event.type === "switch") {
-            const isPlayerSwitch =
-              event.side === "p1" ||
-              (!event.side && event.message?.includes(player.nickname || player.name));
-
-            // Sortie de Pokéball du nouveau Pokémon actif
-            if (isPlayerSwitch) {
-              setPlayerStatus(undefined);
-              setPlayerHp(null);
-              setState((prev) => ({ ...prev, p1: next.state.p1 }));
-              playBattleSfx("switch");
-              setPlayerAnim("is-entering-pokeball");
-              await sleep(320);
-              setPlayerAnim("");
-            } else {
-              setOpponentStatus(undefined);
-              setOpponentHp(null);
-              setState((prev) => ({ ...prev, p2: next.state.p2 }));
-              playBattleSfx("switch");
-              setOpponentAnim("is-entering-pokeball");
-              await sleep(320);
-              setOpponentAnim("");
-            }
-
-            await sleep(650);
-          } else if (event.type === "miss") {
-            playBattleSfx("miss");
-            await sleep(1200);
-          } else {
-            await sleep(1000);
-          }
+      const flushHitFeedback = async () => {
+        if (pendingCrit) {
+          setCurrentMessage("Coup critique !");
+          await sleep(900);
+          pendingCrit = false;
         }
+        if (pendingEffectiveness) {
+          setCurrentMessage(pendingEffectiveness.message);
+          await sleep(900);
+          pendingEffectiveness = null;
+        }
+      };
+
+      const events = next.events ?? [];
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        const type = event.type;
+        const keepsHitGroup =
+          type === "damage" ||
+          type === "critical_hit" ||
+          type === "effectiveness" ||
+          type === "hit_count";
+
+        // Tout autre évènement clôt le groupe de coups en cours : on affiche
+        // d'abord les messages différés, puis on remet le compteur à zéro.
+        if (!keepsHitGroup) {
+          await flushHitFeedback();
+          consecutiveHits = 0;
+        }
+
+        if (type === "turn_start") {
+          await sleep(150);
+          continue;
+        }
+
+        if (event.message && type !== "critical_hit" && type !== "effectiveness") {
+          setCurrentMessage(event.message);
+        }
+
+        if (type === "move") {
+          // 1. Annonce lue par le joueur, puis élan net et pause d'anticipation.
+          await sleep(700);
+          if (targetIsPlayer(event)) {
+            setPlayerAnim("is-attacking-player");
+            await sleep(280);
+            setPlayerAnim("");
+          } else {
+            setOpponentAnim("is-attacking-opponent");
+            await sleep(280);
+            setOpponentAnim("");
+          }
+          await sleep(200);
+          continue;
+        }
+
+        if (type === "critical_hit") {
+          pendingCrit = true;
+          continue;
+        }
+
+        if (type === "effectiveness") {
+          const multiplier =
+            typeof event.multiplier === "number" ? event.multiplier : 1;
+          if (multiplier === 0) {
+            // Immunité : aucun dégât ne suit, on annonce immédiatement.
+            setCurrentMessage(event.message);
+            await sleep(900);
+          } else {
+            pendingEffectiveness = { multiplier, message: event.message };
+          }
+          continue;
+        }
+
+        if (type === "damage") {
+          const playerTarget = targetIsPlayer(event);
+          const residual = event.residual === true;
+          const stateMaxHp = playerTarget ? player.maxHp : opponent.maxHp;
+          const maxHp =
+            typeof event.maxHp === "number" && event.maxHp > 0
+              ? event.maxHp
+              : stateMaxHp > 0
+                ? stateMaxHp
+                : 1;
+          const currentHp =
+            typeof event.currentHp === "number" ? Math.max(0, event.currentHp) : 0;
+          const hpPercent = Math.round((currentHp / maxHp) * 100);
+          const micro = consecutiveHits > 0;
+
+          // 2. SFX d'impact choisi selon le contexte (critique > efficacité > normal).
+          if (pendingCrit) playBattleSfx("critical");
+          else if (pendingEffectiveness && pendingEffectiveness.multiplier >= 2)
+            playBattleSfx("super_effective");
+          else if (
+            pendingEffectiveness &&
+            pendingEffectiveness.multiplier > 0 &&
+            pendingEffectiveness.multiplier < 1
+          )
+            playBattleSfx("resisted");
+          else playBattleSfx("hit");
+
+          // 3. Jauge de PV et recul d'impact déclenchés simultanément.
+          if (playerTarget) {
+            setPlayerHp({ currentHp, maxHp, hpPercent });
+            setPlayerAnim("is-taking-damage-player");
+            await sleep(micro ? 140 : 240);
+            setPlayerAnim("");
+          } else {
+            setOpponentHp({ currentHp, maxHp, hpPercent });
+            setOpponentAnim("is-taking-damage-opponent");
+            await sleep(micro ? 140 : 240);
+            setOpponentAnim("");
+          }
+          consecutiveHits += 1;
+
+          // 4. Descente fluide de la barre (transition CSS 600 ms).
+          await sleep(residual ? 800 : micro ? 260 : 750);
+          continue;
+        }
+
+        if (type === "hit_count") {
+          const hits =
+            typeof event.hitCount === "number" && event.hitCount > 0
+              ? event.hitCount
+              : consecutiveHits;
+          if (hits > 1) {
+            setCurrentMessage(`Touché ${hits} fois !`);
+            await sleep(800);
+          }
+          await flushHitFeedback();
+          consecutiveHits = 0;
+          continue;
+        }
+
+        if (type === "heal") {
+          const playerTarget = targetIsPlayer(event);
+          const stateMaxHp = playerTarget ? player.maxHp : opponent.maxHp;
+          const maxHp =
+            typeof event.maxHp === "number" && event.maxHp > 0
+              ? event.maxHp
+              : stateMaxHp > 0
+                ? stateMaxHp
+                : 1;
+          const currentHp =
+            typeof event.currentHp === "number" ? Math.max(0, event.currentHp) : 0;
+          if (currentHp > 0) {
+            const hpPercent = Math.round((currentHp / maxHp) * 100);
+            if (playerTarget) setPlayerHp({ currentHp, maxHp, hpPercent });
+            else setOpponentHp({ currentHp, maxHp, hpPercent });
+          }
+          await sleep(800);
+          continue;
+        }
+
+        if (type === "status_inflicted") {
+          const playerTarget = targetIsPlayer(event);
+          const status = event.status || null;
+
+          // Apparition instantanée du badge et de l'overlay au moment du log.
+          if (playerTarget) setPlayerStatus(status);
+          else setOpponentStatus(status);
+
+          if (status === "par") playBattleSfx("status_par");
+          else if (status === "slp") playBattleSfx("status_slp");
+          else if (status === "brn") playBattleSfx("status_brn");
+          else if (status === "psn" || status === "tox") playBattleSfx("status_psn");
+          else if (status === "frz") playBattleSfx("status_frz");
+          await sleep(1000);
+          continue;
+        }
+
+        if (type === "status_cleared") {
+          if (targetIsPlayer(event)) setPlayerStatus(null);
+          else setOpponentStatus(null);
+          await sleep(900);
+          continue;
+        }
+
+        if (type === "weather") {
+          // 7. Météo résolue en fin de tour, avant les dégâts qu'elle inflige.
+          await sleep(800);
+          continue;
+        }
+
+        if (type === "stat_boost" || type === "cant" || type === "fail" || type === "message") {
+          await sleep(900);
+          continue;
+        }
+
+        if (type === "miss") {
+          playBattleSfx("miss");
+          await sleep(1000);
+          continue;
+        }
+
+        if (type === "faint") {
+          const playerFaint = targetIsPlayer(event);
+
+          // 8. Les PV affichent 0 / max (jamais 0/0), puis chute et fondu.
+          if (playerFaint) {
+            setPlayerHp({
+              currentHp: 0,
+              maxHp: player.maxHp > 0 ? player.maxHp : 1,
+              hpPercent: 0,
+            });
+            setPlayerStatus(null);
+            setPlayerAnim("is-fainting");
+          } else {
+            setOpponentHp({
+              currentHp: 0,
+              maxHp: opponent.maxHp > 0 ? opponent.maxHp : 1,
+              hpPercent: 0,
+            });
+            setOpponentStatus(null);
+            setOpponentAnim("is-fainting");
+          }
+          playBattleSfx("faint");
+          await sleep(1200);
+          continue;
+        }
+
+        if (type === "switch") {
+          const playerSwitch = targetIsPlayer(event);
+          const setAnim = playerSwitch ? setPlayerAnim : setOpponentAnim;
+          const setHp = playerSwitch ? setPlayerHp : setOpponentHp;
+          const setStatus = playerSwitch ? setPlayerStatus : setOpponentStatus;
+          const outgoing = playerSwitch ? player : opponent;
+
+          // PV d'entrée en jeu (avant les dégâts du tour) pour que la jauge parte
+          // de là et descende visiblement lors du coup adverse.
+          const switchInHp =
+            typeof event.currentHp === "number" &&
+            typeof event.maxHp === "number" &&
+            event.maxHp > 0
+              ? {
+                  currentHp: Math.max(0, event.currentHp),
+                  maxHp: event.maxHp,
+                  hpPercent: Math.round(
+                    (Math.max(0, event.currentHp) / event.maxHp) * 100,
+                  ),
+                }
+              : null;
+
+          // Beat 1 — rappel explicite du combattant sortant (sauf s'il est K.O.,
+          // auquel cas il a déjà quitté le terrain).
+          if (!outgoing.isFainted && outgoing.currentHp > 0) {
+            setCurrentMessage(`${outgoing.nickname || outgoing.name}, reviens !`);
+            setAnim("is-recalling");
+            await sleep(360);
+          }
+
+          // Beat 2 — le nouveau combattant remplace l'ancien et sort de sa Ball.
+          setStatus(undefined);
+          setHp(switchInHp);
+          if (playerSwitch) {
+            setState((prev) => ({ ...prev, p1: next.state.p1 }));
+          } else {
+            setState((prev) => ({ ...prev, p2: next.state.p2 }));
+          }
+          playBattleSfx("switch");
+          setCurrentMessage(event.message);
+          setAnim("is-entering-pokeball");
+          await sleep(360);
+          setAnim("");
+
+          // Beat 3 — temps mort pour bien enregistrer l'entrée avant la suite.
+          await sleep(620);
+          continue;
+        }
+
+        if (type === "battle_end") {
+          // La mise K.O. finale a déjà marqué sa pause : transition brève ici.
+          await sleep(600);
+          continue;
+        }
+
+        await sleep(800);
       }
+
+      // Derniers marqueurs différés éventuels (efficacité/critique en fin de liste).
+      await flushHitFeedback();
 
       // Synchronisation de l'état final
       setState(next.state);

@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => {
     BattleActionRejectedError,
     BattleEngine,
     BattleSessionUnavailableError,
+    abandonBattleSession: vi.fn(),
     canUserAccessStage: vi.fn(),
     findMany: vi.fn(),
     getSession: vi.fn(),
@@ -52,6 +53,7 @@ vi.mock("@/lib/combat/battle-engine", () => ({
 vi.mock("@/lib/combat/battle-session-store", () => ({
   BattleActionRejectedError: mocks.BattleActionRejectedError,
   BattleSessionUnavailableError: mocks.BattleSessionUnavailableError,
+  abandonBattleSession: mocks.abandonBattleSession,
   processBattleTurn: mocks.processBattleTurn,
   registerBattleSession: mocks.registerBattleSession,
 }));
@@ -68,6 +70,7 @@ vi.mock("@/lib/team/team-validator", () => ({
 
 import { POST as startBattle } from "@/app/api/battle/start/route";
 import { POST as applyBattleAction } from "@/app/api/battle/action/route";
+import { POST as abandonBattle } from "@/app/api/battle/abandon/route";
 
 function request(path: string, body: unknown): Request {
   return new Request(`http://localhost:3000${path}`, {
@@ -288,6 +291,40 @@ describe("erreurs sécurisées des actions de combat", () => {
     expect(body.state).toEqual(
       expect.objectContaining({ turn: 2, phase: "switch_required" }),
     );
+  });
+});
+
+describe("POST /api/battle/abandon", () => {
+  it("libère la session du combat pour le compte authentifié", async () => {
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { battleId: "battle-test" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.abandonBattleSession).toHaveBeenCalledWith(
+      "battle-test",
+      "owner-user",
+    );
+  });
+
+  it("ne libère rien et reste neutre sans session authentifiée", async () => {
+    mocks.getSession.mockResolvedValue(null);
+
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { battleId: "battle-test" }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.abandonBattleSession).not.toHaveBeenCalled();
+  });
+
+  it("rejette un corps de requête invalide", async () => {
+    const response = await abandonBattle(
+      request("/api/battle/abandon", { nope: true }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.abandonBattleSession).not.toHaveBeenCalled();
   });
 });
 

@@ -638,7 +638,11 @@
 
 /* Animations de combat : Sortie de Pokéball, Attaque, Dégâts, et K.O. */
 .battle-combatant__sprite.is-entering-pokeball {
-  animation: pokeballEntrance 320ms ease-out forwards;
+  animation: pokeballEntrance 360ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.battle-combatant__sprite.is-recalling {
+  animation: pokeballRecall 340ms ease-in forwards;
 }
 
 .battle-combatant__sprite.is-attacking-player {
@@ -661,6 +665,7 @@
   animation: faintSlide 500ms ease-in forwards;
 }
 
+/* Zoom net et unique de scale(0.2) à scale(1.0) avec surbrillance (§5). */
 @keyframes pokeballEntrance {
   0% {
     opacity: 0;
@@ -671,6 +676,20 @@
     opacity: 1;
     transform: scale(1);
     filter: brightness(1) drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
+}
+
+/* Rappel du combattant sortant : rétraction nette dans la Pokéball. */
+@keyframes pokeballRecall {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 9px 3px rgb(8 11 16 / 42%));
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.24);
+    filter: brightness(2.4) drop-shadow(0 0 18px #ef4444);
   }
 }
 
@@ -844,7 +863,7 @@
   background: var(--color-strong-surface);
 }
 
-.battle-hp > span { display: block; height: 100%; background: var(--color-success); transition: width 400ms cubic-bezier(0.25, 1, 0.5, 1); }
+.battle-hp > span { display: block; height: 100%; background: var(--color-success); transition: width 600ms ease-out; }
 .battle-hp > span[data-tone="warning"] { background: #e6b84f; }
 .battle-hp > span[data-tone="critical"] { background: var(--color-error-border); }
 .battle-pokemon-status__footer strong { color: #ffd166; }

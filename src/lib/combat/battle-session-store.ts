@@ -64,6 +64,11 @@ battleSessionGlobal.__heigOdysseyBattleSessions = activeSessions;
 // Une session inactive expire après trente minutes.
 const SESSION_TTL_MS = 30 * 60 * 1000;
 
+// Au-delà de ce délai sans action de combat, une session ne verrouille plus
+// l'édition des attaques / de l'équipe / des évolutions : le joueur a quitté
+// l'arène (fermeture d'onglet, navigation) sans que le combat se conclue.
+const BATTLE_LOCK_ACTIVITY_MS = 3 * 60 * 1000;
+
 function cleanupOldSessions() {
   const now = Date.now();
   for (const [id, session] of activeSessions.entries()) {
@@ -73,17 +78,38 @@ function cleanupOldSessions() {
   }
 }
 
-/** Vérifie les sessions vivantes sans prolonger leur durée de validité. */
+/**
+ * Un combat n'immobilise un Pokémon que s'il est réellement en cours : session
+ * présente ET action récente. Une session laissée en plan (onglet fermé) cesse
+ * de bloquer après `BATTLE_LOCK_ACTIVITY_MS`, en complément de l'abandon
+ * explicite envoyé par le client quand il quitte l'arène.
+ */
 export function isPokemonInActiveBattle(
   userId: string,
   pokemonId: string,
 ): boolean {
   cleanupOldSessions();
+  const now = Date.now();
   return [...activeSessions.values()].some(
     (session) =>
       session.userId === userId &&
-      session.playerPokemonIds.includes(pokemonId),
+      session.playerPokemonIds.includes(pokemonId) &&
+      now - session.lastAccessed <= BATTLE_LOCK_ACTIVITY_MS,
   );
+}
+
+/**
+ * Libère une session de combat que le joueur quitte volontairement (bouton
+ * « Quitter », fermeture d'onglet, navigation). Idempotent et silencieux si la
+ * session est absente ou appartient à un autre compte.
+ */
+export function abandonBattleSession(battleId: string, userId: string): boolean {
+  const session = activeSessions.get(battleId);
+  if (!session || session.userId !== userId) {
+    return false;
+  }
+  activeSessions.delete(battleId);
+  return true;
 }
 
 function getLiveBattleSession(battleId: string): ActiveBattleSession | undefined {
@@ -218,12 +244,21 @@ export async function processBattleTurn(
 
   // Après un K.O. adverse, le remplacement appartient à l'IA et ne doit pas
   // être présenté au joueur comme un changement obligatoire de son équipe.
-  if (
+  // Ses évènements complètent la timeline du tour : les écraser ferait
+  // disparaître l'animation de mise K.O. adverse côté client.
+  let switchGuard = 0;
+  while (
+    switchGuard++ < 6 &&
     !engine.getRawBattle().ended &&
     engine.getRawBattle().p2.requestState === "switch"
   ) {
     submitPendingAiAction(engine, aiProfile);
-    turnResult = engine.executeTurn();
+    const followUp = engine.executeTurn();
+    turnResult = {
+      turn: followUp.turn,
+      events: [...turnResult.events, ...followUp.events],
+      state: followUp.state,
+    };
   }
 
   let rewards: BattleRewardResult | undefined;

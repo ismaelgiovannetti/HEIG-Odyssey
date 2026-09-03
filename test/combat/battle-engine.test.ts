@@ -196,6 +196,44 @@ describe("Gen 4 Battle Engine (US-06)", () => {
     expect(endEvent?.side).toBe("p1");
   });
 
+  it("keeps a fainted Pokémon's serialized state parseable by the client (no 'fnt' status leak)", async () => {
+    const { BattleStateSchema } = await import("@/lib/combat/battle-client");
+
+    const glassCannon: TrainerPokemonInput = {
+      speciesId: "pikachu",
+      level: 50,
+      moves: [
+        { id: "thunderbolt", name: "Tonnerre", type: "Electric", category: "special", power: 95, accuracy: 100, pp: 15, maxPp: 15, priority: 0 },
+      ],
+    };
+    const fodder: TrainerPokemonInput = {
+      speciesId: "magikarp",
+      level: 5,
+      moves: [
+        { id: "splash", name: "Trempette", type: "Normal", category: "status", power: 0, accuracy: 100, pp: 40, maxPp: 40, priority: 0 },
+      ],
+    };
+
+    // p1 garde un remplaçant : le combat n'est pas terminé, un switch est requis.
+    const engine = new BattleEngine({
+      p1: { name: "Ash", team: [fodder, glassCannon] },
+      p2: { name: "Rival", team: [glassCannon] },
+    });
+
+    engine.submitAction("p1", { type: "move", moveIndex: 0 });
+    engine.submitAction("p2", { type: "move", moveIndex: 0 });
+    const { state } = engine.executeTurn();
+
+    expect(state.phase).toBe("switch_required");
+    const fainted = state.p1.team.find((p) => p.isFainted);
+    expect(fainted).toBeDefined();
+    // @pkmn/sim marque le K.O. via status "fnt" : il ne doit jamais fuir tel quel.
+    expect(fainted?.status).toBeNull();
+
+    // Sans la normalisation, ce parse échouerait et figerait l'arène côté client.
+    expect(BattleStateSchema.safeParse(state).success).toBe(true);
+  });
+
   it("should handle switching Pokémon during combat", () => {
     const b1Team: TrainerPokemonInput[] = [
       p1Turtwig,
@@ -245,5 +283,103 @@ describe("Gen 4 Battle Engine (US-06)", () => {
 
     const switchEvent = result.events.find((e) => e.type === "switch" && e.side === "p1");
     expect(switchEvent).toBeDefined();
+  });
+
+  it("keeps nicknames bound to the right Pokémon after a switch reorders the team", () => {
+    const withMoves = (
+      speciesId: string,
+      nickname: string,
+      moveId: string,
+    ): TrainerPokemonInput => ({
+      speciesId,
+      nickname,
+      level: 20,
+      moves: [
+        { id: moveId, name: moveId, type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 30, maxPp: 30, priority: 0 },
+      ],
+    });
+
+    const engine = new BattleEngine({
+      // Deux combattants, dont deux Vigoroth homonymes : le rattachement par
+      // index se tromperait après le réordonnancement post-switch.
+      p1: {
+        name: "Joueur",
+        team: [
+          withMoves("vigoroth", "Alpha", "scratch"),
+          withMoves("vigoroth", "Bravo", "pound"),
+          withMoves("bidoof", "Charlie", "tackle"),
+        ],
+      },
+      p2: { name: "IA", team: [withMoves("magikarp", "Cible", "splash")] },
+    });
+
+    const before = engine.getState().p1.team;
+    expect(before[0]).toMatchObject({ nickname: "Alpha", isActive: true });
+    expect(before.find((p) => p.nickname === "Bravo")?.speciesId).toBe("vigoroth");
+
+    engine.submitAction("p1", { type: "switch", targetPokemonIndex: 1 }); // -> Bravo
+    engine.submitAction("p2", { type: "move", moveIndex: 0 });
+    engine.executeTurn();
+
+    const after = engine.getState().p1.team;
+    const active = after.find((p) => p.isActive)!;
+    expect(active.nickname).toBe("Bravo"); // pas "Alpha"
+    expect(after.find((p) => p.nickname === "Alpha")?.isActive).toBe(false);
+    expect(after.find((p) => p.nickname === "Charlie")?.speciesId).toBe("bidoof");
+
+    // Les identifiants restent stables malgré le réordonnancement interne.
+    const bravoId = before.find((p) => p.nickname === "Bravo")!.id;
+    expect(after.find((p) => p.nickname === "Bravo")!.id).toBe(bravoId);
+  });
+
+  it("does not deadlock when a move is turn-locked (Uproar / Bide / Encore ...)", async () => {
+    const { selectAIAction } = await import("@/lib/combat/ai");
+
+    const lockUser: TrainerPokemonInput = {
+      speciesId: "vigoroth",
+      level: 24,
+      moves: [
+        { id: "encore", name: "Encore", type: "Normal", category: "status", power: 0, accuracy: 100, pp: 8, maxPp: 8, priority: 0 },
+        { id: "scratch", name: "Griffe", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 56, maxPp: 56, priority: 0 },
+        { id: "uproar", name: "Brouhaha", type: "Normal", category: "special", power: 50, accuracy: 100, pp: 16, maxPp: 16, priority: 0 },
+      ],
+    };
+    const opponent: TrainerPokemonInput = {
+      speciesId: "breloom",
+      level: 20,
+      moves: [
+        { id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 35, accuracy: 95, pp: 56, maxPp: 56, priority: 0 },
+      ],
+    };
+
+    const engine = new BattleEngine({
+      p1: { name: "Joueur", team: [opponent] },
+      p2: { name: "Fouad", team: [lockUser] },
+    });
+
+    // p2 lance Brouhaha : le simulateur le verrouille sur ce coup pour 2-3 tours.
+    expect(engine.submitAction("p1", { type: "move", moveIndex: 0 })).toBe(true);
+    expect(engine.submitAction("p2", { type: "move", moveIndex: 2 })).toBe(true);
+    engine.executeTurn();
+
+    // Seul le coup verrouillé est proposé, les autres sont grisés pour l'UI.
+    const p2Moves = engine.getValidActions("p2").filter((a) => a.type === "move");
+    expect(p2Moves).toEqual([{ type: "move", moveIndex: 2 }]);
+    const active = engine.getState().p2.team.find((p) => p.isActive);
+    expect(active?.moves.filter((m) => !m.disabled).map((m) => m.id)).toEqual(["uproar"]);
+
+    // Le tour suivant : l'IA choisit (n'importe quoi) et le moteur ne rejette pas,
+    // là où auparavant submitAction renvoyait false et bloquait tout le combat.
+    let advanced = false;
+    for (let i = 0; i < 4 && !engine.getRawBattle().ended; i++) {
+      const before = engine.getState().turn;
+      expect(engine.submitAction("p1", { type: "move", moveIndex: 0 })).toBe(true);
+      expect(engine.submitAction("p2", selectAIAction("heuristic", engine, "p2"))).toBe(true);
+      const { state } = engine.executeTurn();
+      if (state.turn > before || state.phase === "finished" || state.p2.team.some((p) => p.isFainted)) {
+        advanced = true;
+      }
+    }
+    expect(advanced).toBe(true);
   });
 });

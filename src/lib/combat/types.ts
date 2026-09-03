@@ -79,6 +79,9 @@ export type BattleEventType =
   | "weather"
   | "effectiveness"
   | "critical_hit"
+  | "hit_count"
+  | "cant"
+  | "fail"
   | "miss"
   | "message"
   | "battle_end";
@@ -99,6 +102,12 @@ export interface BattleEvent {
   hpPercent?: number;
   status?: string;
   multiplier?: number; // for effectiveness (e.g. 2 for super-effective, 0.5, 0 for immune)
+  /** Nombre de coups d'une attaque multi-frappes (Balle Graine, Furie...). */
+  hitCount?: number;
+  /** Dégâts résiduels de fin de tour (météo, poison, brûlure, Vampigraine...). */
+  residual?: boolean;
+  /** Effet source d'un soin/dégât résiduel (`psn`, `Sandstorm`, `Leech Seed`...). */
+  fromEffect?: string;
   message: string;
 }
 

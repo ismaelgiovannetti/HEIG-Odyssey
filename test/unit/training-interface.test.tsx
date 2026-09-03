@@ -269,9 +269,13 @@ describe("interface d'entraînement et de combat", () => {
     expect(screen.getByText("780 ₽")).toBeDefined();
     expect(screen.getByText(/Bulbizarre : niv. 12 → 13/i)).toBeDefined();
     expect(screen.getByText(/Votre stratégie a triomphé/i)).toBeDefined();
-    const audio = document.querySelector("audio");
-    expect(audio?.src).toContain("victory-theme.mp3");
-    expect(audio?.loop).toBe(false);
+    // La bascule de piste est pilotée par un effet du SoundtrackPlayer qui
+    // réagit au passage en phase "victory" : on l'attend explicitement.
+    await waitFor(() => {
+      const audio = document.querySelector("audio");
+      expect(audio?.src).toContain("victory-theme.mp3");
+      expect(audio?.loop).toBe(false);
+    });
     expect(
       screen.queryByText(/Valeurs confirmées par le serveur/i),
     ).toBeNull();

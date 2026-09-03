@@ -25,6 +25,7 @@ export type BattleSfxType =
   | "status_slp"
   | "status_psn"
   | "status_brn"
+  | "status_frz"
   | "faint"
   | "switch"
   | "miss";
@@ -205,6 +206,26 @@ export function playBattleSfx(type: BattleSfxType) {
         gain.connect(masterGain);
         osc.start(t + delay);
         osc.stop(t + delay + 0.07);
+      });
+      break;
+    }
+
+    case "status_frz": {
+      // Gel : cristallisation glaciale scintillante et montante
+      [0, 0.08, 0.16].forEach((delay, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880 + idx * 320, t + delay);
+        osc.frequency.exponentialRampToValueAtTime(1720 + idx * 320, t + delay + 0.18);
+
+        gain.gain.setValueAtTime(0.35, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + delay + 0.2);
+
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.2);
       });
       break;
     }
