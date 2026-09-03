@@ -5,7 +5,7 @@
       "id": "bachelor-1",
       "name": "Les Fondations du Type Normal",
       "degree": "BACHELOR",
-      "description": "Posez les bases de votre parcours avec les sciences fondamentales et les premiers outils de l'ingénierie.",
+      "description": "Apprenez les bases tactiques face au type Normal.",
       "stages": [
         {
           "id": "bachelor-1-stage-1",
@@ -79,7 +79,7 @@
       "id": "bachelor-2",
       "name": "La Serre des Sciences Vivantes",
       "degree": "BACHELOR",
-      "description": "Explorez un campus végétal où modèles scientifiques, cycles naturels et stratégies de croissance s'entremêlent.",
+      "description": "Maîtrisez les statuts, les soins et le type Plante.",
       "stages": [
         {
           "id": "bachelor-2-stage-1",
@@ -164,7 +164,7 @@
       "id": "bachelor-3",
       "name": "Le Réseau Haute Tension",
       "degree": "BACHELOR",
-      "description": "Traversez une infrastructure électrifiée consacrée aux circuits, aux signaux et aux communications rapides.",
+      "description": "Surmontez vitesse, attaques spéciales et paralysie.",
       "stages": [
         {
           "id": "bachelor-3-stage-1",
@@ -260,7 +260,7 @@
       "id": "bachelor-4",
       "name": "La Citadelle des Alliages",
       "degree": "BACHELOR",
-      "description": "Concevez des systèmes robustes au milieu des forges, des automates et des défenses métalliques.",
+      "description": "Brisez défenses, immunités et résistances.",
       "stages": [
         {
           "id": "bachelor-4-stage-1",
@@ -367,7 +367,7 @@
       "id": "bachelor-5",
       "name": "L'Institut des Esprits Connectés",
       "degree": "BACHELOR",
-      "description": "Achevez le Bachelor dans un laboratoire où intelligence artificielle, perception et pouvoirs psychiques convergent.",
+      "description": "Dominez le type Psy pour décrocher votre Bachelor.",
       "stages": [
         {
           "id": "bachelor-5-stage-1",
@@ -485,7 +485,7 @@
       "id": "master-1",
       "name": "Le Campus des Ombres Toxiques",
       "degree": "MASTER",
-      "description": "Entrez en Master par la cybersécurité, la résilience et les tactiques Poison/Ténèbres qui exploitent la moindre faille.",
+      "description": "Déjouez les tactiques Poison et Ténèbres.",
       "stages": [
         {
           "id": "master-1-stage-1",
@@ -614,7 +614,7 @@
       "id": "master-2",
       "name": "Le Sommet Cryo-Draconique",
       "degree": "MASTER",
-      "description": "Maîtrisez les architectures avancées au sommet d'un massif où puissance draconique et froid extrême éprouvent chaque système.",
+      "description": "Affrontez la puissance des Dragons et de la Glace.",
       "stages": [
         {
           "id": "master-2-stage-1",
@@ -754,7 +754,7 @@
       "id": "doctorat",
       "name": "La Convergence des Mondes",
       "degree": "DOCTORAT",
-      "description": "Affrontez six soutenances uniques où recherche, légendes et expertise académique décident du titre suprême.",
+      "description": "Affrontez les créateurs de HEIG Odyssey.",
       "stages": [
         {
           "id": "doctorat-stage-1",
