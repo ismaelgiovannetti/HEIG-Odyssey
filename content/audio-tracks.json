@@ -154,6 +154,62 @@
       "src": "/audio/tracks/defeat-theme.mp3",
       "loop": false,
       "defaultVolume": 0.8
+    },
+    {
+      "id": "route-1",
+      "title": "Thème d'accueil (Route 30)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/route-1.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "pokemon-center",
+      "title": "Centre Pokémon (Gacha)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/pokemon-center.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "pc-box",
+      "title": "Boîte PC (Gestion d'équipe)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/pc-box.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "town",
+      "title": "Ville (Entraînement)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/town.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-bachelor",
+      "title": "Campagne Bachelor (Route 29)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-bachelor.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-master",
+      "title": "Campagne Master (Doublonville)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-master.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
+    },
+    {
+      "id": "campaign-doctorat",
+      "title": "Campagne Doctorat (Plateau Indigo)",
+      "gameOrigin": "Pokémon HeartGold & SoulSilver",
+      "src": "/audio/tracks/campaign-doctorat.mp3",
+      "loop": true,
+      "defaultVolume": 0.6
     }
   ]
 }

@@ -1,73 +1,109 @@
 export const AUDIO_STORAGE_KEY_MUTED = "heig_odyssey_audio_muted";
 export const AUDIO_STORAGE_KEY_VOLUME = "heig_odyssey_audio_volume";
-export const BATTLE_AUDIO_STORAGE_KEY_MUTED = "heig_odyssey_battle_audio_muted";
-export const BATTLE_AUDIO_STORAGE_KEY_VOLUME = "heig_odyssey_battle_audio_volume";
-
-export type AudioPreferenceScope = "app" | "battle";
 
 export interface AudioPreferences {
   isMuted: boolean;
   volume: number; // 0.0 à 1.0
 }
 
-const DEFAULT_AUDIO_PREFERENCES: AudioPreferences = {
+export const DEFAULT_AUDIO_PREFERENCES: AudioPreferences = {
   isMuted: false,
   volume: 0.7,
 };
 
-/**
- * Récupère les préférences audio depuis le localStorage (T-US14-02).
- */
-function storageKeys(scope: AudioPreferenceScope) {
-  return scope === "battle"
-    ? { muted: BATTLE_AUDIO_STORAGE_KEY_MUTED, volume: BATTLE_AUDIO_STORAGE_KEY_VOLUME }
-    : { muted: AUDIO_STORAGE_KEY_MUTED, volume: AUDIO_STORAGE_KEY_VOLUME };
+// Un seul réglage audio pour tout le jeu : musique de combat, bruitages de
+// combat, sons du gacha et cris des Pokémon obéissent tous à ces préférences.
+const AUDIO_PREFERENCES_EVENT = "heig-odyssey:audio-preferences";
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
-export function getSavedAudioPreferences(scope: AudioPreferenceScope = "app"): AudioPreferences {
+/** Préférences audio globales, lues depuis le localStorage (T-US14-02). */
+export function getSavedAudioPreferences(): AudioPreferences {
   if (typeof window === "undefined") {
-    return DEFAULT_AUDIO_PREFERENCES;
+    return { ...DEFAULT_AUDIO_PREFERENCES };
   }
 
   try {
-    const keys = storageKeys(scope);
-    const rawMuted = localStorage.getItem(keys.muted);
-    const rawVolume = localStorage.getItem(keys.volume);
+    const rawMuted = localStorage.getItem(AUDIO_STORAGE_KEY_MUTED);
+    const rawVolume = localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME);
 
-    const isMuted = rawMuted !== null ? rawMuted === "true" : DEFAULT_AUDIO_PREFERENCES.isMuted;
-    const parsedVolume = rawVolume !== null ? parseFloat(rawVolume) : DEFAULT_AUDIO_PREFERENCES.volume;
-    const volume = Number.isFinite(parsedVolume) ? Math.max(0, Math.min(1, parsedVolume)) : DEFAULT_AUDIO_PREFERENCES.volume;
+    const isMuted =
+      rawMuted !== null ? rawMuted === "true" : DEFAULT_AUDIO_PREFERENCES.isMuted;
+    const parsedVolume =
+      rawVolume !== null ? parseFloat(rawVolume) : DEFAULT_AUDIO_PREFERENCES.volume;
+    const volume = Number.isFinite(parsedVolume)
+      ? clamp01(parsedVolume)
+      : DEFAULT_AUDIO_PREFERENCES.volume;
 
     return { isMuted, volume };
   } catch {
-    return DEFAULT_AUDIO_PREFERENCES;
+    return { ...DEFAULT_AUDIO_PREFERENCES };
   }
 }
 
-/**
- * Sauvegarde les préférences audio dans le localStorage (T-US14-02).
- */
+/** Persiste les préférences audio globales et prévient les abonnés (T-US14-02). */
 export function saveAudioPreferences(
   prefs: Partial<AudioPreferences>,
-  scope: AudioPreferenceScope = "app",
 ): AudioPreferences {
   if (typeof window === "undefined") {
     return { ...DEFAULT_AUDIO_PREFERENCES, ...prefs };
   }
 
+  const current = getSavedAudioPreferences();
+  const updated: AudioPreferences = {
+    isMuted:
+      prefs.isMuted !== undefined ? Boolean(prefs.isMuted) : current.isMuted,
+    volume:
+      prefs.volume !== undefined ? clamp01(prefs.volume) : current.volume,
+  };
+
   try {
-    const current = getSavedAudioPreferences(scope);
-    const keys = storageKeys(scope);
-    const updated: AudioPreferences = {
-      isMuted: prefs.isMuted !== undefined ? Boolean(prefs.isMuted) : current.isMuted,
-      volume: prefs.volume !== undefined ? Math.max(0, Math.min(1, prefs.volume)) : current.volume,
-    };
-
-    localStorage.setItem(keys.muted, String(updated.isMuted));
-    localStorage.setItem(keys.volume, String(updated.volume));
-
-    return updated;
+    localStorage.setItem(AUDIO_STORAGE_KEY_MUTED, String(updated.isMuted));
+    localStorage.setItem(AUDIO_STORAGE_KEY_VOLUME, String(updated.volume));
+    window.dispatchEvent(
+      new CustomEvent<AudioPreferences>(AUDIO_PREFERENCES_EVENT, {
+        detail: updated,
+      }),
+    );
   } catch {
-    return { ...DEFAULT_AUDIO_PREFERENCES, ...prefs };
+    // Stockage indisponible : on renvoie tout de même la valeur calculée.
   }
+
+  return updated;
+}
+
+/**
+ * S'abonne aux changements de préférences audio, dans le même onglet
+ * (`saveAudioPreferences`) comme dans les autres (`storage`). Renvoie une
+ * fonction de désabonnement.
+ */
+export function subscribeAudioPreferences(
+  listener: (prefs: AudioPreferences) => void,
+): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleCustom = (event: Event) => {
+    const detail = (event as CustomEvent<AudioPreferences>).detail;
+    listener(detail ?? getSavedAudioPreferences());
+  };
+  const handleStorage = (event: StorageEvent) => {
+    if (
+      event.key === AUDIO_STORAGE_KEY_MUTED ||
+      event.key === AUDIO_STORAGE_KEY_VOLUME
+    ) {
+      listener(getSavedAudioPreferences());
+    }
+  };
+
+  window.addEventListener(AUDIO_PREFERENCES_EVENT, handleCustom);
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener(AUDIO_PREFERENCES_EVENT, handleCustom);
+    window.removeEventListener("storage", handleStorage);
+  };
 }

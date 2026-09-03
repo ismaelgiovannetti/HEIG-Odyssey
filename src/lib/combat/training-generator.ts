@@ -55,10 +55,11 @@ export function generateTrainingOpponent(params: {
     aiProfile: difficultyToAIProfile(difficulty),
     sprite: "trainer-champion-front",
     introCatchline: "Début de la simulation d'entraînement.",
-    // Les deux conclusions décrivent le résultat du point de vue de l'IA,
-    // conformément au contrat commun des dresseurs de campagne.
-    victoryCatchline: "Simulation terminée. Réessayez pour parfaire votre stratégie.",
-    defeatCatchline: "Simulation terminée. Bravo pour votre victoire !",
+    // Les conclusions suivent le point de vue du joueur, comme les libellés :
+    // `victoryCatchline` s'affiche quand le joueur gagne, `defeatCatchline` quand
+    // il perd. Contrat commun avec les dresseurs de campagne.
+    victoryCatchline: "Simulation terminée. Bravo pour votre victoire !",
+    defeatCatchline: "Simulation terminée. Réessayez pour parfaire votre stratégie.",
     musicTrack: "battle-theme-1",
     team: generateTrainingOpponentTeam(averageLevel, teamSize),
   };

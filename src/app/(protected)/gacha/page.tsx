@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
 import { ApplicationShell } from "@/components/application/application-shell";
+import { MenuSoundtrack } from "@/components/audio/menu-soundtrack";
 import { GachaShop } from "@/components/gacha/gacha-shop";
+import { MENU_TRACKS } from "@/lib/audio/soundtrack-tracks";
 import type { GachaPreviewSpecies } from "@/components/gacha/gacha-preview-dialog";
 import { loadSpecies } from "@/lib/content/loader";
 import {
@@ -39,6 +41,7 @@ export default async function GachaPage() {
       playerName={player.name}
       pokedollars={player.pokedollars}
     >
+      <MenuSoundtrack trackId={MENU_TRACKS.gacha} />
       <GachaShop
         banners={banners}
         initialBalance={player.pokedollars}

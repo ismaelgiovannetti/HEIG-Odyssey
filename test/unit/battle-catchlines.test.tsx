@@ -17,39 +17,39 @@ describe("BattleCatchlines Component (T-US08-02)", () => {
     );
 
     expect(screen.getByText("Fouad")).toBeDefined();
-    expect(screen.getByText("(Professeur Réseau)")).toBeDefined();
+    expect(screen.getByText(/Professeur Réseau/)).toBeDefined();
     expect(screen.getByText(/Prépare-toi à une tempête de paquets !/)).toBeDefined();
     expect(screen.getByText("Début du combat")).toBeDefined();
   });
 
-  it("affiche la catchline de défaite du dresseur lorsque le joueur gagne (phase victory)", () => {
+  it("affiche la victoryCatchline quand le joueur gagne (phase victory)", () => {
     render(
       <BattleCatchlines
         trainerName="Fouad"
         introCatchline="Intro"
-        victoryCatchline="J'ai gagné !"
-        defeatCatchline="Mes routeurs ont surchauffé..."
+        victoryCatchline="Tu as franchi ma défense, félicitations !"
+        defeatCatchline="Reviens réviser le modèle OSI !"
         currentPhase="victory"
       />
     );
 
-    expect(screen.getByText(/Mes routeurs ont surchauffé.../)).toBeDefined();
+    expect(screen.getByText(/Tu as franchi ma défense, félicitations !/)).toBeDefined();
     expect(screen.getByText("Victoire !")).toBeDefined();
   });
 
-  it("affiche la catchline de victoire du dresseur lorsque le joueur perd (phase defeat)", () => {
+  it("affiche la defeatCatchline quand le joueur perd (phase defeat)", () => {
     render(
       <BattleCatchlines
         trainerName="Fouad"
         introCatchline="Intro"
-        victoryCatchline="Reviens réviser le modèle OSI !"
-        defeatCatchline="Défaite"
+        victoryCatchline="Tu as franchi ma défense, félicitations !"
+        defeatCatchline="Reviens réviser le modèle OSI !"
         currentPhase="defeat"
       />
     );
 
     expect(screen.getByText(/Reviens réviser le modèle OSI !/)).toBeDefined();
-    expect(screen.getByText("Défaite...")).toBeDefined();
+    expect(screen.getByText("Défaite…")).toBeDefined();
   });
 
   it("ne s'affiche pas pendant les tours de combat normaux (phase turn)", () => {

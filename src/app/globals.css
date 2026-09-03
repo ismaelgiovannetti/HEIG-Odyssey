@@ -3267,6 +3267,8 @@ body {
   .quest-menu { --quest-panel-right: -105px; }
   .quest-menu__trigger { min-width: 44px; padding-inline: 4px; }
   .application-player__name { display: none; }
+  /* On garde le bouton muet, on retire le curseur faute de place. */
+  .audio-controls__slider { display: none; }
 }
 
 @media (max-width: 980px) {
@@ -3485,6 +3487,78 @@ body {
   background: rgb(255 255 255 / 10%);
   color: var(--color-nav-text);
   transform: translateY(-1px);
+}
+
+/* Barre de son unique du jeu, intégrée à la navbar. */
+.application-player__audio,
+.audio-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-controls__toggle {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 32%);
+  background: rgb(8 11 16 / 30%);
+  color: var(--color-nav-muted);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease,
+    color 120ms ease;
+}
+
+.audio-controls__toggle:hover {
+  border-color: var(--color-nav-text);
+  background: rgb(255 255 255 / 10%);
+  color: var(--color-nav-text);
+}
+
+.audio-controls__toggle:focus-visible {
+  outline: 2px solid var(--color-nav-text);
+  outline-offset: 2px;
+}
+
+.audio-controls__toggle[aria-pressed="true"] {
+  border-color: #ff8a80;
+  color: #ff8a80;
+}
+
+.audio-controls__slider {
+  width: 82px;
+  height: 6px;
+  flex: 0 0 auto;
+  border: 2px solid rgb(255 255 255 / 32%);
+  background: rgb(8 11 16 / 40%);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.audio-controls__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgb(8 11 16 / 60%);
+  background: var(--color-nav-text);
+  cursor: pointer;
+}
+
+.audio-controls__slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgb(8 11 16 / 60%);
+  border-radius: 0;
+  background: var(--color-nav-text);
+  cursor: pointer;
+}
+
+.audio-controls__slider:focus-visible {
+  outline: 2px solid var(--color-nav-text);
+  outline-offset: 2px;
 }
 
 /* Le panneau s'ouvre vers la gauche du compteur afin de ne jamais dépasser

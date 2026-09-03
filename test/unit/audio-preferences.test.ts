@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   getSavedAudioPreferences,
   saveAudioPreferences,
+  subscribeAudioPreferences,
   AUDIO_STORAGE_KEY_MUTED,
   AUDIO_STORAGE_KEY_VOLUME,
-  BATTLE_AUDIO_STORAGE_KEY_MUTED,
-  BATTLE_AUDIO_STORAGE_KEY_VOLUME,
 } from "@/lib/audio/audio-preferences";
 
 describe("Audio Preferences & Persistence (T-US14-02, T-US08-03)", () => {
@@ -32,32 +31,39 @@ describe("Audio Preferences & Persistence (T-US14-02, T-US08-03)", () => {
   it("sauvegarde et borne le volume entre 0.0 et 1.0", () => {
     saveAudioPreferences({ volume: 0.45 });
     expect(localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME)).toBe("0.45");
+    expect(getSavedAudioPreferences().volume).toBe(0.45);
 
-    let reloaded = getSavedAudioPreferences();
-    expect(reloaded.volume).toBe(0.45);
+    saveAudioPreferences({ volume: 1.5 });
+    expect(getSavedAudioPreferences().volume).toBe(1.0);
 
-    saveAudioPreferences({ volume: 1.5 }); // Doit être borné à 1.0
-    reloaded = getSavedAudioPreferences();
-    expect(reloaded.volume).toBe(1.0);
-
-    saveAudioPreferences({ volume: -0.2 }); // Doit être borné à 0.0
-    reloaded = getSavedAudioPreferences();
-    expect(reloaded.volume).toBe(0.0);
+    saveAudioPreferences({ volume: -0.2 });
+    expect(getSavedAudioPreferences().volume).toBe(0.0);
   });
 
-  it("isole les préférences des combats de celles du reste de l'application", () => {
-    saveAudioPreferences({ isMuted: true, volume: 0.25 }, "battle");
+  it("pilote tout le jeu avec un seul réglage global (plus de portée « battle »)", () => {
+    saveAudioPreferences({ isMuted: true, volume: 0.25 });
 
-    expect(localStorage.getItem(BATTLE_AUDIO_STORAGE_KEY_MUTED)).toBe("true");
-    expect(localStorage.getItem(BATTLE_AUDIO_STORAGE_KEY_VOLUME)).toBe("0.25");
-    expect(localStorage.getItem(AUDIO_STORAGE_KEY_MUTED)).toBeNull();
-    expect(localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME)).toBeNull();
-    expect(getSavedAudioPreferences()).toEqual({ isMuted: false, volume: 0.7 });
-    expect(getSavedAudioPreferences("battle")).toEqual({ isMuted: true, volume: 0.25 });
+    expect(localStorage.getItem(AUDIO_STORAGE_KEY_MUTED)).toBe("true");
+    expect(localStorage.getItem(AUDIO_STORAGE_KEY_VOLUME)).toBe("0.25");
+    // Aucune clé de stockage dédiée aux combats ne subsiste.
+    expect(
+      Object.keys(localStorage).some((key) => key.includes("battle")),
+    ).toBe(false);
+    expect(getSavedAudioPreferences()).toEqual({ isMuted: true, volume: 0.25 });
+  });
 
-    saveAudioPreferences({ volume: 0.9 });
+  it("notifie les abonnés à chaque changement, puis s'arrête au désabonnement", () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribeAudioPreferences(listener);
 
-    expect(getSavedAudioPreferences()).toEqual({ isMuted: false, volume: 0.9 });
-    expect(getSavedAudioPreferences("battle")).toEqual({ isMuted: true, volume: 0.25 });
+    saveAudioPreferences({ volume: 0.5 });
+    expect(listener).toHaveBeenCalledWith({ isMuted: false, volume: 0.5 });
+
+    saveAudioPreferences({ isMuted: true });
+    expect(listener).toHaveBeenLastCalledWith({ isMuted: true, volume: 0.5 });
+
+    unsubscribe();
+    saveAudioPreferences({ volume: 0.1 });
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 });
