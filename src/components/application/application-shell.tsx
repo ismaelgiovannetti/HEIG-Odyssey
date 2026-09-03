@@ -44,13 +44,6 @@ const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   { section: "gacha", href: "/gacha", label: "Gacha", icon: Dices },
 ];
 
-const LEGAL_LINK_LABELS = [
-  "Politique de confidentialité",
-  "Conditions d'utilisation",
-  "Mentions légales",
-  "Préférences cookies",
-] as const;
-
 interface ApplicationShellProps {
   activeSection: ApplicationSection;
   playerName: string;
@@ -161,19 +154,6 @@ export function ApplicationShell({
             © 2026 HEIG Odyssey - Sprites Pokémon via PokeAPI © Nintendo /
             Creatures Inc. / GAME FREAK inc.
           </span>
-
-          <ul
-            className="application-footer__links"
-            aria-label="Informations légales à venir"
-          >
-            {LEGAL_LINK_LABELS.map((label) => (
-              <li key={label}>
-                {/* Ces emplacements deviennent de vrais liens lorsque les
-                    pages juridiques correspondantes seront disponibles. */}
-                <span>{label}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </footer>
     </div>
