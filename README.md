@@ -38,7 +38,7 @@ cp .env.example .env
 npm ci
 ```
 
-### 3. Démarrer les services (PostgreSQL & Redis)
+### 3. Démarrer les dépendances (PostgreSQL & Redis)
 ```bash
 docker compose up -d postgres redis
 ```
@@ -49,11 +49,18 @@ npm run db:deploy
 npm run db:seed
 ```
 
-### 5. Lancer le serveur de développement
+### 5. Lancer le worker de quêtes et le serveur de développement
 ```bash
+# Le worker traite les événements de combat et actualise les quêtes.
+docker compose up -d worker
+
 npm run dev
 ```
 L'application est accessible sur [http://localhost:3000](http://localhost:3000). Le contrôle de santé est disponible sur `GET /api/health`.
+
+Le worker doit rester actif pendant le développement. Son état et ses journaux
+peuvent être consultés avec `docker compose ps worker` et
+`docker compose logs -f worker`.
 
 ### 6. Commandes de contrôle qualité (US-19)
 ```bash

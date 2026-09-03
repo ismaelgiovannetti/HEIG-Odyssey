@@ -60,6 +60,34 @@ export class QuestRewardAlreadyClaimedError extends Error {
 }
 
 /**
+ * Indique si le worker doit encore appliquer l'événement d'un combat du
+ * joueur. La recherche inclut l'identité du propriétaire afin qu'un identifiant
+ * appartenant a un autre compte soit indistinguable d'un identifiant inconnu.
+ */
+export async function isQuestProgressPendingForBattle(
+  userId: string,
+  battleId: string,
+  client: any = prisma,
+): Promise<boolean> {
+  const ownBattle = await client.battleRecord.findFirst({
+    where: {
+      idempotencyKey: battleId,
+      userId,
+    },
+    select: { id: true },
+  });
+
+  if (!ownBattle) return false;
+
+  const receipt = await client.processedDomainEvent.findUnique({
+    where: { aggregateId: battleId },
+    select: { id: true },
+  });
+
+  return receipt === null;
+}
+
+/**
  * Récupère l'état complet des quêtes actives et de la progression pour un joueur (T-US13-03).
  */
 export async function getUserQuests(
@@ -152,12 +180,13 @@ export function calculateQuestIncrement(
  */
 export async function handleBattleCompletedForQuests(
   payload: BattleCompletedPayload | TrainingCompletedPayload,
-  client: any = prisma
+  client: any = prisma,
+  occurredAt: Date = new Date(),
 ): Promise<number> {
   const userId = payload.userId;
   if (!userId) return 0;
 
-  const activeRotations = await getOrGenerateActiveRotations(new Date(), client);
+  const activeRotations = await getOrGenerateActiveRotations(occurredAt, client);
   let updatedCount = 0;
 
   for (const rotation of activeRotations.allRotations) {
@@ -231,9 +260,14 @@ export async function handleBattleCompletedEventForQuests(
         turnsCount: true,
         xpGained: true,
         moneyGained: true,
+        completedAt: true,
       },
     });
+    const completedAt = battle?.completedAt instanceof Date
+      ? battle.completedAt
+      : null;
     const eventMatchesRecord =
+      completedAt !== null &&
       battle?.userId === payload.userId &&
       battle.battleType === payload.battleType &&
       battle.opponentId === payload.opponentId &&
@@ -247,7 +281,10 @@ export async function handleBattleCompletedEventForQuests(
       throw new PermanentDomainEventError("QUEST_EVENT_BATTLE_MISMATCH");
     }
 
-    return handleBattleCompletedForQuests(payload, tx);
+    // La date persistée du combat est la source de vérité. Lors d'un
+    // rattrapage, un ancien événement progresse ainsi son ancienne rotation au
+    // lieu de créditer par erreur les missions actives aujourd'hui.
+    return handleBattleCompletedForQuests(payload, tx, completedAt);
   });
 }
 

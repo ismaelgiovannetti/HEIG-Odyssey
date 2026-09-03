@@ -87,15 +87,19 @@ export async function publishPendingOutboxEvents(options: {
   batchSize?: number;
   maxRetries?: number;
   client?: Redis;
+  continuousRecovery?: boolean;
 } = {}): Promise<PublishPendingResult> {
   const batchSize = options.batchSize ?? 50;
   const maxRetries = options.maxRetries ?? 5;
   const redis = options.client ?? getRedisClient();
+  const continuousRecovery = options.continuousRecovery === true;
 
   const pendingEvents = await prisma.outboxEvent.findMany({
     where: {
-      status: OutboxStatus.PENDING,
-      retryCount: { lt: maxRetries },
+      status: continuousRecovery
+        ? { in: [OutboxStatus.PENDING, OutboxStatus.FAILED] }
+        : OutboxStatus.PENDING,
+      ...(continuousRecovery ? {} : { retryCount: { lt: maxRetries } }),
     },
     take: batchSize,
     orderBy: { createdAt: "asc" },
@@ -137,7 +141,8 @@ export async function publishPendingOutboxEvents(options: {
       const errorMessage = String(sanitizeLogData(
         error instanceof Error ? error.message : String(error),
       ));
-      const isLastRetry = outboxItem.retryCount + 1 >= maxRetries;
+      const isLastRetry =
+        !continuousRecovery && outboxItem.retryCount + 1 >= maxRetries;
 
       logger.error("Échec de publication d'un événement Outbox", {
         eventId: outboxItem.eventId,

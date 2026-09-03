@@ -2745,6 +2745,7 @@ body {
 /* Le compteur compact ouvre les missions au survol. Une zone invisible
    comble l'espace avec le panneau afin que le pointeur puisse l'atteindre. */
 .quest-menu {
+  --quest-panel-right: -175px;
   position: relative;
   display: flex;
   align-items: center;
@@ -2754,7 +2755,7 @@ body {
   position: absolute;
   z-index: 49;
   top: 100%;
-  right: 0;
+  right: var(--quest-panel-right);
   width: min(690px, calc(100vw - 32px));
   height: 18px;
   content: "";
@@ -2816,11 +2817,11 @@ body {
 .quest-panel {
   position: absolute;
   top: calc(100% + 17px);
-  right: -175px;
+  right: var(--quest-panel-right);
   z-index: 50;
   width: min(690px, calc(100vw - 56px));
   overflow: visible;
-  border: 2px solid #7A3D38;
+  border: 1px solid var(--color-nav-text);
   outline: 3px solid #080B10;
   outline-offset: 0;
   background: var(--color-surface);
@@ -2871,8 +2872,20 @@ body {
   color: var(--color-quest-header-text);
 }
 
+.quest-group__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+}
+
+.quest-group__identity > div {
+  min-width: 0;
+}
+
 .quest-group__icon {
   display: grid;
+  flex: 0 0 32px;
   width: 32px;
   height: 32px;
   place-items: center;
@@ -2895,6 +2908,7 @@ body {
 }
 
 .quest-group__summary {
+  justify-self: end;
   color: var(--color-quest-header-text);
   font-family: "Press Start 2P", "Courier New", monospace;
   font-size: 9px;
@@ -3013,20 +3027,34 @@ body {
 .quest-card__rewards {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  align-items: center;
+  gap: 6px 14px;
 }
 
-.quest-card__rewards span {
+.quest-card__reward {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--color-text-muted);
+  gap: 6px;
   font-size: 9px;
   font-weight: 800;
 }
 
-.quest-card__rewards span:first-child { color: #d59a35; }
-.quest-card__rewards span:last-child { color: var(--color-quest-xp); }
+.quest-card__reward strong {
+  color: #fff;
+  white-space: nowrap;
+}
+
+.quest-card__reward--money { color: #e5bd4f; }
+.quest-card__reward--xp { color: #63e6a2; }
+
+.quest-card__currency-mark {
+  color: #e5bd4f;
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.quest-card__reward--xp svg { flex: 0 0 auto; }
 
 .quest-card__claim,
 .quest-panel__error button {
@@ -3236,8 +3264,8 @@ body {
 @media (max-width: 1260px) {
   .application-brand { width: 165px; }
   .application-navigation a { padding-inline: 7px; font-size: 10px; }
+  .quest-menu { --quest-panel-right: -105px; }
   .quest-menu__trigger { min-width: 44px; padding-inline: 4px; }
-  .quest-panel { right: -105px; }
   .application-player__name { display: none; }
 }
 
@@ -3245,6 +3273,7 @@ body {
   .application-page { padding-inline: 20px; }
 
   .application-brand { width: 145px; }
+  .quest-menu { --quest-panel-right: 0; }
 
   .application-navigation {
     grid-column: 1 / -1;
@@ -3462,7 +3491,7 @@ body {
    du viewport lorsque les contrôles du joueur sont proches du bord droit. */
 .quest-panel {
   top: calc(100% + 18px);
-  right: 0;
+  right: var(--quest-panel-right);
   width: min(690px, calc(100vw - 32px));
 }
 

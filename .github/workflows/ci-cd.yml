@@ -80,6 +80,8 @@ jobs:
           test -f traefik.dynamic.yml
           test -f landing-page/Dockerfile
           test -f landing-page/index.html
+          test -f src/worker/index.ts
+          test -f scripts/worker-healthcheck.mjs
 
       - name: Detect Next.js application
         id: app
@@ -113,7 +115,7 @@ jobs:
         run: |
           node - <<'NODE'
           const scripts = require('./package.json').scripts ?? {};
-          const required = ['lint', 'typecheck', 'test:unit', 'build'];
+          const required = ['lint', 'typecheck', 'test:unit', 'build', 'worker'];
           const missing = required.filter((name) => !scripts[name]);
           if (missing.length) {
             throw new Error('Scripts npm manquants : ' + missing.join(', '));
@@ -326,6 +328,7 @@ jobs:
 
           # Valide également les substitutions sans utiliser de secret réel.
           export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
+          export WORKER_IMAGE=heig-odyssey-worker-validation:"$GITHUB_SHA"
           export MIGRATION_IMAGE=heig-odyssey-migrate-validation:"$GITHUB_SHA"
           export LANDING_IMAGE=heig-odyssey-landing-validation:"$GITHUB_SHA"
           export POSTGRES_PASSWORD=release-validation-postgres-password
@@ -343,27 +346,45 @@ jobs:
         run: |
           set -euo pipefail
           docker build --tag heig-odyssey-validation:"$GITHUB_SHA" .
+          docker build --target worker --tag heig-odyssey-worker-validation:"$GITHUB_SHA" .
           docker build --target migrator --tag heig-odyssey-migrate-validation:"$GITHUB_SHA" .
           docker build --tag heig-odyssey-landing-validation:"$GITHUB_SHA" ./landing-page
 
           # Confirme que l'image dédiée contient bien le client de migration Prisma.
           docker run --rm heig-odyssey-migrate-validation:"$GITHUB_SHA" --version
 
-      - name: Smoke test landing image
+      - name: Smoke test validation images
         shell: bash
         run: |
           set -euo pipefail
-          docker run -d --rm --name landing-ci -p 8080:80 heig-odyssey-landing-validation:"$GITHUB_SHA"
-          trap 'docker rm -f landing-ci >/dev/null 2>&1 || true' EXIT
+          export APP_IMAGE=heig-odyssey-validation:"$GITHUB_SHA"
+          export WORKER_IMAGE=heig-odyssey-worker-validation:"$GITHUB_SHA"
+          export MIGRATION_IMAGE=heig-odyssey-migrate-validation:"$GITHUB_SHA"
+          export LANDING_IMAGE=heig-odyssey-landing-validation:"$GITHUB_SHA"
 
-          for attempt in {1..10}; do
-            if curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+          cleanup() {
+            docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
+          }
+          worker_ready() {
+            docker compose -f compose.ci.yml exec -T redis \
+              redis-cli --raw XINFO GROUPS heig-odyssey:events \
+              | grep -Fxq quest-workers
+          }
+          trap cleanup EXIT
+
+          docker compose -f compose.ci.yml run --rm migrate
+          docker compose -f compose.ci.yml up -d --wait --wait-timeout 60 app worker landing
+
+          for attempt in {1..15}; do
+            if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
+              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null \
+              && worker_ready; then
               exit 0
             fi
             sleep 2
           done
 
-          docker logs landing-ci
+          docker compose -f compose.ci.yml logs 2>/dev/null || true
           exit 1
 
   # Construit, teste et publie les images identifiées par le SHA Git.
@@ -386,6 +407,7 @@ jobs:
           set -euo pipefail
           IMAGE_NAME_LOWER="$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
           echo "APP_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "WORKER_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-worker:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "MIGRATION_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-migrate:${GITHUB_SHA}" >> "$GITHUB_ENV"
           echo "LANDING_IMAGE=${REGISTRY}/${IMAGE_NAME_LOWER}-landing:${GITHUB_SHA}" >> "$GITHUB_ENV"
 
@@ -394,6 +416,7 @@ jobs:
         run: |
           set -euo pipefail
           docker build --tag "$APP_IMAGE" .
+          docker build --target worker --tag "$WORKER_IMAGE" .
           docker build --target migrator --tag "$MIGRATION_IMAGE" .
           docker build --tag "$LANDING_IMAGE" ./landing-page
 
@@ -405,18 +428,24 @@ jobs:
           cleanup() {
             docker compose -f compose.ci.yml down --volumes --remove-orphans >/dev/null 2>&1 || true
           }
+          worker_ready() {
+            docker compose -f compose.ci.yml exec -T redis \
+              redis-cli --raw XINFO GROUPS heig-odyssey:events \
+              | grep -Fxq quest-workers
+          }
           trap cleanup EXIT
 
-          export APP_IMAGE MIGRATION_IMAGE LANDING_IMAGE
+          export APP_IMAGE WORKER_IMAGE MIGRATION_IMAGE LANDING_IMAGE
           docker compose -f compose.ci.yml config
 
           # Applique le schéma avec l'image qui sera réellement publiée.
           docker compose -f compose.ci.yml run --rm migrate
-          docker compose -f compose.ci.yml up -d --wait app landing
+          docker compose -f compose.ci.yml up -d --wait --wait-timeout 60 app worker landing
 
           for attempt in {1..15}; do
             if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
-              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null; then
+              && curl --fail --silent --show-error http://localhost:8080/ >/dev/null \
+              && worker_ready; then
               exit 0
             fi
             sleep 2
@@ -437,6 +466,7 @@ jobs:
         run: |
           set -euo pipefail
           docker push "$APP_IMAGE"
+          docker push "$WORKER_IMAGE"
           docker push "$MIGRATION_IMAGE"
           docker push "$LANDING_IMAGE"
 
@@ -503,6 +533,7 @@ jobs:
             configure_images() {
               local tag="$1"
               export APP_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}:${tag}"
+              export WORKER_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-worker:${tag}"
               export MIGRATION_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-migrate:${tag}"
               export LANDING_IMAGE="ghcr.io/${IMAGE_NAME_LOWER}-landing:${tag}"
             }
@@ -511,14 +542,24 @@ jobs:
               docker compose -f compose.prod.yml "$@"
             }
 
+            worker_is_healthy() {
+              local required="$1"
+              if [[ "$required" != "true" ]]; then
+                return 0
+              fi
+              dc exec -T worker node scripts/worker-healthcheck.mjs >/dev/null 2>&1
+            }
+
             smoke_test() {
+              local require_worker="${1:-true}"
               local public_app_url="${BETTER_AUTH_URL%/}/api/health"
 
               for attempt in $(seq 1 30); do
                 if curl --fail --silent --show-error http://localhost:3000/api/health >/dev/null \
                   && curl --fail --silent --show-error http://localhost:8080/health >/dev/null \
                   && curl --fail --silent --show-error "$public_app_url" >/dev/null \
-                  && curl --fail --silent --show-error https://heig-odyssey.online/health >/dev/null; then
+                  && curl --fail --silent --show-error https://heig-odyssey.online/health >/dev/null \
+                  && worker_is_healthy "$require_worker"; then
                   return 0
                 fi
                 sleep 2
@@ -534,17 +575,32 @@ jobs:
 
               configure_images "$PREVIOUS_SHA"
               dc pull webapp landing-page || return 1
+              local restore_worker=true
+              if ! dc pull worker; then
+                # Lors du tout premier déploiement du worker, le SHA précédent
+                # ne possède pas encore d'image dédiée. Revenir à l'ancien web
+                # implique alors de retirer le worker, comme avant cette feature.
+                echo "Aucune image worker pour ${PREVIOUS_SHA}; rollback sans worker."
+                restore_worker=false
+                dc stop worker >/dev/null 2>&1 || true
+                dc rm -f worker >/dev/null 2>&1 || true
+              fi
               # Les migrations ne sont pas annulées automatiquement : elles doivent
               # rester compatibles avec la version applicative précédente.
-              dc up -d --remove-orphans traefik webapp landing-page postgres redis || return 1
-              smoke_test
+              local services=(traefik webapp landing-page postgres redis)
+              if [[ "$restore_worker" == "true" ]]; then
+                services+=(worker)
+              fi
+              dc up -d --wait --wait-timeout 60 --remove-orphans \
+                "${services[@]}" || return 1
+              smoke_test "$restore_worker"
             }
 
             echo "$CR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
             configure_images "$DEPLOY_SHA"
             dc config >/dev/null
-            dc --profile tools pull webapp landing-page migrate
+            dc --profile tools pull webapp worker landing-page migrate
 
             # Le volume existant est conservé. Cette commande remplace seulement
             # l'ancien mot de passe local par le secret de production actuel.
@@ -565,7 +621,8 @@ jobs:
               exit 1
             fi
 
-            if ! dc up -d --remove-orphans traefik webapp landing-page postgres redis; then
+            if ! dc up -d --wait --wait-timeout 60 --remove-orphans \
+              traefik webapp worker landing-page postgres redis; then
               echo "Le démarrage de ${DEPLOY_SHA} a échoué."
               if restore_previous; then
                 echo "Version ${PREVIOUS_SHA} restaurée."

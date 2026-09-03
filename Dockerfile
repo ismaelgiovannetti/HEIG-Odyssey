@@ -36,7 +36,51 @@ USER node
 ENTRYPOINT ["./node_modules/.bin/prisma"]
 CMD ["migrate", "deploy"]
 
-# 4. Image de production minimale
+# 4. Construction du worker autonome
+FROM deps AS worker-builder
+WORKDIR /app
+
+COPY tsconfig.json ./tsconfig.json
+COPY src ./src
+COPY scripts/worker-healthcheck.mjs ./scripts/worker-healthcheck.mjs
+
+# Les modules internes sont regroupés dans un seul fichier ESM ; seuls les
+# paquets npm restent externes. Les dépendances de développement sont ensuite
+# retirées sans rejouer les scripts d'installation.
+RUN ./node_modules/.bin/esbuild src/worker/index.ts \
+    --bundle \
+    --platform=node \
+    --target=node22 \
+    --format=esm \
+    --packages=external \
+    --tsconfig=tsconfig.json \
+    --outfile=dist/worker.mjs \
+    && npm prune --omit=dev --ignore-scripts
+
+# 5. Image minimale dédiée au worker de quêtes
+FROM base AS worker
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=worker-builder --chown=node:node /app/node_modules ./node_modules
+# Prisma génère ce client pendant `npm ci`; cette copie explicite le préserve
+# même si npm prune retire les dossiers générés non déclarés.
+COPY --from=deps --chown=node:node /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=worker-builder --chown=node:node /app/dist/worker.mjs ./worker.mjs
+COPY --from=worker-builder --chown=node:node /app/scripts/worker-healthcheck.mjs ./scripts/worker-healthcheck.mjs
+
+# Le worker n'a besoin d'aucun port et s'exécute sans privilèges root.
+USER node
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=5 \
+  CMD ["node", "scripts/worker-healthcheck.mjs"]
+
+CMD ["node", "worker.mjs"]
+
+# 6. Image de production minimale
+# Cette cible reste la dernière afin que `docker build .` continue de produire
+# l'application web lorsque le target n'est pas précisé.
 FROM base AS runner
 WORKDIR /app
 

@@ -50,8 +50,8 @@ export function PlayerBalance({
       aria-label={`${formattedBalance} Pokédollars`}
       aria-live="polite"
     >
-      <strong>{formattedBalance}</strong>
       <span aria-hidden="true">₽</span>
+      <strong>{formattedBalance}</strong>
     </span>
   );
 }

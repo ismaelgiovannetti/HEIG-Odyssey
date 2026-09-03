@@ -10,6 +10,10 @@ import type {
   BattlePokemonPayload,
   BattleStartPayload,
 } from "@/lib/combat/battle-client";
+import {
+  QUEST_PROGRESS_INVALIDATED_EVENT,
+  type QuestProgressInvalidatedEventDetail,
+} from "@/lib/quests/quest-progress-events";
 import { teamSnapshot } from "../helpers/team-interface-fixture";
 
 const { refreshMock } = vi.hoisted(() => ({ refreshMock: vi.fn() }));
@@ -119,6 +123,16 @@ function response(body: unknown, status = 200) {
   });
 }
 
+const questRefreshListeners: EventListener[] = [];
+
+function observeQuestRefresh() {
+  const listener = vi.fn();
+  const eventListener = listener as EventListener;
+  questRefreshListeners.push(eventListener);
+  window.addEventListener(QUEST_PROGRESS_INVALIDATED_EVENT, eventListener);
+  return listener;
+}
+
 describe("interface d'entraînement et de combat", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -128,6 +142,9 @@ describe("interface d'entraînement et de combat", () => {
   });
 
   afterEach(() => {
+    for (const listener of questRefreshListeners.splice(0)) {
+      window.removeEventListener(QUEST_PROGRESS_INVALIDATED_EVENT, listener);
+    }
     cleanup();
     vi.restoreAllMocks();
   });
@@ -192,6 +209,7 @@ describe("interface d'entraînement et de combat", () => {
   it("envoie une attaque puis affiche exclusivement les gains confirmés", async () => {
     const user = userEvent.setup();
     const onReturn = vi.fn();
+    const questRefreshListener = observeQuestRefresh();
     const initial = startedBattle();
     const finished: BattleActionPayload = {
       success: true,
@@ -255,6 +273,10 @@ describe("interface d'entraînement et de combat", () => {
     expect(
       await screen.findByRole("heading", { name: "Victoire confirmée !" }),
     ).toBeDefined();
+    await waitFor(() => expect(questRefreshListener).toHaveBeenCalledTimes(1));
+    const refreshEvent = questRefreshListener.mock.calls[0][0] as
+      CustomEvent<QuestProgressInvalidatedEventDetail>;
+    expect(refreshEvent.detail).toEqual({ battleId: "battle-training-42" });
     expect(screen.getByText("+130 ₽")).toBeDefined();
     expect(screen.getByText("+320 XP")).toBeDefined();
     expect(screen.getByText("780 ₽")).toBeDefined();
@@ -275,10 +297,12 @@ describe("interface d'entraînement et de combat", () => {
       screen.getByRole("button", { name: /Retour à l’entraînement/i }),
     );
     expect(onReturn).toHaveBeenCalledOnce();
+    expect(questRefreshListener).toHaveBeenCalledTimes(1);
   });
 
   it("permet de sélectionner un remplacement sans transmettre d'identité", async () => {
     const user = userEvent.setup();
+    const questRefreshListener = observeQuestRefresh();
     const initial = startedBattle();
     const switched = {
       success: true,
@@ -321,6 +345,7 @@ describe("interface d'entraînement et de combat", () => {
       expect(body).not.toHaveProperty("userId");
     });
     expect(await screen.findByText(/Salamèche entre au combat/i)).toBeDefined();
+    expect(questRefreshListener).not.toHaveBeenCalled();
   });
 
   it("resynchronise l'interface lorsqu'une action rapide devient obsolète", async () => {
