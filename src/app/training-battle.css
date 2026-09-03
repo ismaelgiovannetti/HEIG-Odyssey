@@ -618,7 +618,8 @@
   overflow: hidden;
   border-right: 3px solid var(--color-outline);
   background-color: #2b3040;
-  /* Décor par défaut (entraînement / valeur inconnue). */
+  /* Repli si l'attribut data-arena est absent ; les décors procéduraux
+     (dont l'entraînement) sont définis plus bas. */
   background:
     linear-gradient(180deg, rgb(8 11 16 / 8%), rgb(8 11 16 / 30%)),
     url("/battle-arena-background-v2.jpg") center / cover no-repeat;
@@ -657,7 +658,10 @@
 
 /* ---- Décors par type : voile · détails · halo · lueur sol · ciel→sol ---- */
 
-.battle-scene[data-arena="normal"] {
+/* L'entraînement partage le décor procédural du monde Normal plutôt qu'une
+   image fixe. */
+.battle-scene[data-arena="normal"],
+.battle-scene[data-arena="training"] {
   --platform-fill: rgb(150 130 92 / 0.6);
   background:
     var(--arena-veil),
