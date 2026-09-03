@@ -11,6 +11,7 @@ out
 build
 playwright-report
 test-results
+results.sarif
 
 # Sources qui ne participent pas aux images applicative et worker
 .github

@@ -104,6 +104,31 @@ npm run test:e2e:chromium  # Parcours fonctionnels rapides sur Chromium
 npm run test:a11y          # Accessibilité uniquement
 ```
 
+### Validation locale avant un commit
+
+Les contrôles ci-dessus s'exécutent sans commit ni push. Après l'installation
+des dépendances, cette séquence reprend les contrôles npm du job « Quick CI »
+et s'arrête au premier échec :
+
+```bash
+npm audit --audit-level=high &&
+npm run lint &&
+npm run format:check &&
+npm run landing:assets:check &&
+npm run typecheck &&
+npm run test:coverage &&
+npm run test:performance &&
+npm run build
+```
+
+Complétez-la avec les tests d'intégration et E2E décrits plus haut. Avec Gitleaks
+installé, contrôlez aussi les modifications préparées avec `git add`, sans créer
+de commit : `gitleaks git --pre-commit --staged --redact`.
+
+Le rapport généré `results.sarif` reste un artefact CI : il est exclu du formatage,
+de Git et des images Docker. La CI reste la validation finale dans un environnement
+vierge, notamment pour les services, images Docker et permissions GitHub.
+
 ## Documentation
 
 - [Architecture du dépôt](docs/ARCHITECTURE.md)
@@ -116,7 +141,6 @@ npm run test:a11y          # Accessibilité uniquement
 - [Modèle de données](docs/02-conception/HEIG_Odyssey_Modele_Donnees.md)
 - [Tâches et estimations](docs/03-planification/HEIG_Odyssey_Taches.md)
 - [Guide de création des tâches GitHub](docs/03-planification/HEIG_Odyssey_Guide_Creation_Taches_GitHub.md)
-- [Sprint 1](docs/04-sprints/HEIG_Odyssey_Taches_Sprint1.md)
 
 ## Workflow Git
 
