@@ -219,7 +219,7 @@ async function generateCampaignAndTrainers() {
     id: "bachelor-1",
     name: "Bachelor 1 - Type Normal",
     degree: "BACHELOR",
-    description: "Première étape du cursus d'ingénierie. Apprenez les bases tactiques face aux créatures Normal.",
+    description: "Apprenez les bases tactiques face au type Normal.",
     stages: b1Stages,
   });
 
@@ -295,7 +295,7 @@ async function generateCampaignAndTrainers() {
     id: "bachelor-2",
     name: "Bachelor 2 - Type Plante",
     degree: "BACHELOR",
-    description: "Deuxième étape du cursus. Maîtrisez le statut, les régénérations et les faiblesses Plante.",
+    description: "Maîtrisez les statuts, les soins et le type Plante.",
     stages: b2Stages,
   });
 
@@ -371,7 +371,7 @@ async function generateCampaignAndTrainers() {
     id: "bachelor-3",
     name: "Bachelor 3 - Type Électrik",
     degree: "BACHELOR",
-    description: "Troisième étape. Vitesse fulgurante, attaques spéciales et paralysie vous attendent.",
+    description: "Surmontez vitesse, attaques spéciales et paralysie.",
     stages: b3Stages,
   });
 
@@ -448,7 +448,7 @@ async function generateCampaignAndTrainers() {
     id: "bachelor-4",
     name: "Bachelor 4 - Type Acier",
     degree: "BACHELOR",
-    description: "Quatrième étape. Défenses massives, immunités Poison et résistances multiples.",
+    description: "Brisez défenses, immunités et résistances.",
     stages: b4Stages,
   });
 
@@ -527,7 +527,7 @@ async function generateCampaignAndTrainers() {
     id: "bachelor-5",
     name: "Bachelor 5 - Type Psy",
     degree: "BACHELOR",
-    description: "Dernière étape du Bachelor. Affrontez la puissance psychique pour décrocher votre diplôme.",
+    description: "Dominez le type Psy pour décrocher votre Bachelor.",
     stages: b5Stages,
   });
 
@@ -608,7 +608,7 @@ async function generateCampaignAndTrainers() {
     id: "master-1",
     name: "Master 1 - Double Type Poison / Ténèbres",
     degree: "MASTER",
-    description: "Première année de Master. Affrontez les tactiques avancées de statut Poison et dégâts Ténèbres.",
+    description: "Déjouez les tactiques Poison et Ténèbres.",
     stages: m1Stages,
   });
 
@@ -689,7 +689,7 @@ async function generateCampaignAndTrainers() {
     id: "master-2",
     name: "Master 2 - Double Type Dragon / Glace",
     degree: "MASTER",
-    description: "Deuxième année de Master. La puissance dévastatrice des dragons alliée au contrôle absolu de la glace.",
+    description: "Affrontez la puissance des Dragons et de la Glace.",
     stages: m2Stages,
   });
 
@@ -900,7 +900,7 @@ async function generateCampaignAndTrainers() {
     id: "doctorat",
     name: "Doctorat - La Thèse Finale",
     degree: "DOCTORAT",
-    description: "Le sommet absolu de HEIG Odyssey. Affrontez les concepteurs du jeu et la direction suprême.",
+    description: "Affrontez les créateurs de HEIG Odyssey.",
     stages: docStages,
   });
 

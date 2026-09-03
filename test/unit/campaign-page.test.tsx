@@ -157,11 +157,29 @@ const startedBattle = {
           maxHp: 28,
           hpPercent: 100,
           status: null,
-          moves: [{ id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 35, maxPp: 35 }],
+          moves: [
+            {
+              id: "tackle",
+              name: "Charge",
+              type: "Normal",
+              category: "physical",
+              power: 40,
+              accuracy: 100,
+              pp: 35,
+              maxPp: 35,
+            },
+          ],
           isShiny: false,
           isActive: true,
           isFainted: false,
-          baseStats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 },
+          baseStats: {
+            hp: 45,
+            attack: 49,
+            defense: 49,
+            specialAttack: 65,
+            specialDefense: 65,
+            speed: 45,
+          },
         },
       ],
     },
@@ -180,11 +198,29 @@ const startedBattle = {
           maxHp: 24,
           hpPercent: 100,
           status: null,
-          moves: [{ id: "tackle", name: "Charge", type: "Normal", category: "physical", power: 40, accuracy: 100, pp: 35, maxPp: 35 }],
+          moves: [
+            {
+              id: "tackle",
+              name: "Charge",
+              type: "Normal",
+              category: "physical",
+              power: 40,
+              accuracy: 100,
+              pp: 35,
+              maxPp: 35,
+            },
+          ],
           isShiny: false,
           isActive: true,
           isFainted: false,
-          baseStats: { hp: 30, attack: 56, defense: 35, specialAttack: 25, specialDefense: 35, speed: 72 },
+          baseStats: {
+            hp: 30,
+            attack: 56,
+            defense: 35,
+            specialAttack: 25,
+            specialDefense: 35,
+            speed: 72,
+          },
         },
       ],
     },
@@ -196,7 +232,9 @@ describe("CampaignMap Component (US-07)", () => {
     vi.clearAllMocks();
     globalThis.fetch = vi.fn();
     vi.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue();
-    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(window.HTMLMediaElement.prototype, "pause").mockImplementation(
+      () => {},
+    );
   });
 
   afterEach(() => {
@@ -212,7 +250,9 @@ describe("CampaignMap Component (US-07)", () => {
     ).toBeDefined();
 
     expect(
-      screen.getByRole("button", { name: /Bachelor 1 - Type Normal/i }),
+      screen.getByRole("status", {
+        name: /Monde actuel : Bachelor 1 - Type Normal/i,
+      }),
     ).toBeDefined();
   });
 
@@ -223,8 +263,12 @@ describe("CampaignMap Component (US-07)", () => {
     expect(
       screen.getByRole("button", { name: /Étape 1 - Terminée/i }),
     ).toBeDefined();
-    expect(screen.getByRole("button", { name: /Étape 2 - Disponible/i })).toBeDefined();
-    expect(screen.getByRole("button", { name: /Étape 3 - Verrouillée/i })).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /Étape 2 - Disponible/i }),
+    ).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /Étape 3 - Verrouillée/i }),
+    ).toBeDefined();
   });
 
   it("présente la difficulté sans utiliser le niveau comme verrou d'interface", () => {
@@ -233,7 +277,9 @@ describe("CampaignMap Component (US-07)", () => {
     expect(screen.getByLabelText(/Difficulté 1 sur 5/i)).toBeDefined();
     expect(
       screen
-        .getByRole("button", { name: /Lancer le combat : Laboratoire Normal - Étape 2/i })
+        .getByRole("button", {
+          name: /Lancer le combat : Laboratoire Normal - Étape 2/i,
+        })
         .hasAttribute("disabled"),
     ).toBe(false);
   });
@@ -247,7 +293,9 @@ describe("CampaignMap Component (US-07)", () => {
     });
     await user.click(b2Tab);
 
-    expect(screen.getByRole("heading", { name: /Campagne - Bachelor 2/i })).toBeDefined();
+    expect(
+      screen.getByRole("heading", { name: /Campagne - Bachelor 2/i }),
+    ).toBeDefined();
     expect(screen.getByText("Arène Combat - Étape 1")).toBeDefined();
   });
 
@@ -281,9 +329,11 @@ describe("CampaignMap Component (US-07)", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", {
-        name: "Étudiant Normal 2",
-      })).toBeDefined();
+      expect(
+        screen.getByRole("heading", {
+          name: "Étudiant Normal 2",
+        }),
+      ).toBeDefined();
     });
   });
 });
