@@ -314,6 +314,7 @@ export async function processBattleTurn(
         winner,
         playerPokemonIds,
         turnsCount: turnResult.turn,
+        opponentTeam: turnResult.state.p2.team,
       });
     } else if (stageId) {
       rewards = await grantBattleRewards({

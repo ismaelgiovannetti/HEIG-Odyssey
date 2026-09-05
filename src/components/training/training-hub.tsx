@@ -27,9 +27,11 @@ import {
 } from "@/lib/team/team-client";
 import {
   calculateTrainingReward,
+  DIFFICULTY_REWARD_MULTIPLIERS,
   TRAINING_DIFFICULTIES,
   type TrainingDifficulty,
 } from "@/lib/training/difficulty";
+import { calculateTrainingOpponentLevel } from "@/lib/training/level-algorithm";
 
 const DIFFICULTY_ORDER: readonly TrainingDifficulty[] = [
   "easy",
@@ -306,7 +308,17 @@ export function TrainingHub() {
               <div className="training-difficulty-grid">
                 {DIFFICULTY_ORDER.map((value) => {
                   const details = TRAINING_DIFFICULTIES[value];
-                  const reward = calculateTrainingReward(value);
+                  const multiplier = DIFFICULTY_REWARD_MULTIPLIERS[value];
+                  const teamAvgLevel =
+                    activeTeam.length > 0
+                      ? calculateTrainingOpponentLevel(
+                          activeTeam.map((p) => p.level),
+                        ).opponentLevel
+                      : 5;
+                  const reward = calculateTrainingReward(value, {
+                    opponentAverageLevel: teamAvgLevel,
+                    teamSize: Math.max(1, activeTeam.length),
+                  });
                   const selected = difficulty === value;
                   return (
                     <label
@@ -330,7 +342,11 @@ export function TrainingHub() {
                       <small>{details.behavior}</small>
                       <span className="training-difficulty-card__reward">
                         <span>{reward.money} ₽</span>
-                        <span>{reward.xp} XP</span>
+                        <span
+                          title={`Gain estimé : ~${reward.xp} XP (multiplicateur ×${multiplier.xp})`}
+                        >
+                          ×{multiplier.xp} XP
+                        </span>
                       </span>
                     </label>
                   );
