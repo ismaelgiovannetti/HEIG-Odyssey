@@ -17,7 +17,10 @@ import {
 
 export {
   calculateTrainingReward,
+  calculateTrainingBaseXp,
+  calculateDefeatedPokemonXp,
   DIFFICULTY_REWARD_MULTIPLIERS,
+  DIFFICULTY_XP_MULTIPLIERS,
   TRAINING_BASE_REWARD,
 } from "../training/difficulty";
 
@@ -328,6 +331,12 @@ export interface GrantTrainingRewardsParams {
   winner: "p1" | "p2";
   playerPokemonIds: readonly string[];
   turnsCount?: number;
+  opponentTeam?: Array<{
+    speciesId?: string;
+    level: number;
+    isFainted?: boolean;
+  }>;
+  opponentAverageLevel?: number;
 }
 
 /**
@@ -340,6 +349,8 @@ export async function grantTrainingRewards({
   winner,
   playerPokemonIds,
   turnsCount = 1,
+  opponentTeam,
+  opponentAverageLevel,
 }: GrantTrainingRewardsParams): Promise<BattleRewardResult> {
   const participantIds = snapshotBattleParticipants(playerPokemonIds);
 
@@ -362,9 +373,23 @@ export async function grantTrainingRewards({
     };
   }
 
-  const reward = calculateTrainingReward(difficulty);
-  const moneyReward = winner === "p1" ? reward.money : 0;
-  const xpReward = winner === "p1" ? reward.xp : 0;
+  const hydratedOpponents = opponentTeam?.map((p) => {
+    const species = p.speciesId ? getSpecies(p.speciesId) : undefined;
+    const bst = species
+      ? species.baseStats.hp +
+        species.baseStats.attack +
+        species.baseStats.defense +
+        species.baseStats.specialAttack +
+        species.baseStats.specialDefense +
+        species.baseStats.speed
+      : undefined;
+    return {
+      level: p.level,
+      stage: species?.stage,
+      baseStatTotal: bst,
+      isFainted: p.isFainted,
+    };
+  });
 
   const txResult = await prisma.$transaction(async (tx) => {
     const participants = await tx.userPokemon.findMany({
@@ -378,6 +403,32 @@ export async function grantTrainingRewards({
     if (participants.length !== participantIds.length) {
       throw new Error("BATTLE_REWARD_FOREIGN_PARTICIPANT");
     }
+
+    let trainingOptions: Parameters<typeof calculateTrainingReward>[1];
+    if (hydratedOpponents && hydratedOpponents.length > 0) {
+      trainingOptions = { opponentTeam: hydratedOpponents };
+    } else if (typeof opponentAverageLevel === "number") {
+      trainingOptions = {
+        opponentAverageLevel,
+        teamSize: participantIds.length,
+      };
+    } else {
+      const avgLvl =
+        participants.length > 0
+          ? Math.round(
+              participants.reduce((sum, p) => sum + p.level, 0) /
+                participants.length,
+            )
+          : 5;
+      trainingOptions = {
+        opponentAverageLevel: avgLvl,
+        teamSize: participants.length,
+      };
+    }
+
+    const reward = calculateTrainingReward(difficulty, trainingOptions);
+    const moneyReward = winner === "p1" ? reward.money : 0;
+    const xpReward = winner === "p1" ? reward.xp : 0;
 
     const teamLeveledUp: BattleRewardResult["teamLeveledUp"] = [];
 
