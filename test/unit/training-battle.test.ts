@@ -132,7 +132,8 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
       expect(result.isAlreadyClaimed).toBe(false);
       expect(result.moneyEarned).toBe(80);
-      expect(result.xpEarned).toBe(180);
+      // Niveau 10 -> XP de base 214 -> normal (x1.5) -> 321 XP
+      expect(result.xpEarned).toBe(321);
       expect(result.newBalance).toBe(180);
 
       expect(mockTx.battleRecord.create).toHaveBeenCalledWith({
@@ -141,7 +142,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
           battleType: "TRAINING",
           opponentId: "training-normal",
           result: "VICTORY",
-          xpGained: 180,
+          xpGained: 321,
           moneyGained: 80,
         }),
       });
@@ -153,6 +154,57 @@ describe("Training Battle Mode (T-US09-03)", () => {
           aggregateId: "btl-training-1",
         }),
       });
+    });
+
+    it("calcule l'XP à partir des Pokémon adverses vaincus et de la difficulté", async () => {
+      vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+      const mockTx = {
+        userPokemon: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: "pkmn-1",
+              userId: "user-1",
+              speciesId: "turtwig",
+              level: 15,
+              experience: 0,
+              ivs: { hp: 15 },
+            },
+          ]),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        userProfile: {
+          upsert: vi.fn().mockResolvedValue({ pokedollars: 130 }),
+        },
+        battleRecord: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+        outboxEvent: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+      };
+
+      mockInteractiveTransaction(prisma, mockTx);
+
+      // Adversaire avec 2 Pokémon niveau 15 vaincus, difficulté hard (x3)
+      // bulbizarre (stage 1, b=65): floor((65 * 15 * 1.5) / 7) = 208
+      // ivysaur (stage 2, b=140): floor((140 * 15 * 1.5) / 7) = 450
+      // Base XP = 208 + 450 = 658 -> Hard (x3) = 1974 XP
+      const result = await grantTrainingRewards({
+        userId: "user-1",
+        battleId: "btl-training-multi-defeated",
+        difficulty: "hard",
+        winner: "p1",
+        playerPokemonIds: ["pkmn-1"],
+        turnsCount: 6,
+        opponentTeam: [
+          { speciesId: "bulbasaur", level: 15, isFainted: true },
+          { speciesId: "ivysaur", level: 15, isFainted: true },
+        ],
+      });
+
+      expect(result.xpEarned).toBe(1974);
+      expect(result.moneyEarned).toBe(130);
     });
 
     it("ne crédite aucun gain en cas de défaite p2", async () => {
