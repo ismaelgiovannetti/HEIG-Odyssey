@@ -14,6 +14,9 @@ import {
   calculateTrainingReward,
   calculateTrainingBaseXp,
   calculateDefeatedPokemonXp,
+  calculateTrainingBaseMoney,
+  calculateDefeatedPokemonMoney,
+  DEFAULT_BASE_MONEY_PER_LEVEL,
   DIFFICULTY_REWARD_MULTIPLIERS,
   DIFFICULTY_XP_MULTIPLIERS,
   TRAINING_BASE_REWARD,
@@ -24,6 +27,9 @@ export {
   calculateTrainingReward,
   calculateTrainingBaseXp,
   calculateDefeatedPokemonXp,
+  calculateTrainingBaseMoney,
+  calculateDefeatedPokemonMoney,
+  DEFAULT_BASE_MONEY_PER_LEVEL,
   DIFFICULTY_REWARD_MULTIPLIERS,
   DIFFICULTY_XP_MULTIPLIERS,
   TRAINING_BASE_REWARD,
@@ -88,6 +94,24 @@ export function calculateTrainerTeamBaseXp(
     })),
   );
   return calculateTrainingBaseXp({ opponentTeam: hydrated });
+}
+
+/**
+ * Calcule la monnaie (PokéDollars) de base (multiplicateur x1) pour l'équipe complète d'un dresseur en campagne.
+ */
+export function calculateTrainerTeamBaseMoney(
+  trainerTeam?: readonly {
+    speciesId: string;
+    level: number;
+  }[],
+): number {
+  if (!trainerTeam || trainerTeam.length === 0) return 0;
+  return calculateTrainingBaseMoney({
+    opponentTeam: trainerTeam.map((m) => ({
+      level: m.level,
+      isFainted: true,
+    })),
+  });
 }
 
 export interface GrantBattleRewardsParams {
@@ -192,13 +216,18 @@ export async function grantBattleRewards({
     throw new Error("CAMPAIGN_STAGE_NOT_FOUND");
   }
 
-  // Calcul dynamique de l'XP de combat (Gen 4, multiplicateur x1) :
+  // Calcul dynamique des gains de combat (XP Gen 4 & PokéDollars, multiplicateur x1) :
   // dépend du niveau et du nombre de Pokémon vaincus, identique au mode entraînement.
   const hydratedOpponents = resolveOpponentTeamExpParams(opponentTeam);
 
   let calculatedBattleXp: number;
+  let calculatedBattleMoney: number;
+
   if (hydratedOpponents && hydratedOpponents.length > 0) {
     calculatedBattleXp = calculateTrainingBaseXp({
+      opponentTeam: hydratedOpponents,
+    });
+    calculatedBattleMoney = calculateTrainingBaseMoney({
       opponentTeam: hydratedOpponents,
     });
   } else {
@@ -207,17 +236,23 @@ export async function grantBattleRewards({
     const stageTrainer = trainers.get(stageConfig.trainerId);
     if (stageTrainer && stageTrainer.team.length > 0) {
       calculatedBattleXp = calculateTrainerTeamBaseXp(stageTrainer.team);
+      calculatedBattleMoney = calculateTrainerTeamBaseMoney(stageTrainer.team);
     } else if (typeof opponentAverageLevel === "number") {
       calculatedBattleXp = calculateTrainingBaseXp({
         opponentAverageLevel,
         teamSize: 1,
       });
+      calculatedBattleMoney = calculateTrainingBaseMoney({
+        opponentAverageLevel,
+        teamSize: 1,
+      });
     } else {
       calculatedBattleXp = stageConfig.rewardXp;
+      calculatedBattleMoney = stageConfig.rewardMoney;
     }
   }
 
-  const moneyReward = winner === "p1" ? stageConfig.rewardMoney : 0;
+  const moneyReward = winner === "p1" ? Math.max(1, calculatedBattleMoney) : 0;
   const xpReward = winner === "p1" ? Math.max(1, calculatedBattleXp) : 0;
 
   const txResult = await prisma.$transaction(async (tx) => {

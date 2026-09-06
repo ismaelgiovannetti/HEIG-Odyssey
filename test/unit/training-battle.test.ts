@@ -109,7 +109,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
           update: vi.fn().mockResolvedValue({}),
         },
         userProfile: {
-          upsert: vi.fn().mockResolvedValue({ pokedollars: 180 }),
+          upsert: vi.fn().mockResolvedValue({ pokedollars: 212 }),
         },
         battleRecord: {
           create: vi.fn().mockResolvedValue({}),
@@ -131,10 +131,11 @@ describe("Training Battle Mode (T-US09-03)", () => {
       });
 
       expect(result.isAlreadyClaimed).toBe(false);
-      expect(result.moneyEarned).toBe(80);
+      // Niveau 10 -> monnaie de base 70 -> normal (x1.6) -> 112 PokéDollars
+      expect(result.moneyEarned).toBe(112);
       // Niveau 10 -> XP de base 214 -> normal (x1.5) -> 321 XP
       expect(result.xpEarned).toBe(321);
-      expect(result.newBalance).toBe(180);
+      expect(result.newBalance).toBe(212);
 
       expect(mockTx.battleRecord.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -143,7 +144,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
           opponentId: "training-normal",
           result: "VICTORY",
           xpGained: 321,
-          moneyGained: 80,
+          moneyGained: 112,
         }),
       });
 
@@ -204,7 +205,8 @@ describe("Training Battle Mode (T-US09-03)", () => {
       });
 
       expect(result.xpEarned).toBe(1316);
-      expect(result.moneyEarned).toBe(130);
+      // 2 Pokémon lvl 15 -> monnaie de base 210 -> hard (x2.6) -> 546 PokéDollars
+      expect(result.moneyEarned).toBe(546);
     });
 
     it("partage équitablement l'XP totale entre tous les Pokémon participants de l'équipe", async () => {

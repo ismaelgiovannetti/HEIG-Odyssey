@@ -3,6 +3,7 @@ import {
   grantBattleRewards,
   calculateXpForNextLevel,
   calculateTrainerTeamBaseXp,
+  calculateTrainerTeamBaseMoney,
 } from "@/lib/rewards/reward-service";
 import { prisma } from "@/lib/prisma";
 import { mockInteractiveTransaction } from "../helpers/mock-clients";
@@ -179,6 +180,14 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
     expect(xp).toBe(83);
   });
 
+  it("calcule les PokéDollars de base d'une équipe de dresseur selon son niveau", () => {
+    const money = calculateTrainerTeamBaseMoney([
+      { speciesId: "bidoof", level: 6 },
+    ]);
+    // Bidoof niveau 6 : 6 * 7 = 42 PokéDollars
+    expect(money).toBe(42);
+  });
+
   it("calcule l'XP dynamiquement à partir des Pokémon adverses vaincus en campagne", async () => {
     vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
 
@@ -234,6 +243,8 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
     });
 
     expect(result.xpEarned).toBe(139 + 450);
+    // bidoof lvl 10 (70) + bibarel lvl 15 (105) = 175 PokéDollars
+    expect(result.moneyEarned).toBe(70 + 105);
     expect(mockTx.userPokemon.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "pkmn-1" },
