@@ -29,6 +29,48 @@ const FALLBACK_SPRITE = "/pokeball-pixel.svg";
 // Réutilise la mesure lors d'un échange ; chaque variante chromatique a sa propre entrée.
 const spriteBoundsCache = new Map<string, SpriteBounds | null>();
 
+/**
+ * Espèces de base connues de la 4e génération ayant des formes alternatives
+ * (Morphéo, Motisma, Deoxys, Ceriflor, Cheniselle, Cheniti, Giratina, Shaymin, Arceus, etc.).
+ */
+export const GEN4_FORME_BASE_IDS = [
+  "gastrodon",
+  "castform",
+  "giratina",
+  "wormadam",
+  "cherrim",
+  "shellos",
+  "shaymin",
+  "arceus",
+  "deoxys",
+  "rotom",
+  "burmy",
+  "pichu",
+  "unown",
+] as const;
+
+/**
+ * Extrait l'identifiant de l'espèce de base pour une forme spéciale
+ * (ex: castformsunny -> castform, rotom-wash -> rotom, deoxysattack -> deoxys).
+ */
+export function getBaseSpeciesId(speciesId: string): string {
+  if (!speciesId) return "";
+  const normalized = speciesId.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  for (const baseId of GEN4_FORME_BASE_IDS) {
+    if (normalized.length > baseId.length && normalized.startsWith(baseId)) {
+      return baseId;
+    }
+  }
+
+  const dashIndex = speciesId.indexOf("-");
+  if (dashIndex > 0) {
+    return speciesId.slice(0, dashIndex).toLowerCase();
+  }
+
+  return normalized;
+}
+
 export function getPokemonSpriteUrl(
   speciesId: string,
   variant: SpriteVariant = "front",
@@ -58,25 +100,45 @@ export function SpriteProvider({
   priority = false,
   normalizeVisibleSize = false,
 }: SpriteProviderProps) {
-  const [srcError, setSrcError] = useState(false);
+  // Stade de repli : primaire (forme spécifique) -> base (espèce de base) -> pokeball
+  const [fallbackStage, setFallbackStage] = useState<
+    "primary" | "base" | "pokeball"
+  >("primary");
   const [measured, setMeasured] = useState<{
     src: string;
     bounds: SpriteBounds | null;
   } | null>(null);
 
-  let initialSrc = FALLBACK_SPRITE;
+  React.useEffect(() => {
+    setFallbackStage("primary");
+    setMeasured(null);
+  }, [speciesId, variant, trainerSpritePath]);
+
+  let effectiveSrc = FALLBACK_SPRITE;
   if (trainerSpritePath) {
-    initialSrc = trainerSpritePath;
+    effectiveSrc =
+      fallbackStage === "pokeball" ? FALLBACK_SPRITE : trainerSpritePath;
   } else if (speciesId) {
-    initialSrc = getPokemonSpriteUrl(speciesId, variant);
+    const baseSpeciesId = getBaseSpeciesId(speciesId);
+    const hasAlternativeBase =
+      baseSpeciesId &&
+      baseSpeciesId !== speciesId.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (fallbackStage === "primary") {
+      effectiveSrc = getPokemonSpriteUrl(speciesId, variant);
+    } else if (fallbackStage === "base" && hasAlternativeBase) {
+      effectiveSrc = getPokemonSpriteUrl(baseSpeciesId, variant);
+    } else {
+      effectiveSrc = FALLBACK_SPRITE;
+    }
   }
 
-  const effectiveSrc = srcError ? FALLBACK_SPRITE : initialSrc;
+  const isFailed = effectiveSrc === FALLBACK_SPRITE;
   const shouldNormalize =
     normalizeVisibleSize &&
     Boolean(speciesId) &&
     !trainerSpritePath &&
-    !srcError;
+    !isFailed;
   const framing =
     shouldNormalize && measured?.src === effectiveSrc && measured.bounds
       ? fitSpriteBounds(measured.bounds, width, height)
@@ -117,6 +179,23 @@ export function SpriteProvider({
     }
   }
 
+  function handleImageError() {
+    if (fallbackStage === "primary") {
+      const baseSpeciesId = speciesId ? getBaseSpeciesId(speciesId) : "";
+      const hasAlternativeBase =
+        baseSpeciesId &&
+        baseSpeciesId !== speciesId?.toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (hasAlternativeBase) {
+        setFallbackStage("base");
+      } else {
+        setFallbackStage("pokeball");
+      }
+    } else if (fallbackStage === "base") {
+      setFallbackStage("pokeball");
+    }
+    setMeasured(null);
+  }
+
   return (
     <div
       className={`relative inline-flex items-center justify-center ${className}`}
@@ -134,10 +213,7 @@ export function SpriteProvider({
         priority={priority}
         unoptimized
         onLoad={measureSprite}
-        onError={() => {
-          setSrcError(true);
-          setMeasured(null);
-        }}
+        onError={handleImageError}
         className="object-contain pixelated"
         style={{
           imageRendering: "pixelated",
