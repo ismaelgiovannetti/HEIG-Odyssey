@@ -207,6 +207,71 @@ describe("Training Battle Mode (T-US09-03)", () => {
       expect(result.moneyEarned).toBe(130);
     });
 
+    it("partage équitablement l'XP totale entre tous les Pokémon participants de l'équipe", async () => {
+      vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+      const pkmn1 = {
+        id: "pkmn-1",
+        userId: "user-1",
+        speciesId: "turtwig",
+        level: 10,
+        experience: 0,
+        ivs: { hp: 15 },
+      };
+      const pkmn2 = {
+        id: "pkmn-2",
+        userId: "user-1",
+        speciesId: "chimchar",
+        level: 10,
+        experience: 0,
+        ivs: { hp: 15 },
+      };
+
+      const mockTx = {
+        userPokemon: {
+          findMany: vi.fn().mockResolvedValue([pkmn1, pkmn2]),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        userProfile: {
+          upsert: vi.fn().mockResolvedValue({ pokedollars: 180 }),
+        },
+        battleRecord: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+        outboxEvent: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+      };
+
+      mockInteractiveTransaction(prisma, mockTx);
+
+      // Niveau 10, 2 participants -> XP de base = 214 * 2 = 428
+      // Difficulté normal (x1.5) -> Total = 642 XP
+      // Partagé entre 2 participants -> 321 XP chacun
+      const result = await grantTrainingRewards({
+        userId: "user-1",
+        battleId: "btl-training-shared",
+        difficulty: "normal",
+        winner: "p1",
+        playerPokemonIds: ["pkmn-1", "pkmn-2"],
+        turnsCount: 4,
+      });
+
+      expect(result.xpEarned).toBe(642);
+      expect(mockTx.userPokemon.update).toHaveBeenCalledWith({
+        where: { id: "pkmn-1" },
+        data: expect.objectContaining({
+          experience: 321,
+        }),
+      });
+      expect(mockTx.userPokemon.update).toHaveBeenCalledWith({
+        where: { id: "pkmn-2" },
+        data: expect.objectContaining({
+          experience: 321,
+        }),
+      });
+    });
+
     it("ne crédite aucun gain en cas de défaite p2", async () => {
       vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
 

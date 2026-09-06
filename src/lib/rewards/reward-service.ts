@@ -432,12 +432,17 @@ export async function grantTrainingRewards({
 
     const teamLeveledUp: BattleRewardResult["teamLeveledUp"] = [];
 
+    const xpPerMember =
+      winner === "p1" && xpReward > 0
+        ? Math.max(1, Math.floor(xpReward / participants.length))
+        : 0;
+
     for (const pokemon of participants) {
       const species = getSpecies(pokemon.speciesId);
       if (!species) continue;
 
       let currentLvl = pokemon.level;
-      let currentExp = pokemon.experience + xpReward;
+      let currentExp = pokemon.experience + xpPerMember;
       let leveledUp = false;
 
       while (currentLvl < 100) {
@@ -474,7 +479,7 @@ export async function grantTrainingRewards({
         hpEv,
       );
 
-      if (leveledUp || xpReward > 0) {
+      if (leveledUp || xpPerMember > 0) {
         await tx.userPokemon.update({
           where: { id: pokemon.id },
           data: {
