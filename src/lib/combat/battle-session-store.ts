@@ -324,6 +324,7 @@ export async function processBattleTurn(
         winner,
         turnsCount: turnResult.turn,
         playerPokemonIds,
+        opponentTeam: turnResult.state.p2.team,
       });
     }
 

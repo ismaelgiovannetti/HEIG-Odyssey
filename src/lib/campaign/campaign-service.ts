@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { loadCampaign, loadTrainers } from "@/lib/content/loader";
+import { calculateTrainerTeamBaseXp } from "@/lib/rewards/reward-service";
 import type { CampaignStage, CampaignWorld } from "@/lib/content/schemas";
 import type {
   CampaignProgressOverview,
@@ -66,6 +67,10 @@ export async function getCampaignProgressForUser(
       }
 
       const trainer = trainers.get(stage.trainerId);
+      const computedStageXp =
+        trainer && trainer.team.length > 0
+          ? calculateTrainerTeamBaseXp(trainer.team)
+          : stage.rewardXp;
 
       const stageView: CampaignStageView = {
         id: stage.id,
@@ -79,7 +84,7 @@ export async function getCampaignProgressForUser(
         trainerSprite: trainer?.sprite ?? "/sprites/trainer-player-back.png",
         prerequisiteStageId: stage.prerequisiteStageId,
         rewardMoney: stage.rewardMoney,
-        rewardXp: stage.rewardXp,
+        rewardXp: computedStageXp,
         status,
         isCompleted,
         isAccessible: status !== "LOCKED",
