@@ -39,13 +39,13 @@ export const DIFFICULTY_REWARD_MULTIPLIERS: Record<
 > = {
   easy: { money: 1, xp: 1 },
   normal: { money: 1.6, xp: 1.5 },
-  hard: { money: 2.6, xp: 3 },
+  hard: { money: 2.6, xp: 2 },
 };
 
 export const DIFFICULTY_XP_MULTIPLIERS: Record<TrainingDifficulty, number> = {
   easy: 1,
   normal: 1.5,
-  hard: 3,
+  hard: 2,
 };
 
 /** Rendement de base moyen (Gen 4) par défaut ou selon le stade d'évolution. */

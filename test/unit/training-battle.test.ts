@@ -186,10 +186,10 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
       mockInteractiveTransaction(prisma, mockTx);
 
-      // Adversaire avec 2 Pokémon niveau 15 vaincus, difficulté hard (x3)
+      // Adversaire avec 2 Pokémon niveau 15 vaincus, difficulté hard (x2)
       // bulbizarre (stage 1, b=65): floor((65 * 15 * 1.5) / 7) = 208
       // ivysaur (stage 2, b=140): floor((140 * 15 * 1.5) / 7) = 450
-      // Base XP = 208 + 450 = 658 -> Hard (x3) = 1974 XP
+      // Base XP = 208 + 450 = 658 -> Hard (x2) = 1316 XP
       const result = await grantTrainingRewards({
         userId: "user-1",
         battleId: "btl-training-multi-defeated",
@@ -203,7 +203,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
         ],
       });
 
-      expect(result.xpEarned).toBe(1974);
+      expect(result.xpEarned).toBe(1316);
       expect(result.moneyEarned).toBe(130);
     });
 
