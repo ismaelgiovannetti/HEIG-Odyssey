@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { loadSpecies, loadTrainers } from "@/lib/content/loader";
-import { getPokemonSpriteUrl } from "@/components/pokemon/sprite-provider";
+import {
+  getPokemonSpriteUrl,
+  getBaseSpeciesId,
+} from "@/components/pokemon/sprite-provider";
 
 describe("Sprite Assets & Manifest Validation (US-16)", () => {
   it("should have a valid sprites manifest.json with all 493 species", () => {
@@ -104,5 +107,84 @@ describe("Sprite Assets & Manifest Validation (US-16)", () => {
       "/sprites/pokemon/back_shiny/turtwig.png",
     );
     expect(getPokemonSpriteUrl("", "front")).toBe("/pokeball-pixel.svg");
+  });
+
+  it("should resolve base species id for all Gen 1-4 alternative forms", () => {
+    // Morphéo (Castform)
+    expect(getBaseSpeciesId("castformsunny")).toBe("castform");
+    expect(getBaseSpeciesId("castform-sunny")).toBe("castform");
+    expect(getBaseSpeciesId("castformrainy")).toBe("castform");
+    expect(getBaseSpeciesId("castformsnowy")).toBe("castform");
+
+    // Motisma (Rotom)
+    expect(getBaseSpeciesId("rotomheat")).toBe("rotom");
+    expect(getBaseSpeciesId("rotomwash")).toBe("rotom");
+    expect(getBaseSpeciesId("rotom-frost")).toBe("rotom");
+
+    // Autres formes Gen 1-4
+    expect(getBaseSpeciesId("cherrimsunshine")).toBe("cherrim");
+    expect(getBaseSpeciesId("deoxysattack")).toBe("deoxys");
+    expect(getBaseSpeciesId("giratinaorigin")).toBe("giratina");
+    expect(getBaseSpeciesId("shayminsky")).toBe("shaymin");
+    expect(getBaseSpeciesId("wormadamsandy")).toBe("wormadam");
+    expect(getBaseSpeciesId("arceuswater")).toBe("arceus");
+    expect(getBaseSpeciesId("burmytrash")).toBe("burmy");
+    expect(getBaseSpeciesId("shelloseast")).toBe("shellos");
+    expect(getBaseSpeciesId("gastrodoneast")).toBe("gastrodon");
+    expect(getBaseSpeciesId("pichuspikyeared")).toBe("pichu");
+
+    // Espèces régulières
+    expect(getBaseSpeciesId("bulbasaur")).toBe("bulbasaur");
+    expect(getBaseSpeciesId("pikachu")).toBe("pikachu");
+  });
+
+  it("should have all Castform form sprites across all 4 visual variants", () => {
+    const publicDir = path.join(process.cwd(), "public", "sprites", "pokemon");
+    const castformForms = [
+      "castformsunny",
+      "castformrainy",
+      "castformsnowy",
+      "castform-sunny",
+      "castform-rainy",
+      "castform-snowy",
+    ];
+
+    for (const folder of ["front", "back", "front_shiny", "back_shiny"]) {
+      for (const formId of castformForms) {
+        const filePath = path.join(publicDir, folder, `${formId}.png`);
+        expect(
+          fs.existsSync(filePath),
+          `Missing Castform form sprite: ${filePath}`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("should have special Gen 1-4 form sprites available in front folder", () => {
+    const publicDir = path.join(
+      process.cwd(),
+      "public",
+      "sprites",
+      "pokemon",
+      "front",
+    );
+    const sampleSpecialForms = [
+      "rotomheat",
+      "rotomwash",
+      "cherrimsunshine",
+      "deoxysattack",
+      "giratinaorigin",
+      "shayminsky",
+      "wormadamsandy",
+      "arceusfire",
+    ];
+
+    for (const formId of sampleSpecialForms) {
+      const filePath = path.join(publicDir, `${formId}.png`);
+      expect(
+        fs.existsSync(filePath),
+        `Missing special form sprite: ${filePath}`,
+      ).toBe(true);
+    }
   });
 });
