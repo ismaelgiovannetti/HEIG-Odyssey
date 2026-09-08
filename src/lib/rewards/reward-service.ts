@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "../prisma";
-import { loadCampaign, getSpecies } from "../content/loader";
+import { loadCampaign, loadTrainers, getSpecies } from "../content/loader";
 import { calculateMaxHp } from "../team/team-validator";
 import { BattleResult, OutboxStatus, type Prisma } from "@prisma/client";
 import { snapshotBattleParticipants } from "../combat/battle-participants";
@@ -12,6 +12,14 @@ import {
 import { triggerOutboxFlush } from "../events/publisher";
 import {
   calculateTrainingReward,
+  calculateTrainingBaseXp,
+  calculateDefeatedPokemonXp,
+  calculateTrainingBaseMoney,
+  calculateDefeatedPokemonMoney,
+  DEFAULT_BASE_MONEY_PER_LEVEL,
+  DIFFICULTY_REWARD_MULTIPLIERS,
+  DIFFICULTY_XP_MULTIPLIERS,
+  TRAINING_BASE_REWARD,
   type TrainingDifficulty,
 } from "../training/difficulty";
 
@@ -19,10 +27,92 @@ export {
   calculateTrainingReward,
   calculateTrainingBaseXp,
   calculateDefeatedPokemonXp,
+  calculateTrainingBaseMoney,
+  calculateDefeatedPokemonMoney,
+  DEFAULT_BASE_MONEY_PER_LEVEL,
   DIFFICULTY_REWARD_MULTIPLIERS,
   DIFFICULTY_XP_MULTIPLIERS,
   TRAINING_BASE_REWARD,
-} from "../training/difficulty";
+};
+
+/**
+ * Prépare les paramètres d'XP pour une équipe adverse à partir des métadonnées d'espèces.
+ */
+export function resolveOpponentTeamExpParams(
+  opponentTeam?: readonly {
+    speciesId?: string;
+    level: number;
+    currentHp?: number;
+    maxHp?: number;
+    isFainted?: boolean;
+  }[],
+):
+  | Array<{
+      level: number;
+      stage?: number;
+      baseStatTotal?: number;
+      isFainted?: boolean;
+    }>
+  | undefined {
+  if (!opponentTeam || opponentTeam.length === 0) return undefined;
+  return opponentTeam.map((p) => {
+    const species = p.speciesId ? getSpecies(p.speciesId) : undefined;
+    const bst = species
+      ? species.baseStats.hp +
+        species.baseStats.attack +
+        species.baseStats.defense +
+        species.baseStats.specialAttack +
+        species.baseStats.specialDefense +
+        species.baseStats.speed
+      : undefined;
+    return {
+      level: p.level,
+      stage: species?.stage,
+      baseStatTotal: bst,
+      isFainted:
+        p.isFainted ??
+        (p.currentHp !== undefined ? p.currentHp <= 0 : undefined),
+    };
+  });
+}
+
+/**
+ * Calcule l'XP de combat de référence (Gen 4, multiplicateur x1) pour l'équipe complète d'un dresseur.
+ */
+export function calculateTrainerTeamBaseXp(
+  trainerTeam?: readonly {
+    speciesId: string;
+    level: number;
+  }[],
+): number {
+  if (!trainerTeam || trainerTeam.length === 0) return 0;
+  const hydrated = resolveOpponentTeamExpParams(
+    trainerTeam.map((m) => ({
+      speciesId: m.speciesId,
+      level: m.level,
+      isFainted: true,
+    })),
+  );
+  return calculateTrainingBaseXp({ opponentTeam: hydrated });
+}
+
+/**
+ * Calcule la monnaie (PokéDollars) de base (multiplicateur x1) pour l'équipe complète d'un dresseur en campagne.
+ */
+export function calculateTrainerTeamBaseMoney(
+  trainerTeam?: readonly {
+    speciesId: string;
+    level: number;
+  }[],
+): number {
+  if (!trainerTeam || trainerTeam.length === 0) return 0;
+  return calculateTrainingBaseMoney({
+    opponentTeam: trainerTeam.map((m) => ({
+      level: m.level,
+      isFainted: true,
+    })),
+  });
+}
 
 export interface GrantBattleRewardsParams {
   userId: string;
@@ -32,6 +122,14 @@ export interface GrantBattleRewardsParams {
   turnsCount?: number;
   // Identifiants capturés par le serveur au lancement, jamais par le navigateur.
   playerPokemonIds: readonly string[];
+  opponentTeam?: readonly {
+    speciesId?: string;
+    level: number;
+    currentHp?: number;
+    maxHp?: number;
+    isFainted?: boolean;
+  }[];
+  opponentAverageLevel?: number;
 }
 
 export interface BattleRewardResult {
@@ -64,6 +162,8 @@ export async function grantBattleRewards({
   winner,
   turnsCount = 1,
   playerPokemonIds,
+  opponentTeam,
+  opponentAverageLevel,
 }: GrantBattleRewardsParams): Promise<BattleRewardResult> {
   const participantIds = snapshotBattleParticipants(playerPokemonIds);
   // Un résultat déjà enregistré ne doit jamais attribuer de nouveaux gains.
@@ -116,8 +216,44 @@ export async function grantBattleRewards({
     throw new Error("CAMPAIGN_STAGE_NOT_FOUND");
   }
 
-  const moneyReward = winner === "p1" ? stageConfig.rewardMoney : 0;
-  const xpReward = winner === "p1" ? stageConfig.rewardXp : 0;
+  // Calcul dynamique des gains de combat (XP Gen 4 & PokéDollars, multiplicateur x1) :
+  // dépend du niveau et du nombre de Pokémon vaincus, identique au mode entraînement.
+  const hydratedOpponents = resolveOpponentTeamExpParams(opponentTeam);
+
+  let calculatedBattleXp: number;
+  let calculatedBattleMoney: number;
+
+  if (hydratedOpponents && hydratedOpponents.length > 0) {
+    calculatedBattleXp = calculateTrainingBaseXp({
+      opponentTeam: hydratedOpponents,
+    });
+    calculatedBattleMoney = calculateTrainingBaseMoney({
+      opponentTeam: hydratedOpponents,
+    });
+  } else {
+    // Si l'équipe adverse en direct n'est pas fournie, on s'appuie sur la composition du dresseur
+    const trainers = loadTrainers();
+    const stageTrainer = trainers.get(stageConfig.trainerId);
+    if (stageTrainer && stageTrainer.team.length > 0) {
+      calculatedBattleXp = calculateTrainerTeamBaseXp(stageTrainer.team);
+      calculatedBattleMoney = calculateTrainerTeamBaseMoney(stageTrainer.team);
+    } else if (typeof opponentAverageLevel === "number") {
+      calculatedBattleXp = calculateTrainingBaseXp({
+        opponentAverageLevel,
+        teamSize: 1,
+      });
+      calculatedBattleMoney = calculateTrainingBaseMoney({
+        opponentAverageLevel,
+        teamSize: 1,
+      });
+    } else {
+      calculatedBattleXp = stageConfig.rewardXp;
+      calculatedBattleMoney = stageConfig.rewardMoney;
+    }
+  }
+
+  const moneyReward = winner === "p1" ? Math.max(1, calculatedBattleMoney) : 0;
+  const xpReward = winner === "p1" ? Math.max(1, calculatedBattleXp) : 0;
 
   const txResult = await prisma.$transaction(async (tx) => {
     // Monnaie, expérience, progression et résultat font partie de la même transaction.
@@ -373,23 +509,7 @@ export async function grantTrainingRewards({
     };
   }
 
-  const hydratedOpponents = opponentTeam?.map((p) => {
-    const species = p.speciesId ? getSpecies(p.speciesId) : undefined;
-    const bst = species
-      ? species.baseStats.hp +
-        species.baseStats.attack +
-        species.baseStats.defense +
-        species.baseStats.specialAttack +
-        species.baseStats.specialDefense +
-        species.baseStats.speed
-      : undefined;
-    return {
-      level: p.level,
-      stage: species?.stage,
-      baseStatTotal: bst,
-      isFainted: p.isFainted,
-    };
-  });
+  const hydratedOpponents = resolveOpponentTeamExpParams(opponentTeam);
 
   const txResult = await prisma.$transaction(async (tx) => {
     const participants = await tx.userPokemon.findMany({
@@ -432,12 +552,17 @@ export async function grantTrainingRewards({
 
     const teamLeveledUp: BattleRewardResult["teamLeveledUp"] = [];
 
+    const xpPerMember =
+      winner === "p1" && xpReward > 0
+        ? Math.max(1, Math.floor(xpReward / participants.length))
+        : 0;
+
     for (const pokemon of participants) {
       const species = getSpecies(pokemon.speciesId);
       if (!species) continue;
 
       let currentLvl = pokemon.level;
-      let currentExp = pokemon.experience + xpReward;
+      let currentExp = pokemon.experience + xpPerMember;
       let leveledUp = false;
 
       while (currentLvl < 100) {
@@ -474,7 +599,7 @@ export async function grantTrainingRewards({
         hpEv,
       );
 
-      if (leveledUp || xpReward > 0) {
+      if (leveledUp || xpPerMember > 0) {
         await tx.userPokemon.update({
           where: { id: pokemon.id },
           data: {

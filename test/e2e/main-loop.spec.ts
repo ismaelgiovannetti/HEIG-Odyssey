@@ -82,10 +82,10 @@ test.describe("boucle principale (T-US19-05)", () => {
 
     // --- Étape 3 : résultat et gains vérifiés immédiatement après le combat -
     const rewards = page.locator(".battle-result__rewards");
-    await expect(rewards).toContainText("+40 ₽");
-    await expect(rewards).toContainText("+70 XP");
-    await expect(rewards).toContainText("40 ₽");
-    await expect(page.getByLabel("40 Pokédollars")).toBeVisible();
+    await expect(rewards).toContainText("+42 ₽");
+    await expect(rewards).toContainText("+83 XP");
+    await expect(rewards).toContainText("42 ₽");
+    await expect(page.getByLabel("42 Pokédollars")).toBeVisible();
 
     await page.getByRole("button", { name: /Retour.*campagne/ }).click();
     await expect(
@@ -128,7 +128,7 @@ test.describe("boucle principale (T-US19-05)", () => {
       prisma.userProfile.findUnique({ where: { userId: testUser.id } }),
       prisma.campaignProgress.findMany({ where: { userId: testUser.id } }),
     ]);
-    expect(profileAfterBattle?.pokedollars).toBe(40);
+    expect(profileAfterBattle?.pokedollars).toBe(42);
     expect(progressAfterBattle).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -151,7 +151,7 @@ test.describe("boucle principale (T-US19-05)", () => {
     await page.waitForLoadState("networkidle");
     await login(page, testUser);
 
-    await expect(page.getByLabel("40 Pokédollars")).toBeVisible();
+    await expect(page.getByLabel("42 Pokédollars")).toBeVisible();
 
     await page.goto("/team");
     await expect(

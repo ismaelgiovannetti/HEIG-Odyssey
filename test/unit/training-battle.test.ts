@@ -109,7 +109,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
           update: vi.fn().mockResolvedValue({}),
         },
         userProfile: {
-          upsert: vi.fn().mockResolvedValue({ pokedollars: 180 }),
+          upsert: vi.fn().mockResolvedValue({ pokedollars: 212 }),
         },
         battleRecord: {
           create: vi.fn().mockResolvedValue({}),
@@ -131,10 +131,11 @@ describe("Training Battle Mode (T-US09-03)", () => {
       });
 
       expect(result.isAlreadyClaimed).toBe(false);
-      expect(result.moneyEarned).toBe(80);
+      // Niveau 10 -> monnaie de base 70 -> normal (x1.6) -> 112 PokéDollars
+      expect(result.moneyEarned).toBe(112);
       // Niveau 10 -> XP de base 214 -> normal (x1.5) -> 321 XP
       expect(result.xpEarned).toBe(321);
-      expect(result.newBalance).toBe(180);
+      expect(result.newBalance).toBe(212);
 
       expect(mockTx.battleRecord.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -143,7 +144,7 @@ describe("Training Battle Mode (T-US09-03)", () => {
           opponentId: "training-normal",
           result: "VICTORY",
           xpGained: 321,
-          moneyGained: 80,
+          moneyGained: 112,
         }),
       });
 
@@ -186,10 +187,10 @@ describe("Training Battle Mode (T-US09-03)", () => {
 
       mockInteractiveTransaction(prisma, mockTx);
 
-      // Adversaire avec 2 Pokémon niveau 15 vaincus, difficulté hard (x3)
+      // Adversaire avec 2 Pokémon niveau 15 vaincus, difficulté hard (x2)
       // bulbizarre (stage 1, b=65): floor((65 * 15 * 1.5) / 7) = 208
       // ivysaur (stage 2, b=140): floor((140 * 15 * 1.5) / 7) = 450
-      // Base XP = 208 + 450 = 658 -> Hard (x3) = 1974 XP
+      // Base XP = 208 + 450 = 658 -> Hard (x2) = 1316 XP
       const result = await grantTrainingRewards({
         userId: "user-1",
         battleId: "btl-training-multi-defeated",
@@ -203,8 +204,74 @@ describe("Training Battle Mode (T-US09-03)", () => {
         ],
       });
 
-      expect(result.xpEarned).toBe(1974);
-      expect(result.moneyEarned).toBe(130);
+      expect(result.xpEarned).toBe(1316);
+      // 2 Pokémon lvl 15 -> monnaie de base 210 -> hard (x2.6) -> 546 PokéDollars
+      expect(result.moneyEarned).toBe(546);
+    });
+
+    it("partage équitablement l'XP totale entre tous les Pokémon participants de l'équipe", async () => {
+      vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+      const pkmn1 = {
+        id: "pkmn-1",
+        userId: "user-1",
+        speciesId: "turtwig",
+        level: 10,
+        experience: 0,
+        ivs: { hp: 15 },
+      };
+      const pkmn2 = {
+        id: "pkmn-2",
+        userId: "user-1",
+        speciesId: "chimchar",
+        level: 10,
+        experience: 0,
+        ivs: { hp: 15 },
+      };
+
+      const mockTx = {
+        userPokemon: {
+          findMany: vi.fn().mockResolvedValue([pkmn1, pkmn2]),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        userProfile: {
+          upsert: vi.fn().mockResolvedValue({ pokedollars: 180 }),
+        },
+        battleRecord: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+        outboxEvent: {
+          create: vi.fn().mockResolvedValue({}),
+        },
+      };
+
+      mockInteractiveTransaction(prisma, mockTx);
+
+      // Niveau 10, 2 participants -> XP de base = 214 * 2 = 428
+      // Difficulté normal (x1.5) -> Total = 642 XP
+      // Partagé entre 2 participants -> 321 XP chacun
+      const result = await grantTrainingRewards({
+        userId: "user-1",
+        battleId: "btl-training-shared",
+        difficulty: "normal",
+        winner: "p1",
+        playerPokemonIds: ["pkmn-1", "pkmn-2"],
+        turnsCount: 4,
+      });
+
+      expect(result.xpEarned).toBe(642);
+      expect(mockTx.userPokemon.update).toHaveBeenCalledWith({
+        where: { id: "pkmn-1" },
+        data: expect.objectContaining({
+          experience: 321,
+        }),
+      });
+      expect(mockTx.userPokemon.update).toHaveBeenCalledWith({
+        where: { id: "pkmn-2" },
+        data: expect.objectContaining({
+          experience: 321,
+        }),
+      });
     });
 
     it("ne crédite aucun gain en cas de défaite p2", async () => {

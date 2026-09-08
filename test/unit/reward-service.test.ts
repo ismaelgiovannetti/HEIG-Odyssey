@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   grantBattleRewards,
   calculateXpForNextLevel,
+  calculateTrainerTeamBaseXp,
+  calculateTrainerTeamBaseMoney,
 } from "@/lib/rewards/reward-service";
 import { prisma } from "@/lib/prisma";
 import { mockInteractiveTransaction } from "../helpers/mock-clients";
@@ -170,5 +172,211 @@ describe("Reward & Idempotency Service (US-11 & US-07)", () => {
       }),
     ).rejects.toThrow("BATTLE_REWARD_OWNER_MISMATCH");
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("calcule l'XP de base d'une équipe de dresseur selon la formule Gen 4", () => {
+    const xp = calculateTrainerTeamBaseXp([{ speciesId: "bidoof", level: 6 }]);
+    // Bidoof stade 1 (rendement 65), niveau 6 : floor((65 * 6 * 1.5) / 7) = floor(585 / 7) = 83
+    expect(xp).toBe(83);
+  });
+
+  it("calcule les PokéDollars de base d'une équipe de dresseur selon son niveau", () => {
+    const money = calculateTrainerTeamBaseMoney([
+      { speciesId: "bidoof", level: 6 },
+    ]);
+    // Bidoof niveau 6 : 6 * 7 = 42 PokéDollars
+    expect(money).toBe(42);
+  });
+
+  it("calcule l'XP dynamiquement à partir des Pokémon adverses vaincus en campagne", async () => {
+    vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+    const mockTx = {
+      userProfile: {
+        upsert: vi
+          .fn()
+          .mockResolvedValue({ userId: "user-1", pokedollars: 150 }),
+      },
+      userPokemon: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "pkmn-1",
+            userId: "user-1",
+            speciesId: "turtwig",
+            nickname: "Tortipouss",
+            level: 5,
+            experience: 0,
+            currentHp: 21,
+            maxHp: 21,
+            ivs: { hp: 15 },
+          },
+        ]),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      campaignProgress: {
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      battleRecord: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    mockInteractiveTransaction(prisma, mockTx);
+
+    // Combat contre 2 Pokémon vaincus : bidoof lvl 10 (stage 1 = 65) et bibarel lvl 15 (stage 2 = 140)
+    // bidoof lvl 10: floor((65 * 10 * 1.5) / 7) = 139
+    // bibarel lvl 15: floor((140 * 15 * 1.5) / 7) = 450
+    // total = 589
+    const result = await grantBattleRewards({
+      userId: "user-1",
+      battleId: "battle-dyn-xp",
+      stageId: "bachelor-1-stage-1",
+      winner: "p1",
+      playerPokemonIds: ["pkmn-1"],
+      opponentTeam: [
+        { speciesId: "bidoof", level: 10, isFainted: true },
+        { speciesId: "bibarel", level: 15, isFainted: true },
+      ],
+    });
+
+    expect(result.xpEarned).toBe(139 + 450);
+    // bidoof lvl 10 (70) + bibarel lvl 15 (105) = 175 PokéDollars
+    expect(result.moneyEarned).toBe(70 + 105);
+    expect(mockTx.userPokemon.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "pkmn-1" },
+        data: expect.objectContaining({
+          experience: expect.any(Number),
+        }),
+      }),
+    );
+  });
+
+  it("partage équitablement l'XP entre tous les participants en campagne", async () => {
+    vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+    const mockTx = {
+      userProfile: {
+        upsert: vi
+          .fn()
+          .mockResolvedValue({ userId: "user-1", pokedollars: 150 }),
+      },
+      userPokemon: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "pkmn-1",
+            userId: "user-1",
+            speciesId: "turtwig",
+            level: 50,
+            experience: 0,
+            currentHp: 100,
+            maxHp: 100,
+          },
+          {
+            id: "pkmn-2",
+            userId: "user-1",
+            speciesId: "chimchar",
+            level: 50,
+            experience: 0,
+            currentHp: 100,
+            maxHp: 100,
+          },
+        ]),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      campaignProgress: {
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      battleRecord: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    mockInteractiveTransaction(prisma, mockTx);
+
+    const result = await grantBattleRewards({
+      userId: "user-1",
+      battleId: "battle-shared-xp",
+      stageId: "bachelor-1-stage-1",
+      winner: "p1",
+      playerPokemonIds: ["pkmn-1", "pkmn-2"],
+      opponentTeam: [{ speciesId: "bidoof", level: 10, isFainted: true }],
+    });
+
+    // 139 XP total partagé entre 2 = Math.floor(139 / 2) = 69 par membre
+    expect(result.xpEarned).toBe(139);
+    expect(mockTx.userPokemon.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "pkmn-1" },
+        data: expect.objectContaining({
+          experience: 69,
+        }),
+      }),
+    );
+    expect(mockTx.userPokemon.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "pkmn-2" },
+        data: expect.objectContaining({
+          experience: 69,
+        }),
+      }),
+    );
+  });
+
+  it("n'accorde aucune XP en cas de défaite en campagne", async () => {
+    vi.mocked(prisma.battleRecord.findUnique).mockResolvedValue(null);
+
+    const mockTx = {
+      userProfile: {
+        upsert: vi
+          .fn()
+          .mockResolvedValue({ userId: "user-1", pokedollars: 150 }),
+      },
+      userPokemon: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "pkmn-1",
+            userId: "user-1",
+            speciesId: "turtwig",
+            level: 5,
+            experience: 0,
+            currentHp: 21,
+            maxHp: 21,
+          },
+        ]),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      campaignProgress: {
+        upsert: vi.fn().mockResolvedValue({}),
+      },
+      battleRecord: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+      outboxEvent: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    mockInteractiveTransaction(prisma, mockTx);
+
+    const result = await grantBattleRewards({
+      userId: "user-1",
+      battleId: "battle-defeat",
+      stageId: "bachelor-1-stage-1",
+      winner: "p2",
+      playerPokemonIds: ["pkmn-1"],
+      opponentTeam: [{ speciesId: "bidoof", level: 10, isFainted: true }],
+    });
+
+    expect(result.xpEarned).toBe(0);
+    expect(result.moneyEarned).toBe(0);
+    expect(result.stageCompleted).toBe(false);
+    expect(mockTx.userPokemon.update).not.toHaveBeenCalled();
   });
 });

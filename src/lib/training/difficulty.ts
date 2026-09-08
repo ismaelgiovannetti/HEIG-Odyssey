@@ -39,13 +39,13 @@ export const DIFFICULTY_REWARD_MULTIPLIERS: Record<
 > = {
   easy: { money: 1, xp: 1 },
   normal: { money: 1.6, xp: 1.5 },
-  hard: { money: 2.6, xp: 3 },
+  hard: { money: 2.6, xp: 2 },
 };
 
 export const DIFFICULTY_XP_MULTIPLIERS: Record<TrainingDifficulty, number> = {
   easy: 1,
   normal: 1.5,
-  hard: 3,
+  hard: 2,
 };
 
 /** Rendement de base moyen (Gen 4) par défaut ou selon le stade d'évolution. */
@@ -119,27 +119,98 @@ export function calculateTrainingBaseXp(
   return perPokemon * size;
 }
 
-export interface CalculateTrainingRewardOptions extends CalculateTrainingBaseXpParams {
-  baseXp?: number;
+/** Taux de base par niveau pour le calcul des gains financiers en combat. */
+export const DEFAULT_BASE_MONEY_PER_LEVEL = 7;
+
+/**
+ * Calcule les PokéDollars générés par la mise K.O. d'un Pokémon adverse selon son niveau.
+ */
+export function calculateDefeatedPokemonMoney(params: {
+  level: number;
+  baseMoneyPerLevel?: number;
+}): number {
+  const level = Math.max(1, Math.min(100, Math.round(params.level)));
+  const rate = params.baseMoneyPerLevel ?? DEFAULT_BASE_MONEY_PER_LEVEL;
+  return Math.max(1, Math.round(level * rate));
+}
+
+export interface CalculateTrainingBaseMoneyParams {
+  opponentTeam?: Array<{
+    level: number;
+    isFainted?: boolean;
+  }>;
+  opponentAverageLevel?: number;
+  teamSize?: number;
+  baseMoneyPerLevel?: number;
 }
 
 /**
- * Calcule les gains d'entraînement en appliquant le multiplicateur de difficulté (x1, x1.5, x3)
- * sur l'XP de base du combat (dérivée des Pokémon vaincus ou du niveau moyen adverse).
+ * Calcule la monnaie (PokéDollars) de base issue d'un combat.
+ * Si une équipe adverse est fournie, somme les gains des Pokémon vaincus (ou de toute l'équipe si victorieux).
+ * Sinon, se base sur le niveau moyen et le nombre de Pokémon adverses.
+ */
+export function calculateTrainingBaseMoney(
+  params?: CalculateTrainingBaseMoneyParams,
+): number {
+  if (params?.opponentTeam && params.opponentTeam.length > 0) {
+    const targets = params.opponentTeam.some((p) => p.isFainted)
+      ? params.opponentTeam.filter((p) => p.isFainted)
+      : params.opponentTeam;
+    return targets.reduce(
+      (sum, p) =>
+        sum +
+        calculateDefeatedPokemonMoney({
+          level: p.level,
+          baseMoneyPerLevel: params?.baseMoneyPerLevel,
+        }),
+      0,
+    );
+  }
+
+  const avgLevel = params?.opponentAverageLevel ?? 5;
+  const size = Math.max(1, params?.teamSize ?? 1);
+  const perPokemon = calculateDefeatedPokemonMoney({
+    level: avgLevel,
+    baseMoneyPerLevel: params?.baseMoneyPerLevel,
+  });
+  return perPokemon * size;
+}
+
+export interface CalculateTrainingRewardOptions extends CalculateTrainingBaseXpParams {
+  baseXp?: number;
+  baseMoney?: number;
+  baseMoneyPerLevel?: number;
+}
+
+/**
+ * Calcule les gains d'entraînement en appliquant les multiplicateurs de difficulté
+ * sur l'XP de base et la monnaie de base du combat (dérivées des Pokémon vaincus ou du niveau moyen adverse).
  */
 export function calculateTrainingReward(
   difficulty: TrainingDifficulty,
   options?: CalculateTrainingRewardOptions,
 ) {
   const multiplier = DIFFICULTY_REWARD_MULTIPLIERS[difficulty];
+  const hasCombatOptions = Boolean(
+    options?.opponentTeam ||
+    options?.opponentAverageLevel !== undefined ||
+    options?.teamSize !== undefined,
+  );
+
   const baseXp =
     options?.baseXp ??
-    (options?.opponentTeam || options?.opponentAverageLevel || options?.teamSize
+    (hasCombatOptions
       ? calculateTrainingBaseXp(options)
       : TRAINING_BASE_REWARD.xp);
 
+  const baseMoney =
+    options?.baseMoney ??
+    (hasCombatOptions
+      ? calculateTrainingBaseMoney(options)
+      : TRAINING_BASE_REWARD.money);
+
   return {
-    money: Math.round(TRAINING_BASE_REWARD.money * multiplier.money),
+    money: Math.round(baseMoney * multiplier.money),
     xp: Math.round(baseXp * multiplier.xp),
   };
 }
