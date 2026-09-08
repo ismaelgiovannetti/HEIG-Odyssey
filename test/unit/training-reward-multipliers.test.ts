@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   calculateDefeatedPokemonXp,
   calculateTrainingBaseXp,
+  calculateDefeatedPokemonMoney,
+  calculateTrainingBaseMoney,
   calculateTrainingReward,
   DIFFICULTY_REWARD_MULTIPLIERS,
   DIFFICULTY_XP_MULTIPLIERS,
@@ -9,15 +11,15 @@ import {
 } from "@/lib/rewards/reward-service";
 
 describe("Multiplicateurs de récompense d'entraînement (T-US10-04)", () => {
-  it("définit les multiplicateurs d'XP conformes aux exigences (x1, x1.5, x3)", () => {
+  it("définit les multiplicateurs d'XP conformes aux exigences (x1, x1.5, x2)", () => {
     expect(DIFFICULTY_REWARD_MULTIPLIERS.easy.xp).toBe(1);
     expect(DIFFICULTY_REWARD_MULTIPLIERS.normal.xp).toBe(1.5);
-    expect(DIFFICULTY_REWARD_MULTIPLIERS.hard.xp).toBe(3);
+    expect(DIFFICULTY_REWARD_MULTIPLIERS.hard.xp).toBe(2);
 
     expect(DIFFICULTY_XP_MULTIPLIERS).toEqual({
       easy: 1,
       normal: 1.5,
-      hard: 3,
+      hard: 2,
     });
   });
 
@@ -84,7 +86,7 @@ describe("Multiplicateurs de récompense d'entraînement (T-US10-04)", () => {
     expect(threePokemonReward.xp).toBe(midLevelReward.xp * 3);
   });
 
-  it("applique les multiplicateurs (x1, x1.5, x3) sur l'XP de combat calculée", () => {
+  it("applique les multiplicateurs (x1, x1.5, x2) sur l'XP de combat calculée", () => {
     const options = { opponentAverageLevel: 20, teamSize: 2 };
     const baseXp = calculateTrainingBaseXp(options);
 
@@ -94,7 +96,49 @@ describe("Multiplicateurs de récompense d'entraînement (T-US10-04)", () => {
 
     expect(easy.xp).toBe(Math.round(baseXp * 1));
     expect(normal.xp).toBe(Math.round(baseXp * 1.5));
-    expect(hard.xp).toBe(Math.round(baseXp * 3));
+    expect(hard.xp).toBe(Math.round(baseXp * 2));
+  });
+
+  it("calcule les PokéDollars par Pokémon selon son niveau", () => {
+    // level * 7
+    expect(calculateDefeatedPokemonMoney({ level: 6 })).toBe(42);
+    expect(calculateDefeatedPokemonMoney({ level: 10 })).toBe(70);
+    expect(calculateDefeatedPokemonMoney({ level: 20 })).toBe(140);
+  });
+
+  it("adapte dynamiquement la monnaie selon le niveau et le nombre de Pokémon adverses", () => {
+    const lowLevelReward = calculateTrainingReward("easy", {
+      opponentAverageLevel: 5,
+      teamSize: 1,
+    });
+    const highLevelReward = calculateTrainingReward("easy", {
+      opponentAverageLevel: 50,
+      teamSize: 1,
+    });
+
+    expect(highLevelReward.money).toBeGreaterThan(lowLevelReward.money);
+
+    const multiPokemonReward = calculateTrainingReward("easy", {
+      opponentAverageLevel: 10,
+      teamSize: 3,
+    });
+    // 3 * 70 = 210 PokéDollars
+    expect(multiPokemonReward.money).toBe(210);
+  });
+
+  it("applique les multiplicateurs de difficulté sur la monnaie de combat calculée", () => {
+    const options = { opponentAverageLevel: 10, teamSize: 2 };
+    // base money = 2 * (10 * 7) = 140
+    const baseMoney = calculateTrainingBaseMoney(options);
+    expect(baseMoney).toBe(140);
+
+    const easy = calculateTrainingReward("easy", options);
+    const normal = calculateTrainingReward("normal", options);
+    const hard = calculateTrainingReward("hard", options);
+
+    expect(easy.money).toBe(Math.round(140 * 1));
+    expect(normal.money).toBe(Math.round(140 * 1.6));
+    expect(hard.money).toBe(Math.round(140 * 2.6));
   });
 
   it("ne duplique pas la configuration : un seul multiplicateur par difficulté et par ressource", () => {
