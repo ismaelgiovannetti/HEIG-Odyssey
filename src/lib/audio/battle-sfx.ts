@@ -33,7 +33,8 @@ export type BattleSfxType =
   | "status_frz"
   | "faint"
   | "switch"
-  | "miss";
+  | "miss"
+  | "shiny";
 
 /**
  * Joue un effet sonore rétro synthétisé via la Web Audio API,
@@ -289,6 +290,42 @@ export function playBattleSfx(type: BattleSfxType) {
       gain.connect(masterGain);
       osc.start(t);
       osc.stop(t + 0.18);
+      break;
+    }
+
+    case "shiny": {
+      // Scintillement chromatique (Shiny sparkle chime) :
+      // Cascade de carillons cristallins et chatoyants montants
+      const notes = [1318.51, 1567.98, 1760.0, 2093.0, 2637.02, 3135.96]; // E6, G6, A6, C7, E7, G7
+      notes.forEach((freq, idx) => {
+        const delay = idx * 0.055;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, t + delay);
+        osc.frequency.linearRampToValueAtTime(freq * 1.05, t + delay + 0.18);
+
+        gain.gain.setValueAtTime(0.45, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.22);
+
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.22);
+      });
+
+      // Shimmer magique d'accompagnement
+      const shimmerOsc = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
+      shimmerOsc.type = "triangle";
+      shimmerOsc.frequency.setValueAtTime(880, t);
+      shimmerOsc.frequency.exponentialRampToValueAtTime(3520, t + 0.35);
+      shimmerGain.gain.setValueAtTime(0.28, t);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      shimmerOsc.connect(shimmerGain);
+      shimmerGain.connect(masterGain);
+      shimmerOsc.start(t);
+      shimmerOsc.stop(t + 0.35);
       break;
     }
   }

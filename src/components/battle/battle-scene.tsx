@@ -1,3 +1,4 @@
+import { ShinySparkles } from "@/components/pokemon/shiny-sparkles";
 import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type {
   BattlePokemonPayload,
@@ -12,6 +13,7 @@ interface CombatantPresentation {
   statusOverride: string | null | undefined;
   animation: string;
   hideField: boolean;
+  showShinySparkles?: boolean;
 }
 
 interface BattleSceneProps {
@@ -96,6 +98,7 @@ export function BattleScene({
             {effectiveOpponentStatus && (
               <StatusOverlay status={effectiveOpponentStatus} />
             )}
+            {opponent.showShinySparkles && <ShinySparkles active />}
             <SpriteProvider
               speciesId={opponent.pokemon.speciesId}
               variant={opponent.pokemon.isShiny ? "front_shiny" : "front"}
@@ -120,6 +123,7 @@ export function BattleScene({
             {effectivePlayerStatus && (
               <StatusOverlay status={effectivePlayerStatus} />
             )}
+            {player.showShinySparkles && <ShinySparkles active />}
             <SpriteProvider
               speciesId={player.pokemon.speciesId}
               variant={player.pokemon.isShiny ? "back_shiny" : "back"}

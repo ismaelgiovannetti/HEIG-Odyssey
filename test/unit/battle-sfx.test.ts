@@ -20,6 +20,7 @@ describe("battle-sfx", () => {
       "faint",
       "switch",
       "miss",
+      "shiny",
     ];
 
     for (const type of sfxTypes) {

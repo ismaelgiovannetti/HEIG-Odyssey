@@ -28,6 +28,7 @@ import {
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
 import { publishQuestProgressInvalidated } from "@/lib/quests/quest-progress-events";
 import { playBattleSfx } from "@/lib/audio/battle-sfx";
+import { playPokemonCry } from "@/lib/audio/pokemon-cry";
 
 /** Retrouve le combattant visible tout en conservant un repli sûr. */
 function activePokemon(side: BattleStatePayload["p1"]): BattlePokemonPayload {
@@ -73,6 +74,8 @@ export function BattleArena({
   // Animations visuelles des combattants
   const [playerAnim, setPlayerAnim] = useState<string>("");
   const [opponentAnim, setOpponentAnim] = useState<string>("");
+  const [playerShinySparkles, setPlayerShinySparkles] = useState(false);
+  const [opponentShinySparkles, setOpponentShinySparkles] = useState(false);
 
   // Lancement du combat : le dresseur adverse reste en scène le temps de sa
   // réplique, glisse hors champ, puis laisse place à son Pokémon.
@@ -138,16 +141,51 @@ export function BattleArena({
       timers.push(window.setTimeout(() => setAnim(""), delay + 420));
     };
 
-    // Sans dresseur à l'écran : les deux Pokémon entrent tout de suite.
+    const initialPlayer = activePokemon(initialBattle.state.p1);
+    const initialOpponent = activePokemon(initialBattle.state.p2);
+
+    const triggerOpponentEntrance = (delay = 0) => {
+      pokeballEntrance(setOpponentAnim, delay);
+      timers.push(
+        window.setTimeout(() => {
+          playPokemonCry(initialOpponent.speciesId, { interrupt: false });
+          if (initialOpponent.isShiny) {
+            playBattleSfx("shiny");
+            setOpponentShinySparkles(true);
+            timers.push(
+              window.setTimeout(() => setOpponentShinySparkles(false), 1400),
+            );
+          }
+        }, delay + 30),
+      );
+    };
+
+    const triggerPlayerEntrance = (delay = 0) => {
+      pokeballEntrance(setPlayerAnim, delay);
+      timers.push(
+        window.setTimeout(() => {
+          playPokemonCry(initialPlayer.speciesId, { interrupt: false });
+          if (initialPlayer.isShiny) {
+            playBattleSfx("shiny");
+            setPlayerShinySparkles(true);
+            timers.push(
+              window.setTimeout(() => setPlayerShinySparkles(false), 1400),
+            );
+          }
+        }, delay + 30),
+      );
+    };
+
+    // Sans dresseur à l'écran : l'adversaire entre, puis le joueur enchaîne
     if (!introTrainerUrl) {
       setOpponentIntro("pokemon");
-      pokeballEntrance(setPlayerAnim);
-      pokeballEntrance(setOpponentAnim);
+      triggerOpponentEntrance(0);
+      triggerPlayerEntrance(280);
       return () => timers.forEach((id) => clearTimeout(id));
     }
 
     // Le dresseur reste 1,5 s en scène, glisse hors champ (420 ms), puis les
-    // deux Pokémon apparaissent une fois son animation terminée.
+    // deux Pokémon apparaissent (adversaire puis joueur).
     const HOLD_MS = 1500;
     const SLIDE_MS = 420;
     timers.push(
@@ -159,8 +197,8 @@ export function BattleArena({
     timers.push(
       window.setTimeout(() => {
         setOpponentIntro("pokemon");
-        pokeballEntrance(setPlayerAnim);
-        pokeballEntrance(setOpponentAnim);
+        triggerOpponentEntrance(0);
+        triggerPlayerEntrance(280);
       }, HOLD_MS + SLIDE_MS),
     );
 
@@ -595,6 +633,22 @@ export function BattleArena({
           playBattleSfx("switch");
           setCurrentMessage(event.message);
           setAnim("is-entering-pokeball");
+
+          const incoming = activePokemon(
+            playerSwitch ? next.state.p1 : next.state.p2,
+          );
+          playPokemonCry(incoming.speciesId, { interrupt: false });
+          if (incoming.isShiny) {
+            playBattleSfx("shiny");
+            if (playerSwitch) {
+              setPlayerShinySparkles(true);
+              window.setTimeout(() => setPlayerShinySparkles(false), 1400);
+            } else {
+              setOpponentShinySparkles(true);
+              window.setTimeout(() => setOpponentShinySparkles(false), 1400);
+            }
+          }
+
           await sleep(360);
           setAnim("");
 
@@ -732,6 +786,7 @@ export function BattleArena({
               statusOverride: playerStatus,
               animation: playerAnim,
               hideField: hidePlayerField,
+              showShinySparkles: playerShinySparkles,
             }}
             opponent={{
               pokemon: opponent,
@@ -739,6 +794,7 @@ export function BattleArena({
               statusOverride: opponentStatus,
               animation: opponentAnim,
               hideField: hideOpponentField,
+              showShinySparkles: opponentShinySparkles,
             }}
           />
 
