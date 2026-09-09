@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import {
   Check,
   ChevronLeft,
@@ -26,6 +26,12 @@ import {
   readBattleStartResponse,
   type BattleStartPayload,
 } from "@/lib/combat/battle-client";
+import {
+  GAMEPAD_EVENTS,
+  type GamepadActionEventDetail,
+  type GamepadNavEventDetail,
+} from "@/lib/gamepad/gamepad-types";
+import { playUiSfx } from "@/lib/audio/ui-sfx";
 import {
   getCampaignStagePoint,
   getCampaignWorldMap,
@@ -108,7 +114,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
     setMessage(null);
   }
 
-  async function startBattleForStage(stageId: string) {
+  const startBattleForStage = useCallback(async (stageId: string) => {
     setMessage(null);
     try {
       // Seul l'identifiant de l'étape est transmis : le serveur contrôle
@@ -129,17 +135,81 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
           : "Une erreur de communication est survenue lors du démarrage du combat.",
       );
     }
-  }
+  }, []);
 
-  async function launch(target: CampaignStageView) {
-    if (target.isLocked || launching) return;
-    setLaunching(target.id);
-    try {
-      await startBattleForStage(target.id);
-    } finally {
-      setLaunching(null);
-    }
-  }
+  const launch = useCallback(
+    async (target: CampaignStageView) => {
+      if (target.isLocked || launching) return;
+      setLaunching(target.id);
+      try {
+        await startBattleForStage(target.id);
+      } finally {
+        setLaunching(null);
+      }
+    },
+    [launching, startBattleForStage],
+  );
+
+  // Contrôles manette Xbox pour la carte de campagne
+  useEffect(() => {
+    if (activeBattle) return;
+
+    const onNav = (e: Event) => {
+      const custom = e as CustomEvent<GamepadNavEventDetail>;
+      const dir = custom.detail?.direction;
+
+      if (dir === "left" && previousWorld) {
+        custom.preventDefault();
+        playUiSfx("select");
+        selectWorld(previousWorld);
+      } else if (dir === "right" && nextWorld) {
+        custom.preventDefault();
+        playUiSfx("select");
+        selectWorld(nextWorld);
+      } else if (dir === "up" || dir === "down") {
+        custom.preventDefault();
+        const stages = world.stages;
+        const currentIdx = stages.findIndex((s) => s.id === stageId);
+        if (currentIdx !== -1) {
+          const nextIdx =
+            dir === "down"
+              ? Math.min(stages.length - 1, currentIdx + 1)
+              : Math.max(0, currentIdx - 1);
+          if (nextIdx !== currentIdx) {
+            playUiSfx("hover");
+            setStageId(stages[nextIdx].id);
+          }
+        }
+      }
+    };
+
+    const onAction = (e: Event) => {
+      const custom = e as CustomEvent<GamepadActionEventDetail>;
+      const action = custom.detail?.action;
+
+      if (action === "confirm" && stage && !stage.isLocked && !launching) {
+        custom.preventDefault();
+        void launch(stage);
+      }
+    };
+
+    window.addEventListener(GAMEPAD_EVENTS.NAV, onNav);
+    window.addEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+
+    return () => {
+      window.removeEventListener(GAMEPAD_EVENTS.NAV, onNav);
+      window.removeEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+    };
+  }, [
+    activeBattle,
+    previousWorld,
+    nextWorld,
+    world.stages,
+    stageId,
+    stage,
+    launching,
+    launch,
+  ]);
 
   if (activeBattle) {
     return (
@@ -417,6 +487,7 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
             <button
               type="button"
               className={styles.fightButton}
+              data-gamepad-primary="true"
               onClick={() => launch(stage)}
               disabled={stage.isLocked || launching !== null}
               aria-label={`${stage.isCompleted ? "Rejouer" : "Lancer le combat"} : ${stage.name}`}
@@ -429,6 +500,12 @@ export function CampaignMap({ overview }: Readonly<CampaignMapProps>) {
                 </>
               ) : (
                 <>
+                  <span
+                    className="gamepad-hint gamepad-hint--button-a"
+                    aria-hidden="true"
+                  >
+                    A
+                  </span>
                   <Swords aria-hidden="true" size={18} />
                   {stage.isCompleted ? "Rejouer" : "Combattre"}
                 </>
