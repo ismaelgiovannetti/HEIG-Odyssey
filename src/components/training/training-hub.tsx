@@ -21,6 +21,12 @@ import {
   type BattleStartPayload,
 } from "@/lib/combat/battle-client";
 import {
+  GAMEPAD_EVENTS,
+  type GamepadActionEventDetail,
+  type GamepadNavEventDetail,
+} from "@/lib/gamepad/gamepad-types";
+import { playUiSfx } from "@/lib/audio/ui-sfx";
+import {
   readTeamResponse,
   TeamRequestError,
   type CollectionSnapshot,
@@ -176,7 +182,7 @@ export function TrainingHub() {
     activeTeam.length > 0 &&
     activeTeam.some((pokemon) => pokemon.currentHp > 0);
 
-  async function prepareOpponent() {
+  const prepareOpponent = useCallback(async () => {
     if (!canPrepare || prepareLock.current) return;
     prepareLock.current = true;
     setPreparing(true);
@@ -208,7 +214,7 @@ export function TrainingHub() {
       prepareLock.current = false;
       setPreparing(false);
     }
-  }
+  }, [canPrepare, difficulty]);
 
   function returnToTraining() {
     setPreparedBattle(null);
@@ -217,6 +223,49 @@ export function TrainingHub() {
     void loadTeam();
     router.refresh();
   }
+
+  // Contrôles manette Xbox pour l'entraînement
+  useEffect(() => {
+    if (preparedBattle) return;
+
+    const onNav = (e: Event) => {
+      const custom = e as CustomEvent<GamepadNavEventDetail>;
+      const dir = custom.detail?.direction;
+      if (dir === "left" || dir === "right") {
+        custom.preventDefault();
+        setDifficulty((prev) => {
+          const idx = DIFFICULTY_ORDER.indexOf(prev);
+          const nextIdx =
+            dir === "right"
+              ? (idx + 1) % DIFFICULTY_ORDER.length
+              : (idx - 1 + DIFFICULTY_ORDER.length) % DIFFICULTY_ORDER.length;
+          playUiSfx("select");
+          return DIFFICULTY_ORDER[nextIdx];
+        });
+      }
+    };
+
+    const onAction = (e: Event) => {
+      const custom = e as CustomEvent<GamepadActionEventDetail>;
+      const action = custom.detail?.action;
+
+      if (action === "confirm" && canPrepare && !preparing) {
+        custom.preventDefault();
+        void prepareOpponent();
+      } else if (action === "context") {
+        custom.preventDefault();
+        router.push("/team");
+      }
+    };
+
+    window.addEventListener(GAMEPAD_EVENTS.NAV, onNav);
+    window.addEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+
+    return () => {
+      window.removeEventListener(GAMEPAD_EVENTS.NAV, onNav);
+      window.removeEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+    };
+  }, [preparedBattle, canPrepare, preparing, prepareOpponent, router]);
 
   if (preparedBattle) {
     return (
@@ -265,6 +314,12 @@ export function TrainingHub() {
                 <h2 id="training-team-title">Votre équipe en lice</h2>
               </div>
               <Link href="/team">
+                <span
+                  className="gamepad-hint gamepad-hint--button-x"
+                  aria-hidden="true"
+                >
+                  X
+                </span>{" "}
                 Gérer l’équipe <ArrowRight aria-hidden="true" size={16} />
               </Link>
             </div>
@@ -301,7 +356,13 @@ export function TrainingHub() {
                 <div>
                   <span>Configuration du combat</span>
                   <h2 id="training-difficulty-title">
-                    Choisissez la difficulté
+                    Choisissez la difficulté{" "}
+                    <span
+                      className="gamepad-hint gamepad-hint--bumper"
+                      aria-hidden="true"
+                    >
+                      ◀ ▶
+                    </span>
                   </h2>
                 </div>
               </div>
@@ -369,6 +430,7 @@ export function TrainingHub() {
               <button
                 type="button"
                 className="battle-primary-button"
+                data-gamepad-primary="true"
                 disabled={!canPrepare || preparing}
                 onClick={() => void prepareOpponent()}
               >
@@ -379,6 +441,12 @@ export function TrainingHub() {
                   </>
                 ) : (
                   <>
+                    <span
+                      className="gamepad-hint gamepad-hint--button-a"
+                      aria-hidden="true"
+                    >
+                      A
+                    </span>
                     <Swords aria-hidden="true" size={18} /> Générer l’adversaire
                   </>
                 )}

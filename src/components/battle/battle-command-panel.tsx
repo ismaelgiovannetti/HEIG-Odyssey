@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { ArrowLeft, RefreshCw, UsersRound } from "lucide-react";
 import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type {
@@ -8,6 +9,10 @@ import { getMoveFrenchName } from "@/lib/pokemon/move-names-fr";
 import { getSpeciesFrenchName } from "@/lib/pokemon/species-names-fr";
 import { getPokemonTypeLabel } from "@/lib/pokemon/type-presentation";
 import type { PlayerAction } from "./battle-arena-types";
+import {
+  GAMEPAD_EVENTS,
+  type GamepadActionEventDetail,
+} from "@/lib/gamepad/gamepad-types";
 
 interface BattleCommandPanelProps {
   state: BattleStatePayload;
@@ -39,6 +44,58 @@ export function BattleCommandPanel({
   onToggleTeam,
   onReturn,
 }: Readonly<BattleCommandPanelProps>) {
+  const movesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-focus le premier bouton disponible lorsque le tour commence
+  useEffect(() => {
+    if (controlsDisabled || isAnimating) return;
+    const firstActiveButton =
+      movesContainerRef.current?.querySelector<HTMLButtonElement>(
+        "button:not([disabled])",
+      );
+    if (firstActiveButton) {
+      firstActiveButton.focus({ preventScroll: true });
+    }
+  }, [controlsDisabled, isAnimating, showTeam, switchRequired]);
+
+  // Écoute des commandes de manette Xbox dans le combat
+  useEffect(() => {
+    const onGamepadAction = (e: Event) => {
+      const custom = e as CustomEvent<GamepadActionEventDetail>;
+      const action = custom.detail?.action;
+      if (controlsDisabled) return;
+
+      // X ou LB/RB : bascule entre attaques et banc Pokémon
+      if (
+        action === "context" ||
+        action === "prev_tab" ||
+        action === "next_tab"
+      ) {
+        if (!switchRequired && state.p1.team.length >= 2) {
+          custom.preventDefault();
+          onToggleTeam();
+        }
+      } else if (action === "cancel") {
+        custom.preventDefault();
+        if (showTeam && !switchRequired) {
+          onToggleTeam();
+        } else if (!showTeam) {
+          onReturn();
+        }
+      }
+    };
+
+    window.addEventListener(GAMEPAD_EVENTS.ACTION, onGamepadAction);
+    return () =>
+      window.removeEventListener(GAMEPAD_EVENTS.ACTION, onGamepadAction);
+  }, [
+    controlsDisabled,
+    switchRequired,
+    showTeam,
+    onToggleTeam,
+    onReturn,
+    state.p1.team.length,
+  ]);
   return (
     <aside className="battle-command" aria-label="Commandes de combat">
       <div className="battle-command__dialogue">
@@ -66,7 +123,7 @@ export function BattleCommandPanel({
         )}
       </div>
 
-      <div className="battle-command__actions-wrapper">
+      <div className="battle-command__actions-wrapper" ref={movesContainerRef}>
         <div className="battle-command__heading">
           <div>
             <span>
@@ -166,6 +223,12 @@ export function BattleCommandPanel({
               aria-expanded={showTeam}
               onClick={onToggleTeam}
             >
+              <span
+                className="gamepad-hint gamepad-hint--button-x"
+                aria-hidden="true"
+              >
+                X
+              </span>
               <UsersRound aria-hidden="true" size={17} />
               {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
             </button>
@@ -176,6 +239,12 @@ export function BattleCommandPanel({
             disabled={controlsDisabled}
             onClick={onReturn}
           >
+            <span
+              className="gamepad-hint gamepad-hint--button-b"
+              aria-hidden="true"
+            >
+              B
+            </span>
             <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
           </button>
         </div>

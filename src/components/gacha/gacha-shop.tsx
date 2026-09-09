@@ -27,6 +27,10 @@ import {
   type GachaPreviewSpecies,
 } from "./gacha-preview-dialog";
 import { GachaPullDialog, type PullPhase } from "./gacha-pull-dialog";
+import {
+  GAMEPAD_EVENTS,
+  type GamepadActionEventDetail,
+} from "@/lib/gamepad/gamepad-types";
 import styles from "./gacha-shop.module.css";
 
 interface GachaShopProps {
@@ -133,6 +137,31 @@ export function GachaShop({
       void soundPlayer.playPokemonCry(dialog.result.pokemon.speciesId);
     }
   }, [dialog?.phase, dialog?.result]);
+
+  useEffect(() => {
+    const onAction = (e: Event) => {
+      const custom = e as CustomEvent<GamepadActionEventDetail>;
+      const action = custom.detail?.action;
+
+      if (action === "cancel") {
+        if (dialog && dialog.phase === "revealed") {
+          custom.preventDefault();
+          setDialog(null);
+        } else if (previewBanner) {
+          custom.preventDefault();
+          setPreviewBanner(null);
+        }
+      } else if (action === "confirm") {
+        if (dialog && dialog.phase === "revealed") {
+          custom.preventDefault();
+          setDialog(null);
+        }
+      }
+    };
+
+    window.addEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+    return () => window.removeEventListener(GAMEPAD_EVENTS.ACTION, onAction);
+  }, [dialog, previewBanner]);
 
   function getSoundPlayer() {
     soundPlayerRef.current ??= new GachaSoundPlayer();
