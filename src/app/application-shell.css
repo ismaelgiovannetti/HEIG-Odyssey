@@ -880,6 +880,51 @@
   transform-origin: top left;
 }
 
+/* ============================================================
+   Mode plein écran pour les combats :
+   Élimine le bord gris, supprime le scale et remplit tout l'espace
+   ============================================================ */
+.application-stage:has(.battle-interface),
+.application-stage:has(.battle-result),
+.application-stage:has(.battle-result-container),
+body.in-battle-mode .application-stage {
+  padding: clamp(6px, 1vh, 12px) clamp(10px, 1.6vw, 22px);
+}
+
+.application-shell:has(.battle-interface),
+.application-shell:has(.battle-result),
+.application-shell:has(.battle-result-container),
+body.in-battle-mode .application-shell {
+  width: 100%;
+  max-width: 1720px;
+  height: calc(100% - 4px);
+  margin: 0 auto 4px;
+}
+
+.application-shell__content:has(.battle-interface),
+.application-shell__content:has(.battle-result),
+.application-shell__content:has(.battle-result-container),
+body.in-battle-mode .application-shell__content {
+  padding: 0 !important;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.application-shell__content:has(.battle-interface) .application-shell__viewport,
+.application-shell__content:has(.battle-result) .application-shell__viewport,
+.application-shell__content:has(.battle-result-container)
+  .application-shell__viewport,
+body.in-battle-mode .application-shell__viewport {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  transform: none !important;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Les crédits constituent l'unique contenu du pied de page et restent centrés
    quelle que soit la largeur du shell. */
 .application-footer {

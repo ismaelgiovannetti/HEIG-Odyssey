@@ -172,6 +172,13 @@ export function BattleArena({
     if (finished) resultRef.current?.focus();
   }, [finished]);
 
+  useEffect(() => {
+    document.body.classList.add("in-battle-mode");
+    return () => {
+      document.body.classList.remove("in-battle-mode");
+    };
+  }, []);
+
   useEffect(
     () => () => {
       requestController.current?.abort();
@@ -649,7 +656,12 @@ export function BattleArena({
     return (
       <>
         {soundtrack}
-        <div ref={resultRef} tabIndex={-1} aria-live="polite">
+        <div
+          ref={resultRef}
+          tabIndex={-1}
+          aria-live="polite"
+          className="battle-result-container"
+        >
           <BattleResult
             state={state}
             rewards={rewards}
