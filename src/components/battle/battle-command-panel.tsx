@@ -41,129 +41,144 @@ export function BattleCommandPanel({
 }: Readonly<BattleCommandPanelProps>) {
   return (
     <aside className="battle-command" aria-label="Commandes de combat">
-      <div className="battle-log" aria-live="polite" aria-atomic="true">
-        <strong>
-          <span>Journal de combat</span>
-          {isAnimating && <span className="battle-log__indicator">▼</span>}
-        </strong>
-        <p>{currentMessage}</p>
-      </div>
-
-      {error && (
-        <p className="battle-feedback is-error" role="alert">
-          {error}
-        </p>
-      )}
-      {pending && (
-        <p className="battle-feedback" role="status">
-          <RefreshCw aria-hidden="true" size={16} /> Résolution du tour…
-        </p>
-      )}
-
-      <div className="battle-command__heading">
-        <div>
-          <span>
-            {switchRequired ? "Remplacement requis" : "À vous de jouer"}
-          </span>
-          <strong>
-            {switchRequired
-              ? "Choisissez un Pokémon apte"
-              : `Que doit faire ${
-                  player.nickname ||
-                  getSpeciesFrenchName(player.speciesId, player.name)
-                } ?`}
-          </strong>
-        </div>
-        <span>
-          {state.p1.team.filter((pokemon) => !pokemon.isFainted).length}/
-          {state.p1.team.length} disponibles
-        </span>
-      </div>
-
-      {!showTeam && !switchRequired ? (
-        <div className="battle-moves">
-          {player.moves.map((move, index) => (
-            <button
-              key={`${move.id}-${index}`}
-              type="button"
-              data-type={move.type}
-              disabled={controlsDisabled || move.disabled || move.pp === 0}
-              onClick={() =>
-                void onSubmitAction({ type: "move", moveIndex: index })
-              }
-            >
-              <strong>{getMoveFrenchName(move.id, move.name)}</strong>
-              <span>
-                {getPokemonTypeLabel(move.type)} · {move.pp}/{move.maxPp} PP
+      <div className="battle-command__dialogue">
+        <div className="battle-log" aria-live="polite" aria-atomic="true">
+          <div className="battle-log__header">
+            <strong>Journal de combat</strong>
+            {isAnimating && (
+              <span className="battle-log__indicator" aria-hidden="true">
+                ▼
               </span>
-            </button>
-          ))}
+            )}
+          </div>
+          <p className="battle-log__message">{currentMessage}</p>
         </div>
-      ) : (
-        <div className="battle-switches">
-          {state.p1.team.map((pokemon, index) => {
-            const switchName =
-              pokemon.nickname ||
-              getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
 
-            return (
+        {error && (
+          <p className="battle-feedback is-error" role="alert">
+            {error}
+          </p>
+        )}
+        {pending && (
+          <p className="battle-feedback" role="status">
+            <RefreshCw aria-hidden="true" size={16} /> Résolution du tour…
+          </p>
+        )}
+      </div>
+
+      <div className="battle-command__actions-wrapper">
+        <div className="battle-command__heading">
+          <div>
+            <span>
+              {switchRequired ? "Remplacement requis" : "À vous de jouer"}
+            </span>
+            <strong>
+              {switchRequired
+                ? "Choisissez un Pokémon apte"
+                : `Que doit faire ${
+                    player.nickname ||
+                    getSpeciesFrenchName(player.speciesId, player.name)
+                  } ?`}
+            </strong>
+          </div>
+          <span className="battle-command__count">
+            {state.p1.team.filter((pokemon) => !pokemon.isFainted).length}/
+            {state.p1.team.length} disponibles
+          </span>
+        </div>
+
+        {!showTeam && !switchRequired ? (
+          <div className="battle-moves">
+            {player.moves.map((move, index) => (
               <button
-                key={pokemon.id}
+                key={`${move.id}-${index}`}
                 type="button"
-                disabled={
-                  controlsDisabled || pokemon.isActive || pokemon.isFainted
-                }
+                data-type={move.type}
+                disabled={controlsDisabled || move.disabled || move.pp === 0}
                 onClick={() =>
-                  void onSubmitAction({
-                    type: "switch",
-                    targetPokemonIndex: index,
-                  })
+                  void onSubmitAction({ type: "move", moveIndex: index })
                 }
               >
-                <SpriteProvider
-                  speciesId={pokemon.speciesId}
-                  variant={pokemon.isShiny ? "front_shiny" : "front"}
-                  alt=""
-                  width={42}
-                  height={42}
-                />
-                <span>
-                  <strong>{switchName}</strong>
-                  <small>
-                    {pokemon.isFainted
-                      ? "K.O."
-                      : pokemon.isActive
-                        ? "Au combat"
-                        : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
-                  </small>
+                <span className="battle-moves__name">
+                  {getMoveFrenchName(move.id, move.name)}
+                </span>
+                <span className="battle-moves__meta">
+                  <span className="battle-moves__type">
+                    {getPokemonTypeLabel(move.type)}
+                  </span>
+                  <span className="battle-moves__pp">
+                    {move.pp}/{move.maxPp} PP
+                  </span>
                 </span>
               </button>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="battle-switches">
+            {state.p1.team.map((pokemon, index) => {
+              const switchName =
+                pokemon.nickname ||
+                getSpeciesFrenchName(pokemon.speciesId, pokemon.name);
 
-      <div className="battle-command__actions">
-        {!switchRequired && (
+              return (
+                <button
+                  key={pokemon.id}
+                  type="button"
+                  disabled={
+                    controlsDisabled || pokemon.isActive || pokemon.isFainted
+                  }
+                  onClick={() =>
+                    void onSubmitAction({
+                      type: "switch",
+                      targetPokemonIndex: index,
+                    })
+                  }
+                >
+                  <SpriteProvider
+                    speciesId={pokemon.speciesId}
+                    variant={pokemon.isShiny ? "front_shiny" : "front"}
+                    alt=""
+                    width={44}
+                    height={44}
+                  />
+                  <span>
+                    <strong>{switchName}</strong>
+                    <small>
+                      {pokemon.isFainted
+                        ? "K.O."
+                        : pokemon.isActive
+                          ? "Au combat"
+                          : `${pokemon.currentHp}/${pokemon.maxHp} PV`}
+                    </small>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="battle-command__actions">
+          {!switchRequired && (
+            <button
+              type="button"
+              className="battle-secondary-button"
+              disabled={controlsDisabled || state.p1.team.length < 2}
+              aria-expanded={showTeam}
+              onClick={onToggleTeam}
+            >
+              <UsersRound aria-hidden="true" size={17} />
+              {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
+            </button>
+          )}
           <button
             type="button"
-            className="battle-secondary-button"
-            disabled={controlsDisabled || state.p1.team.length < 2}
-            aria-expanded={showTeam}
-            onClick={onToggleTeam}
+            className="battle-quiet-button"
+            disabled={controlsDisabled}
+            onClick={onReturn}
           >
-            <UsersRound aria-hidden="true" size={17} />
-            {showTeam ? "Voir les attaques" : "Changer de Pokémon"}
+            <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
           </button>
-        )}
-        <button
-          type="button"
-          className="battle-quiet-button"
-          disabled={controlsDisabled}
-          onClick={onReturn}
-        >
-          <ArrowLeft aria-hidden="true" size={16} /> Quitter le combat
-        </button>
+        </div>
       </div>
     </aside>
   );
