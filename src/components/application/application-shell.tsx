@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AudioControls } from "@/components/audio/audio-controls";
 import { UiSoundEffects } from "@/components/audio/ui-sound-effects";
+import { GamepadController } from "@/components/gamepad/gamepad-controller";
 import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
@@ -60,6 +61,7 @@ export function ApplicationShell({
   return (
     <div className="application-page">
       <UiSoundEffects />
+      <GamepadController activeSection={activeSection} />
       <div
         className="application-background-mark application-background-mark--one"
         aria-hidden="true"
@@ -89,24 +91,42 @@ export function ApplicationShell({
             className="application-navigation"
             aria-label="Navigation principale"
           >
-            <ul>
-              {NAVIGATION_ITEMS.map(({ section, href, label, icon: Icon }) => {
-                const isActive = activeSection === section;
+            <div className="application-navigation__wrapper">
+              <span
+                className="gamepad-hint gamepad-hint--bumper"
+                aria-hidden="true"
+                title="Manette : Touche LB (L1)"
+              >
+                LB
+              </span>
+              <ul>
+                {NAVIGATION_ITEMS.map(
+                  ({ section, href, label, icon: Icon }) => {
+                    const isActive = activeSection === section;
 
-                return (
-                  <li key={section}>
-                    <Link
-                      className={isActive ? "is-active" : undefined}
-                      href={href}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <Icon aria-hidden="true" size={16} />
-                      <span>{label}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                    return (
+                      <li key={section}>
+                        <Link
+                          className={isActive ? "is-active" : undefined}
+                          href={href}
+                          aria-current={isActive ? "page" : undefined}
+                        >
+                          <Icon aria-hidden="true" size={16} />
+                          <span>{label}</span>
+                        </Link>
+                      </li>
+                    );
+                  },
+                )}
+              </ul>
+              <span
+                className="gamepad-hint gamepad-hint--bumper"
+                aria-hidden="true"
+                title="Manette : Touche RB (R1)"
+              >
+                RB
+              </span>
+            </div>
           </nav>
 
           <div className="application-player">
