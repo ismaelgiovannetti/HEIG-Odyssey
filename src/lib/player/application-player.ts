@@ -78,15 +78,21 @@ export const getPlayerAccessContext = cache(
 /**
  * Autorise uniquement un joueur connecté ayant terminé son onboarding. Cette
  * fonction est partagée par toutes les pages qui affichent le shell du jeu.
+ * Le compte admin est automatiquement redirigé vers l'interface d'administration.
  */
 export const getApplicationPlayer = cache(
-  async (): Promise<ApplicationPlayer> => {
+  async (options?: { allowAdmin?: boolean }): Promise<ApplicationPlayer> => {
     const context = await getPlayerAccessContext();
 
     // redirect() interrompt le rendu Next.js : aucune donnée du shell n'est
     // envoyée au navigateur tant que le joueur n'est pas prêt.
     if (context.state !== "ready") {
       redirect(getAccessDestination(context.state));
+    }
+
+    // Le compte admin n'a pas accès au jeu, uniquement à l'interface admin !
+    if (!options?.allowAdmin && context.player.role === "admin") {
+      redirect("/admin");
     }
 
     return context.player;

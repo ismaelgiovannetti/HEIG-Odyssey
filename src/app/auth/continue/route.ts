@@ -27,10 +27,23 @@ export async function GET(request: Request) {
 
   // Le profil est toujours recherché depuis l'identité Better Auth et jamais
   // depuis une valeur transmise dans l'URL.
-  const profile = await prisma.userProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { hasCompletedOnboarding: true },
-  });
+  const [profile, user] = await Promise.all([
+    prisma.userProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { hasCompletedOnboarding: true },
+    }),
+    prisma.user?.findUnique
+      ? prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { role: true },
+        })
+      : Promise.resolve(null),
+  ]);
+
+  if (user?.role === "admin") {
+    return NextResponse.redirect(new URL("/admin", applicationOrigin));
+  }
+
   const accessState = getPlayerAccessState(
     session.user.id,
     profile?.hasCompletedOnboarding,
