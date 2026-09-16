@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const guardMocks = vi.hoisted(() => ({
   findProfile: vi.fn(),
+  findUser: vi.fn(),
   getServerSession: vi.fn(),
   redirect: vi.fn(),
 }));
@@ -30,6 +31,9 @@ vi.mock("@/lib/prisma", () => ({
     userProfile: {
       findUnique: guardMocks.findProfile,
     },
+    user: {
+      findUnique: guardMocks.findUser,
+    },
   },
 }));
 
@@ -42,6 +46,7 @@ import {
 describe("gardes serveur du joueur", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    guardMocks.findUser.mockResolvedValue({ role: "user" });
     // Next.js interrompt le rendu lorsqu'une redirection est décidée.
     guardMocks.redirect.mockImplementation((destination: string) => {
       throw new Error(`NEXT_REDIRECT:${destination}`);
@@ -68,7 +73,7 @@ describe("gardes serveur du joueur", () => {
 
     await expect(getPlayerAccessContext()).resolves.toEqual({
       state: "ready",
-      player: { id: "user-1", name: "Kim", pokedollars: 1250 },
+      player: { id: "user-1", name: "Kim", pokedollars: 1250, role: "user" },
     });
     expect(guardMocks.findProfile).toHaveBeenCalledWith({
       where: { userId: "user-1" },
@@ -87,7 +92,7 @@ describe("gardes serveur du joueur", () => {
 
     await expect(getPlayerAccessContext()).resolves.toEqual({
       state: "onboarding-required",
-      player: { id: "legacy-user", name: "Kim", pokedollars: 0 },
+      player: { id: "legacy-user", name: "Kim", pokedollars: 0, role: "user" },
     });
   });
 
@@ -126,6 +131,7 @@ describe("gardes serveur du joueur", () => {
       id: "user-1",
       name: "Kim",
       pokedollars: 90,
+      role: "user",
     });
   });
 

@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "better-auth/crypto";
 
 const prisma = new PrismaClient();
 
@@ -64,6 +65,61 @@ async function main() {
   console.log(
     `MVP quest definitions seeded (${MVP_QUEST_DEFINITIONS.length} quests).`,
   );
+
+  // 3. Compte Administrateur
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@heig-odyssey.ch";
+  const adminUsername = "admin";
+  const adminPassword = process.env.ADMIN_PASSWORD || "Gorgonzola123$";
+  const hashedPassword = await hashPassword(adminPassword);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      role: "admin",
+      emailVerified: true,
+    },
+    create: {
+      name: "Administrateur",
+      username: adminUsername,
+      email: adminEmail,
+      emailVerified: true,
+      role: "admin",
+    },
+  });
+
+  await prisma.userProfile.upsert({
+    where: { userId: adminUser.id },
+    update: {
+      hasCompletedOnboarding: true,
+    },
+    create: {
+      userId: adminUser.id,
+      pokedollars: 999999,
+      hasCompletedOnboarding: true,
+      onboardingCompletedAt: new Date(),
+    },
+  });
+
+  await prisma.account.upsert({
+    where: {
+      issuer_accountId: {
+        issuer: "local:credential",
+        accountId: adminUser.id,
+      },
+    },
+    update: {
+      password: hashedPassword,
+    },
+    create: {
+      userId: adminUser.id,
+      accountId: adminUser.id,
+      providerId: "credential",
+      issuer: "local:credential",
+      password: hashedPassword,
+    },
+  });
+
+  console.log(`Admin user seeded: ${adminEmail} (role: admin)`);
 }
 
 main()

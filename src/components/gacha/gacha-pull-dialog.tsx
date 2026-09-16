@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef } from "react";
 import { LoaderCircle, RefreshCw, Sparkles, X } from "lucide-react";
+import { ShinySparkles } from "@/components/pokemon/shiny-sparkles";
 import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import type { GachaBannerConfig } from "@/lib/content/schemas";
 import type { GachaExecutionResult } from "@/lib/gacha/gacha-contract";
@@ -122,15 +123,20 @@ export function GachaPullDialog({
             <span className={styles.eggCrack} />
           </span>
           {result ? (
-            <SpriteProvider
-              speciesId={result.pokemon.speciesId}
-              variant={result.pokemon.isShiny ? "front_shiny" : "front"}
-              alt=""
-              width={176}
-              height={176}
-              className={styles.revealedSprite}
-              normalizeVisibleSize
-            />
+            <>
+              {result.pokemon.isShiny && phase === "revealed" && (
+                <ShinySparkles active />
+              )}
+              <SpriteProvider
+                speciesId={result.pokemon.speciesId}
+                variant={result.pokemon.isShiny ? "front_shiny" : "front"}
+                alt=""
+                width={176}
+                height={176}
+                className={styles.revealedSprite}
+                normalizeVisibleSize
+              />
+            </>
           ) : null}
         </div>
 

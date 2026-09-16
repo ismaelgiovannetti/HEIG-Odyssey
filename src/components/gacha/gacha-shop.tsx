@@ -21,6 +21,7 @@ import {
   GACHA_SEARCH_DURATION_MS,
   GachaSoundPlayer,
 } from "@/lib/audio/gacha-sound-effects";
+import { playBattleSfx } from "@/lib/audio/battle-sfx";
 import { publishPlayerBalance } from "@/lib/player/player-balance-events";
 import {
   GachaPreviewDialog,
@@ -135,6 +136,9 @@ export function GachaShop({
       // React rejoue l'effet pendant le développement.
       lastCryPullIdRef.current = dialog.result.pullId;
       void soundPlayer.playPokemonCry(dialog.result.pokemon.speciesId);
+      if (dialog.result.pokemon.isShiny) {
+        playBattleSfx("shiny");
+      }
     }
   }, [dialog?.phase, dialog?.result]);
 

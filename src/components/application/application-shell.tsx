@@ -7,6 +7,7 @@ import {
   Home,
   LogOut,
   Map,
+  ShieldCheck,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -17,7 +18,7 @@ import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
-  "home" | "campaign" | "training" | "team" | "gacha";
+  "home" | "campaign" | "training" | "team" | "gacha" | "admin";
 
 interface NavigationItem {
   section: ApplicationSection;
@@ -45,6 +46,7 @@ interface ApplicationShellProps {
   activeSection: ApplicationSection;
   playerName: string;
   pokedollars: number;
+  role?: string;
   children: ReactNode;
 }
 
@@ -56,6 +58,7 @@ export function ApplicationShell({
   activeSection,
   playerName,
   pokedollars,
+  role,
   children,
 }: Readonly<ApplicationShellProps>) {
   return (
@@ -117,6 +120,24 @@ export function ApplicationShell({
                       </li>
                     );
                   },
+                )}
+                {role === "admin" && (
+                  <li key="admin">
+                    <Link
+                      className={
+                        activeSection === "admin" ? "is-active" : undefined
+                      }
+                      href="/admin"
+                      aria-current={
+                        activeSection === "admin" ? "page" : undefined
+                      }
+                      style={{ color: "#f59e0b" }}
+                      title="Panneau d'administration"
+                    >
+                      <ShieldCheck aria-hidden="true" size={16} />
+                      <span>Admin</span>
+                    </Link>
+                  </li>
                 )}
               </ul>
               <span

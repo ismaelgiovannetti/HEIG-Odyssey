@@ -15,6 +15,7 @@ export interface ApplicationPlayer {
   id: string;
   name: string;
   pokedollars: number;
+  role?: string;
 }
 
 interface AuthenticatedPlayerContext {
@@ -40,13 +41,21 @@ export const getPlayerAccessContext = cache(
 
     // La clé de recherche provient exclusivement de la session serveur. Le
     // navigateur ne peut donc pas demander le profil d'un autre joueur.
-    const profile = await prisma.userProfile.findUnique({
-      where: { userId: session.user.id },
-      select: {
-        pokedollars: true,
-        hasCompletedOnboarding: true,
-      },
-    });
+    const [profile, user] = await Promise.all([
+      prisma.userProfile.findUnique({
+        where: { userId: session.user.id },
+        select: {
+          pokedollars: true,
+          hasCompletedOnboarding: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          role: true,
+        },
+      }),
+    ]);
     const state = getPlayerAccessState(
       session.user.id,
       profile?.hasCompletedOnboarding,
@@ -60,6 +69,7 @@ export const getPlayerAccessContext = cache(
         // Un profil absent reste incomplet ; zéro sert uniquement à typer le
         // contexte et n'ouvre jamais les pages de jeu.
         pokedollars: profile?.pokedollars ?? 0,
+        role: user?.role ?? "user",
       },
     };
   },

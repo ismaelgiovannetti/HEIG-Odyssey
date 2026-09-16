@@ -163,6 +163,7 @@ export default async function DashboardPage() {
       activeSection="home"
       playerName={player.name}
       pokedollars={player.pokedollars}
+      role={player.role}
     >
       <MenuSoundtrack trackId={MENU_TRACKS.dashboard} />
       <div className="dashboard-home">

@@ -42,6 +42,7 @@ export default async function GachaPage() {
       activeSection="gacha"
       playerName={player.name}
       pokedollars={player.pokedollars}
+      role={player.role}
     >
       <MenuSoundtrack trackId={MENU_TRACKS.gacha} />
       <GachaShop

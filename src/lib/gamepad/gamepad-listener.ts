@@ -13,9 +13,9 @@ interface ButtonState {
   repeatAt?: number;
 }
 
-const STICK_DEADZONE = 0.45;
-const REPEAT_INITIAL_DELAY_MS = 280;
-const REPEAT_INTERVAL_MS = 140;
+const STICK_DEADZONE = 0.55;
+const REPEAT_INITIAL_DELAY_MS = 450;
+const REPEAT_INTERVAL_MS = 220;
 
 const ACTION_MAPPING: Readonly<
   Record<number, { action: GamepadActionType; name: XboxButtonName }>
@@ -31,6 +31,7 @@ const ACTION_MAPPING: Readonly<
 };
 
 let activeRafId: number | null = null;
+let listenerCount = 0;
 let buttonStates: Record<number, ButtonState> = {};
 let navStates: Record<GamepadDirection, { active: boolean; repeatAt: number }> =
   {
@@ -185,23 +186,27 @@ export function startGamepadLoop(): () => void {
   window.addEventListener("gamepadconnected", onConnect);
   window.addEventListener("gamepaddisconnected", onDisconnect);
 
+  listenerCount++;
   if (!activeRafId) {
     activeRafId = requestAnimationFrame(pollGamepads);
   }
 
   return () => {
-    window.removeEventListener("gamepadconnected", onConnect);
-    window.removeEventListener("gamepaddisconnected", onDisconnect);
-    if (activeRafId) {
-      cancelAnimationFrame(activeRafId);
-      activeRafId = null;
+    listenerCount = Math.max(0, listenerCount - 1);
+    if (listenerCount === 0) {
+      window.removeEventListener("gamepadconnected", onConnect);
+      window.removeEventListener("gamepaddisconnected", onDisconnect);
+      if (activeRafId) {
+        cancelAnimationFrame(activeRafId);
+        activeRafId = null;
+      }
+      buttonStates = {};
+      navStates = {
+        up: { active: false, repeatAt: 0 },
+        down: { active: false, repeatAt: 0 },
+        left: { active: false, repeatAt: 0 },
+        right: { active: false, repeatAt: 0 },
+      };
     }
-    buttonStates = {};
-    navStates = {
-      up: { active: false, repeatAt: 0 },
-      down: { active: false, repeatAt: 0 },
-      left: { active: false, repeatAt: 0 },
-      right: { active: false, repeatAt: 0 },
-    };
   };
 }
