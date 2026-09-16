@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { startGamepadLoop } from "@/lib/gamepad/gamepad-listener";
 import { navigateSpatially } from "@/lib/gamepad/spatial-navigation";
 import {
@@ -29,6 +29,8 @@ export function GamepadController({
   activeSection,
 }: Readonly<GamepadControllerProps>) {
   const router = useRouter();
+  const activeSectionRef = useRef(activeSection);
+  activeSectionRef.current = activeSection;
 
   useEffect(() => {
     const stopLoop = startGamepadLoop();
@@ -45,8 +47,9 @@ export function GamepadController({
       // LB (L1) -> Onglet précédent
       if (detail.action === "prev_tab") {
         if (customEvent.defaultPrevented || isInBattle) return;
+        const currentSection = activeSectionRef.current;
         const currentIndex = SECTION_ORDER.findIndex(
-          (item) => item.section === activeSection,
+          (item) => item.section === currentSection,
         );
         if (currentIndex !== -1) {
           const prevIndex =
@@ -60,8 +63,9 @@ export function GamepadController({
       // RB (R1) -> Onglet suivant
       if (detail.action === "next_tab") {
         if (customEvent.defaultPrevented || isInBattle) return;
+        const currentSection = activeSectionRef.current;
         const currentIndex = SECTION_ORDER.findIndex(
-          (item) => item.section === activeSection,
+          (item) => item.section === currentSection,
         );
         if (currentIndex !== -1) {
           const nextIndex = (currentIndex + 1) % SECTION_ORDER.length;
@@ -124,7 +128,7 @@ export function GamepadController({
       window.removeEventListener(GAMEPAD_EVENTS.NAV, onGamepadNav);
       stopLoop();
     };
-  }, [activeSection, router]);
+  }, [router]);
 
   return null;
 }

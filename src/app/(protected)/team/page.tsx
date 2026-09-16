@@ -19,6 +19,7 @@ export default async function TeamPage() {
       activeSection="team"
       playerName={player.name}
       pokedollars={player.pokedollars}
+      role={player.role}
     >
       <MenuSoundtrack trackId={MENU_TRACKS.team} />
       {/* Le PC affiche le nom de la session serveur, comme l'en-tête du jeu. */}

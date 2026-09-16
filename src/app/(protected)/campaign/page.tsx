@@ -26,6 +26,7 @@ export default async function CampaignPage() {
       activeSection="campaign"
       playerName={player.name}
       pokedollars={player.pokedollars}
+      role={player.role}
     >
       <CampaignMap overview={overview} />
     </ApplicationShell>
