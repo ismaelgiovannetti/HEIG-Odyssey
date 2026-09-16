@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   AlertTriangle,
   Award,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Coins,
   Compass,
   Dices,
@@ -23,20 +26,55 @@ import type {
   AdminDashboardData,
   AdminPlayerItem,
 } from "@/lib/admin/admin-analytics-service";
+import type { ApplicationSection } from "@/components/application/application-shell";
 import { SpriteProvider } from "@/components/pokemon/sprite-provider";
 import styles from "./admin-dashboard.module.css";
 
 interface AdminDashboardProps {
   initialData: AdminDashboardData;
+  activeSection?: ApplicationSection;
 }
 
 type TabType = "overview" | "players" | "combats" | "gacha" | "system";
 
-export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
+const VALID_TABS: readonly TabType[] = [
+  "overview",
+  "players",
+  "combats",
+  "gacha",
+  "system",
+];
+
+const PAGE_SIZE = 5;
+
+export function AdminDashboard({
+  initialData,
+  activeSection,
+}: Readonly<AdminDashboardProps>) {
+  const router = useRouter();
   const [data, setData] = useState<AdminDashboardData>(initialData);
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
+
+  const initialTab: TabType =
+    activeSection && VALID_TABS.includes(activeSection as TabType)
+      ? (activeSection as TabType)
+      : "overview";
+
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isPending, startTransition] = useTransition();
+
+  // Synchronise avec l'onglet de la barre de navigation ou des URLs
+  useEffect(() => {
+    if (activeSection && VALID_TABS.includes(activeSection as TabType)) {
+      setActiveTab(activeSection as TabType);
+    }
+  }, [activeSection]);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    router.push(`/admin?tab=${tab}`);
+  };
 
   const handleRefresh = () => {
     startTransition(async () => {
@@ -65,6 +103,13 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
       p.id.toLowerCase().includes(q)
     );
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredPlayers.length / PAGE_SIZE));
+  const safePage = Math.min(Math.max(1, currentPage), totalPages);
+  const paginatedPlayers = filteredPlayers.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   const shinyRateDiff = Math.abs(data.overview.observedShinyRate - 1.0);
   const isShinyRateNormal = shinyRateDiff <= 1.5;
@@ -108,7 +153,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
         <button
           type="button"
           className={`${styles.tabBtn} ${activeTab === "overview" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("overview")}
+          onClick={() => handleTabChange("overview")}
         >
           <Activity size={16} />
           <span>Vue d&apos;ensemble</span>
@@ -116,7 +161,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
         <button
           type="button"
           className={`${styles.tabBtn} ${activeTab === "players" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("players")}
+          onClick={() => handleTabChange("players")}
         >
           <Users size={16} />
           <span>Joueurs ({data.players.length})</span>
@@ -124,7 +169,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
         <button
           type="button"
           className={`${styles.tabBtn} ${activeTab === "combats" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("combats")}
+          onClick={() => handleTabChange("combats")}
         >
           <Swords size={16} />
           <span>Combats &amp; Campagne</span>
@@ -132,7 +177,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
         <button
           type="button"
           className={`${styles.tabBtn} ${activeTab === "gacha" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("gacha")}
+          onClick={() => handleTabChange("gacha")}
         >
           <Dices size={16} />
           <span>Gacha &amp; Économie</span>
@@ -140,7 +185,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
         <button
           type="button"
           className={`${styles.tabBtn} ${activeTab === "system" ? styles.tabBtnActive : ""}`}
-          onClick={() => setActiveTab("system")}
+          onClick={() => handleTabChange("system")}
         >
           <Layers size={16} />
           <span>Système &amp; Événements</span>
@@ -345,7 +390,10 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
                   type="text"
                   placeholder="Rechercher par nom, email, identifiant..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className={styles.searchInput}
                 />
               </div>
@@ -366,7 +414,7 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPlayers.length === 0 ? (
+                  {paginatedPlayers.length === 0 ? (
                     <tr>
                       <td
                         colSpan={8}
@@ -380,13 +428,61 @@ export function AdminDashboard({ initialData }: Readonly<AdminDashboardProps>) {
                       </td>
                     </tr>
                   ) : (
-                    filteredPlayers.map((player) => (
+                    paginatedPlayers.map((player) => (
                       <PlayerRow key={player.id} player={player} />
                     ))
                   )}
                 </tbody>
               </table>
             </div>
+
+            {filteredPlayers.length > 0 && (
+              <div className={styles.paginationContainer}>
+                <span className={styles.paginationInfo}>
+                  Affichage de {(safePage - 1) * PAGE_SIZE + 1} à{" "}
+                  {Math.min(safePage * PAGE_SIZE, filteredPlayers.length)} sur{" "}
+                  {filteredPlayers.length} joueur
+                  {filteredPlayers.length > 1 ? "s" : ""}
+                </span>
+
+                <div className={styles.paginationControls}>
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                    title="Page précédente"
+                  >
+                    <ChevronLeft size={14} />
+                    <span>Précédent</span>
+                  </button>
+
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "var(--color-text-muted)",
+                      padding: "0 8px",
+                    }}
+                  >
+                    Page {safePage} / {totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    className={styles.pageBtn}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={safePage >= totalPages}
+                    title="Page suivante"
+                  >
+                    <span>Suivant</span>
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

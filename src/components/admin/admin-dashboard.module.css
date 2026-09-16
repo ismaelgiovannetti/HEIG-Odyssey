@@ -1,12 +1,15 @@
 .adminContainer {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
   width: 100%;
   max-width: 1300px;
+  height: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
-  padding: 10px 16px 40px;
+  padding: 6px 16px 16px;
   color: var(--color-text);
+  overflow: hidden;
 }
 
 .header {
@@ -14,9 +17,10 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 16px;
+  gap: 12px;
+  padding-bottom: 12px;
   border-bottom: 2px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .titleArea {
@@ -141,7 +145,10 @@
 .tabContent {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* KPI Grid */
@@ -212,11 +219,14 @@
   background: var(--color-surface);
   border: 2px solid var(--color-border);
   border-radius: 6px;
-  padding: 20px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sectionHeader {
@@ -225,6 +235,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .sectionTitle {
@@ -271,8 +282,11 @@
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
   border: 1px solid var(--color-border);
   border-radius: 4px;
+  flex: 1;
+  min-height: 0;
 }
 
 .table {
@@ -286,19 +300,81 @@
   background: var(--color-surface-raised);
   color: var(--color-text-muted);
   font-weight: 600;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-bottom: 2px solid var(--color-border);
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .td {
-  padding: 12px 14px;
+  padding: 7px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   vertical-align: middle;
 }
 
 .tr:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* Pagination */
+.paginationContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.paginationInfo {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 32px;
+  height: 30px;
+  padding: 0 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--color-surface-raised);
+  border-color: var(--color-primary-light);
+}
+
+.pageBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-color: var(--color-primary-light) !important;
 }
 
 /* Badges */

@@ -2,12 +2,14 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
   BrainCircuit,
   Dices,
   Home,
+  Layers,
   LogOut,
   Map,
-  ShieldCheck,
+  Swords,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -18,7 +20,16 @@ import { PlayerBalance } from "@/components/application/player-balance";
 import { QuestPanel } from "@/components/quests/quest-panel";
 
 export type ApplicationSection =
-  "home" | "campaign" | "training" | "team" | "gacha" | "admin";
+  | "home"
+  | "campaign"
+  | "training"
+  | "team"
+  | "gacha"
+  | "admin"
+  | "overview"
+  | "players"
+  | "combats"
+  | "system";
 
 interface NavigationItem {
   section: ApplicationSection;
@@ -27,8 +38,7 @@ interface NavigationItem {
   icon: LucideIcon;
 }
 
-// La navigation est déclarée une seule fois afin que toutes les pages du jeu
-// conservent les mêmes routes, libellés et icônes.
+// La navigation joueur standard
 const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   { section: "home", href: "/dashboard", label: "Accueil", icon: Home },
   { section: "campaign", href: "/campaign", label: "Campagne", icon: Map },
@@ -42,6 +52,40 @@ const NAVIGATION_ITEMS: readonly NavigationItem[] = [
   { section: "gacha", href: "/gacha", label: "Gacha", icon: Dices },
 ];
 
+// La navigation réservée aux administrateurs remplace les menus du jeu
+const ADMIN_NAVIGATION_ITEMS: readonly NavigationItem[] = [
+  {
+    section: "overview",
+    href: "/admin?tab=overview",
+    label: "Vue d'ensemble",
+    icon: Activity,
+  },
+  {
+    section: "players",
+    href: "/admin?tab=players",
+    label: "Joueurs",
+    icon: UsersRound,
+  },
+  {
+    section: "combats",
+    href: "/admin?tab=combats",
+    label: "Combats",
+    icon: Swords,
+  },
+  {
+    section: "gacha",
+    href: "/admin?tab=gacha",
+    label: "Gacha & Éco",
+    icon: Dices,
+  },
+  {
+    section: "system",
+    href: "/admin?tab=system",
+    label: "Système",
+    icon: Layers,
+  },
+];
+
 interface ApplicationShellProps {
   activeSection: ApplicationSection;
   playerName: string;
@@ -51,8 +95,8 @@ interface ApplicationShellProps {
 }
 
 /**
- * Cadre commun des pages de jeu. La navigation et le pied de page restent
- * hors du panneau pixel afin que le contenu dispose de tout l'espace central.
+ * Cadre commun des pages de jeu et d'administration.
+ * Pour les comptes administrateurs, les menus du jeu sont remplacés par les onglets d'administration.
  */
 export function ApplicationShell({
   activeSection,
@@ -61,10 +105,17 @@ export function ApplicationShell({
   role,
   children,
 }: Readonly<ApplicationShellProps>) {
+  const isAdmin = role === "admin";
+  const navItems = isAdmin ? ADMIN_NAVIGATION_ITEMS : NAVIGATION_ITEMS;
+  const brandHref = isAdmin ? "/admin" : "/dashboard";
+  const brandLabel = isAdmin
+    ? "Administration HEIG Odyssey"
+    : "Accueil HEIG Odyssey";
+
   return (
     <div className="application-page">
       <UiSoundEffects />
-      <GamepadController activeSection={activeSection} />
+      <GamepadController activeSection={activeSection} role={role} />
       <div
         className="application-background-mark application-background-mark--one"
         aria-hidden="true"
@@ -78,8 +129,8 @@ export function ApplicationShell({
         <div className="application-navbar">
           <Link
             className="application-brand"
-            href="/dashboard"
-            aria-label="Accueil HEIG Odyssey"
+            href={brandHref}
+            aria-label={brandLabel}
           >
             <Image
               src="/heig-odyssey-logo.png"
@@ -92,7 +143,9 @@ export function ApplicationShell({
 
           <nav
             className="application-navigation"
-            aria-label="Navigation principale"
+            aria-label={
+              isAdmin ? "Navigation administration" : "Navigation principale"
+            }
           >
             <div className="application-navigation__wrapper">
               <span
@@ -103,42 +156,26 @@ export function ApplicationShell({
                 LB
               </span>
               <ul>
-                {NAVIGATION_ITEMS.map(
-                  ({ section, href, label, icon: Icon }) => {
-                    const isActive = activeSection === section;
+                {navItems.map(({ section, href, label, icon: Icon }) => {
+                  const isActive =
+                    activeSection === section ||
+                    (isAdmin &&
+                      activeSection === "admin" &&
+                      section === "overview");
 
-                    return (
-                      <li key={section}>
-                        <Link
-                          className={isActive ? "is-active" : undefined}
-                          href={href}
-                          aria-current={isActive ? "page" : undefined}
-                        >
-                          <Icon aria-hidden="true" size={16} />
-                          <span>{label}</span>
-                        </Link>
-                      </li>
-                    );
-                  },
-                )}
-                {role === "admin" && (
-                  <li key="admin">
-                    <Link
-                      className={
-                        activeSection === "admin" ? "is-active" : undefined
-                      }
-                      href="/admin"
-                      aria-current={
-                        activeSection === "admin" ? "page" : undefined
-                      }
-                      style={{ color: "#f59e0b" }}
-                      title="Panneau d'administration"
-                    >
-                      <ShieldCheck aria-hidden="true" size={16} />
-                      <span>Admin</span>
-                    </Link>
-                  </li>
-                )}
+                  return (
+                    <li key={section}>
+                      <Link
+                        className={isActive ? "is-active" : undefined}
+                        href={href}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <Icon aria-hidden="true" size={16} />
+                        <span>{label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
               <span
                 className="gamepad-hint gamepad-hint--bumper"
@@ -151,12 +188,34 @@ export function ApplicationShell({
           </nav>
 
           <div className="application-player">
-            {/* Les informations dynamiques restent groupées à droite, dans le
-                même ordre sur chacune des pages authentifiées. */}
-            <QuestPanel />
-            <PlayerBalance initialBalance={pokedollars} />
+            {/* Les modules de jeu (quêtes, solde) ne sont affichés que pour les joueurs normaux */}
+            {!isAdmin && (
+              <>
+                <QuestPanel />
+                <PlayerBalance initialBalance={pokedollars} />
+              </>
+            )}
             <AudioControls className="application-player__audio" />
-            <span className="application-player__name">{playerName}</span>
+            <span className="application-player__name">
+              {playerName}
+              {isAdmin && (
+                <span
+                  style={{
+                    marginLeft: "6px",
+                    padding: "2px 6px",
+                    background: "rgba(245, 158, 11, 0.2)",
+                    border: "1px solid #f59e0b",
+                    borderRadius: "4px",
+                    color: "#fbbf24",
+                    fontSize: "10px",
+                    fontWeight: "700",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Admin
+                </span>
+              )}
+            </span>
             <Link
               className="application-player__logout"
               href="/logout"
