@@ -1,33 +1,5 @@
 # Déploiement VPS : seules les images immuables publiées par la CI sont utilisées.
 services:
-  traefik:
-    image: traefik@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf
-    container_name: traefik
-    restart: unless-stopped
-    command:
-      - --api.insecure=false
-      - --providers.file.filename=/etc/traefik/dynamic.yml
-      - --providers.file.watch=true
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entryPoint.to=websecure
-      - --entrypoints.web.http.redirections.entryPoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      - --certificatesresolvers.myresolver.acme.tlschallenge=true
-      - --certificatesresolvers.myresolver.acme.email=admin@heig-odyssey.online
-      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      # Le routage explicite évite tout accès de Traefik au socket Docker.
-      - ./traefik.dynamic.yml:/etc/traefik/dynamic.yml:ro
-      # Le certificat ACME existant est conservé entre les déploiements.
-      - ./letsencrypt:/letsencrypt
-    security_opt:
-      - no-new-privileges:true
-    networks:
-      - frontend
-
   webapp:
     image: ${APP_IMAGE:?APP_IMAGE is required}
     container_name: webapp
@@ -53,6 +25,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_app-network"
+      - "traefik.http.middlewares.heig-odyssey-limit.buffering.maxRequestBodyBytes=524288"
+      - "traefik.http.routers.heig-odyssey-app.rule=Host(`play.heig-odyssey.online`)"
+      - "traefik.http.routers.heig-odyssey-app.entrypoints=websecure"
+      - "traefik.http.routers.heig-odyssey-app.tls.certresolver=letsencryptresolver"
+      - "traefik.http.routers.heig-odyssey-app.middlewares=heig-odyssey-limit"
+      - "traefik.http.services.heig-odyssey-app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.heig-odyssey-app-web.rule=Host(`play.heig-odyssey.online`)"
+      - "traefik.http.routers.heig-odyssey-app-web.entrypoints=web"
     networks:
       - frontend
       - backend
@@ -103,6 +86,15 @@ services:
       - no-new-privileges:true
     ports:
       - "127.0.0.1:8080:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=root_app-network"
+      - "traefik.http.routers.heig-odyssey-landing.rule=Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)"
+      - "traefik.http.routers.heig-odyssey-landing.entrypoints=websecure"
+      - "traefik.http.routers.heig-odyssey-landing.tls.certresolver=letsencryptresolver"
+      - "traefik.http.services.heig-odyssey-landing.loadbalancer.server.port=80"
+      - "traefik.http.routers.heig-odyssey-landing-web.rule=Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)"
+      - "traefik.http.routers.heig-odyssey-landing-web.entrypoints=web"
     networks:
       - frontend
     healthcheck:
@@ -165,10 +157,10 @@ volumes:
   redis_data:
 
 networks:
-  # Nom fixe utilisé par Traefik pour joindre explicitement les services web.
+  # Raccordement au Traefik mutualisé sur le VPS
   frontend:
-    name: heig-odyssey-frontend
-    driver: bridge
+    external: true
+    name: root_app-network
   # PostgreSQL et Redis n'ont aucun accès direct à l'extérieur du réseau Docker.
   backend:
     name: heig-odyssey-backend
