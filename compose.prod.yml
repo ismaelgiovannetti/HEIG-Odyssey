@@ -27,6 +27,7 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=root_app-network"
       - "traefik.http.middlewares.heig-odyssey-limit.buffering.maxRequestBodyBytes=524288"
       - "traefik.http.routers.heig-odyssey-app.rule=Host(`play.heig-odyssey.online`)"
       - "traefik.http.routers.heig-odyssey-app.entrypoints=websecure"
@@ -87,6 +88,7 @@ services:
       - "127.0.0.1:8080:80"
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=root_app-network"
       - "traefik.http.routers.heig-odyssey-landing.rule=Host(`heig-odyssey.online`) || Host(`www.heig-odyssey.online`)"
       - "traefik.http.routers.heig-odyssey-landing.entrypoints=websecure"
       - "traefik.http.routers.heig-odyssey-landing.tls.certresolver=letsencryptresolver"
