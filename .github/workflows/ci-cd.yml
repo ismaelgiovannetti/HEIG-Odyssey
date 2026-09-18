@@ -86,7 +86,6 @@ jobs:
           test -f Dockerfile
           test -f compose.ci.yml
           test -f compose.prod.yml
-          test -f traefik.dynamic.yml
           test -f landing-page/Dockerfile
           test -f landing-page/index.html
           test -f src/worker/index.ts
@@ -479,8 +478,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          source: compose.prod.yml,traefik.dynamic.yml
-          target: /home/app/heig-odyssey
+          source: compose.prod.yml
+          target: heig-odyssey
           overwrite: true
 
       - name: Deploy via SSH
@@ -504,7 +503,7 @@ jobs:
           envs: DEPLOY_SHA,IMAGE_NAME,GHCR_USERNAME,CR_PAT,BETTER_AUTH_SECRET,BETTER_AUTH_URL,NEXT_PUBLIC_APP_URL,RESEND_API_KEY,RESEND_FROM_EMAIL,POSTGRES_PASSWORD
           script: |
             set -euo pipefail
-            cd /home/app/heig-odyssey
+            cd ~/heig-odyssey
 
             IMAGE_NAME_LOWER="$(printf '%s' "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
             PREVIOUS_SHA="$(cat .deployed_sha 2>/dev/null || true)"
@@ -566,7 +565,7 @@ jobs:
               fi
               # Les migrations ne sont pas annulées automatiquement : elles doivent
               # rester compatibles avec la version applicative précédente.
-              local services=(traefik webapp landing-page postgres redis)
+              local services=(webapp landing-page postgres redis)
               if [[ "$restore_worker" == "true" ]]; then
                 services+=(worker)
               fi
@@ -601,7 +600,7 @@ jobs:
             fi
 
             if ! dc up -d --wait --wait-timeout 60 --remove-orphans \
-              traefik webapp worker landing-page postgres redis; then
+              webapp worker landing-page postgres redis; then
               echo "Le démarrage de ${DEPLOY_SHA} a échoué."
               if restore_previous; then
                 echo "Version ${PREVIOUS_SHA} restaurée."
