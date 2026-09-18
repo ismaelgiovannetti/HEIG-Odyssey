@@ -28,11 +28,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=root_app-network"
-      - "traefik.http.middlewares.heig-odyssey-limit.buffering.maxRequestBodyBytes=524288"
       - "traefik.http.routers.heig-odyssey-app.rule=Host(`play.heig-odyssey.online`)"
       - "traefik.http.routers.heig-odyssey-app.entrypoints=websecure"
       - "traefik.http.routers.heig-odyssey-app.tls.certresolver=letsencryptresolver"
-      - "traefik.http.routers.heig-odyssey-app.middlewares=heig-odyssey-limit"
       - "traefik.http.services.heig-odyssey-app.loadbalancer.server.port=3000"
       - "traefik.http.routers.heig-odyssey-app-web.rule=Host(`play.heig-odyssey.online`)"
       - "traefik.http.routers.heig-odyssey-app-web.entrypoints=web"
